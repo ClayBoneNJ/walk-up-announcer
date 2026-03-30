@@ -15,7 +15,7 @@ function builtInClip({ id, group, nickname, fileName, src }) {
 }
 
 function assetSrc(folder, fileName) {
-  return `/assets/audio/${folder}/${encodeURIComponent(fileName)}`;
+  return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}`;
 }
 
 function titleCaseFromFileName(fileName) {
