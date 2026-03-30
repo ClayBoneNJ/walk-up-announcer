@@ -782,7 +782,10 @@ function RosterModal({
     Math.round(timelineDurationMs * TIMELINE_PIXELS_PER_MS),
   );
   const timelineWidth = isCompactTimeline
-    ? Math.max(TIMELINE_MOBILE_MIN_WIDTH, timelineViewportWidth || TIMELINE_MOBILE_MIN_WIDTH)
+    ? Math.max(
+        TIMELINE_MOBILE_MIN_WIDTH,
+        (timelineViewportWidth || TIMELINE_MOBILE_MIN_WIDTH) - 8,
+      )
     : desktopTimelineWidth;
   const timelinePixelsPerMs = Math.max(
     0.01,
@@ -1250,8 +1253,8 @@ function RosterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-slate-950/70 p-4 backdrop-blur sm:items-center">
-      <div className="glass-panel max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-[2rem] border border-white/10 p-5 shadow-2xl shadow-sky-950/30">
+    <div className="fixed inset-0 z-30 flex items-end justify-center bg-slate-950/70 p-2 backdrop-blur sm:p-4 sm:items-center">
+      <div className="glass-panel max-h-[92vh] w-full max-w-4xl overflow-x-hidden overflow-y-auto rounded-[1.4rem] border border-white/10 p-3 shadow-2xl shadow-sky-950/30 sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
@@ -1266,10 +1269,10 @@ function RosterModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-5 space-y-3">
-          <div className="grid gap-4 xl:grid-cols-[1.1fr,1fr]">
-            <div className="space-y-4">
-              <div className="panel-muted rounded-[1.5rem] p-4">
+        <form onSubmit={onSubmit} className="mt-4 space-y-3 sm:mt-5">
+          <div className="grid gap-3 xl:grid-cols-[1.1fr,1fr] xl:gap-4">
+            <div className="min-w-0 space-y-3 sm:space-y-4">
+              <div className="panel-muted rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
                 <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
                   Player Info
                 </div>
@@ -1299,7 +1302,7 @@ function RosterModal({
                 </div>
               </div>
 
-              <div className="panel-muted rounded-[1.5rem] p-4">
+              <div className="panel-muted rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
                 <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
                   Player-Owned Uploads
                 </div>
@@ -1337,22 +1340,22 @@ function RosterModal({
               </div>
             </div>
 
-            <div className="panel-muted rounded-[1.5rem] p-4">
-              <div className="flex items-start justify-between gap-3">
+            <div className="panel-muted min-w-0 rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
                     Walk-Up Timeline
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                   {selectedTimelineItem?.slot === "announcement" ? (
-                    <div className="relative">
+                    <div className="relative min-w-0 grow sm:grow-0">
                       <select
                         value={selectedAnnouncementClipId}
                         onChange={(event) =>
                           updateAnnouncementSelection(selectedTimelineItem.timelineItemId, event.target.value)
                         }
-                        className="w-44 rounded-2xl border border-cyan-300/30 bg-slate-900/85 px-3 py-3 text-sm text-white outline-none"
+                        className="w-full rounded-2xl border border-cyan-300/30 bg-slate-900/85 px-3 py-3 text-sm text-white outline-none sm:w-44"
                       >
                         {libraries.announcements.map((clip) => (
                           <option key={clip.id} value={clip.id}>
@@ -1365,7 +1368,7 @@ function RosterModal({
                   <button
                     type="button"
                     onClick={() => setPlayheadMs(0)}
-                    className="secondary-button"
+                    className="secondary-button px-3"
                     title="Back to start"
                   >
                     |&lt;
@@ -1373,7 +1376,7 @@ function RosterModal({
                   <button
                     type="button"
                     onClick={previewDraftSequence}
-                    className="secondary-button"
+                    className="secondary-button px-3"
                   >
                     <Play className="h-4 w-4" />
                     Preview
@@ -1386,7 +1389,7 @@ function RosterModal({
                       }
                     }}
                     disabled={!selectedTimelineId}
-                    className={`flex h-12 w-12 items-center justify-center rounded-full border transition ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-full border transition sm:h-12 sm:w-12 ${
                       selectedTimelineId
                         ? "border-rose-300/40 bg-rose-400/15 text-rose-100 hover:bg-rose-400/20"
                         : "border-white/10 bg-slate-900/80 text-slate-500"
@@ -1406,7 +1409,7 @@ function RosterModal({
 
                       setShowSequenceAddPicker((current) => !current);
                     }}
-                    className="secondary-button h-12 w-12 justify-center rounded-full p-0"
+                    className="secondary-button h-11 w-11 justify-center rounded-full p-0 sm:h-12 sm:w-12"
                     aria-label="Add sequence pill"
                     title="Add sequence pill"
                   >
@@ -1456,7 +1459,7 @@ function RosterModal({
 
               <div className="mt-4 space-y-4">
                 {selectedTimelineItem ? (
-                  <div className="rounded-[1.35rem] border border-white/8 bg-slate-950/45 p-3">
+                  <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/45 p-2.5 sm:rounded-[1.35rem] sm:p-3">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div>
                         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300">
@@ -1480,7 +1483,7 @@ function RosterModal({
                       ) : null}
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                    <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-5 sm:gap-2">
                       <button
                         type="button"
                         onClick={() => moveSelectedTimelineItem(-100)}
