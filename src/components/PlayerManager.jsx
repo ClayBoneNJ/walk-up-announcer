@@ -801,9 +801,13 @@ function RosterModal({
     selectedTimelineItem?.slot === "announcement"
       ? selectedTimelineItem.timelineClipId || ""
       : "";
+  const songClipKey = draft.songClip?.dataUrl ?? draft.songClip?.src ?? draft.songClip?.id ?? "";
+  const measuredSongClipDurationMs = songClipKey ? clipDurationLookup[songClipKey] : 0;
   const songClipDurationMs = Math.max(
     0,
-    Math.round((draft.songClip?.duration || 0) * 1000),
+    Number.isFinite(measuredSongClipDurationMs) && measuredSongClipDurationMs > 0
+      ? measuredSongClipDurationMs
+      : Math.round((draft.songClip?.duration || 0) * 1000),
   );
   const maxSongTrimStartMs = Math.max(0, songClipDurationMs - WALKUP_TRIM_MS);
 
@@ -1619,6 +1623,7 @@ function RosterModal({
       {showSongTrimModal ? (
         <SongTrimModal
           clip={draft.songClip}
+          clipDurationMs={songClipDurationMs}
           trimStartMs={songTrimStartMs}
           maxTrimStartMs={maxSongTrimStartMs}
           onChange={setSongTrimStartMs}
@@ -2134,6 +2139,7 @@ function TimelineBlock({
 
 function SongTrimModal({
   clip,
+  clipDurationMs,
   trimStartMs,
   maxTrimStartMs,
   onChange,
@@ -2143,9 +2149,12 @@ function SongTrimModal({
 }) {
   const windowEndMs = Math.min(
     Math.max(0, Number(trimStartMs) || 0) + WALKUP_TRIM_MS,
-    Math.max(WALKUP_TRIM_MS, Math.round((clip?.duration || 0) * 1000)),
+    Math.max(WALKUP_TRIM_MS, clipDurationMs || Math.round((clip?.duration || 0) * 1000)),
   );
-  const totalDurationMs = Math.max(0, Math.round((clip?.duration || 0) * 1000));
+  const totalDurationMs = Math.max(
+    0,
+    clipDurationMs || Math.round((clip?.duration || 0) * 1000),
+  );
   const canTrim = totalDurationMs > WALKUP_TRIM_MS;
 
   return (
@@ -2171,7 +2180,7 @@ function SongTrimModal({
         <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-            {clip?.fileName} • original {formatDuration(clip?.duration)} • playing {formatMsTimestamp(trimStartMs)} to {formatMsTimestamp(windowEndMs)}
+            {clip?.fileName} • original {formatDuration(totalDurationMs / 1000)} • playing {formatMsTimestamp(trimStartMs)} to {formatMsTimestamp(windowEndMs)}
           </div>
 
           <div className="mt-4">
