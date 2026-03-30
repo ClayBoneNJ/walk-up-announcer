@@ -242,14 +242,29 @@ export default function App() {
   }, [players, lineupCursorId]);
 
   const playPlayerFromWalkups = async (player, visiblePlayers = players) => {
-    await playPlayer(player);
-    const currentIndex = visiblePlayers.findIndex((entry) => entry.id === player.id);
-    if (currentIndex === -1 || visiblePlayers.length === 0) {
+    await playTrackedBatter(player, visiblePlayers);
+  };
+
+  const playTrackedBatter = async (player, visiblePlayers = players) => {
+    if (!player || !visiblePlayers.length) {
       return;
     }
 
-    const nextPlayer = visiblePlayers[(currentIndex + 1) % visiblePlayers.length];
-    setLineupCursorId(nextPlayer.id);
+    setLineupCursorId(player.id);
+
+    try {
+      await playPlayer(player);
+    } catch {
+      return;
+    }
+
+    const currentIndex = visiblePlayers.findIndex((entry) => entry.id === player.id);
+    if (currentIndex === -1) {
+      return;
+    }
+
+    const followingPlayer = visiblePlayers[(currentIndex + 1) % visiblePlayers.length];
+    setLineupCursorId(followingPlayer.id);
   };
 
   const playNextBatter = async (visiblePlayers = players) => {
@@ -257,13 +272,9 @@ export default function App() {
       return;
     }
 
-    const nextIndex = visiblePlayers.findIndex((player) => player.id === lineupCursorId);
-    const batter = visiblePlayers[nextIndex >= 0 ? nextIndex : 0];
-    await playPlayer(batter);
-
-    const followingPlayer =
-      visiblePlayers[((nextIndex >= 0 ? nextIndex : 0) + 1) % visiblePlayers.length];
-    setLineupCursorId(followingPlayer.id);
+    const currentIndex = visiblePlayers.findIndex((player) => player.id === lineupCursorId);
+    const nextPlayer = visiblePlayers[((currentIndex >= 0 ? currentIndex : 0) + 1) % visiblePlayers.length];
+    await playTrackedBatter(nextPlayer, visiblePlayers);
   };
 
   const playClip = async ({ clip, playerId = "", playerName = "" }) => {
@@ -373,6 +384,7 @@ export default function App() {
               playbackProgress={playbackProgress}
               lineupCursorId={lineupCursorId}
               onPlayPlayer={playPlayerFromWalkups}
+              onPlayCurrentBatter={playTrackedBatter}
               onPlayNextBatter={playNextBatter}
               onReorderPlayers={reorderPlayers}
               onEditPlayer={(playerId) => {
@@ -479,11 +491,21 @@ function WalkupsView({
   playbackProgress,
   lineupCursorId,
   onPlayPlayer,
+  onPlayCurrentBatter,
   onPlayNextBatter,
   onReorderPlayers,
   onEditPlayer,
 }) {
   const [draggedPlayerId, setDraggedPlayerId] = useState("");
+  const currentBatter =
+    players.find((player) => player.id === lineupCursorId) ?? players[0] ?? null;
+  const currentIndex = currentBatter
+    ? players.findIndex((player) => player.id === currentBatter.id)
+    : -1;
+  const nextBatter =
+    players.length > 1 && currentIndex >= 0
+      ? players[(currentIndex + 1) % players.length]
+      : currentBatter;
 
   const handleDragStart = (event, player) => {
     setDraggedPlayerId(player.id);
@@ -536,6 +558,7 @@ function WalkupsView({
       <div className="space-y-3">
         {players.map((player) => {
           const active = activePlayback?.playerId === player.id;
+          const isCurrentBatter = lineupCursorId === player.id;
 
           return (
             <div
@@ -562,8 +585,12 @@ function WalkupsView({
               }}
               onDragEnd={() => setDraggedPlayerId("")}
               className={`relative flex w-full items-center gap-3 overflow-hidden rounded-[1.7rem] border px-3 py-3 text-left transition ${
-                active || draggedPlayerId === player.id
+                active
                   ? "border-cyan-300/70 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(14,165,233,0.14)_45%,rgba(8,47,73,0.65))] shadow-[0_22px_50px_rgba(14,165,233,0.2)]"
+                  : isCurrentBatter
+                    ? "border-emerald-300/45 bg-[linear-gradient(135deg,rgba(34,197,94,0.18),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))] shadow-[0_18px_40px_rgba(34,197,94,0.12)]"
+                    : draggedPlayerId === player.id
+                      ? "border-cyan-300/50 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))]"
                   : "border-sky-400/15 bg-[linear-gradient(135deg,rgba(8,47,73,0.9),rgba(15,23,42,0.94)_40%,rgba(2,6,23,0.98))] shadow-[0_14px_36px_rgba(2,6,23,0.45)] hover:border-cyan-300/30 hover:shadow-[0_18px_42px_rgba(14,165,233,0.14)]"
               }`}
             >
@@ -583,6 +610,8 @@ function WalkupsView({
                   className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.15rem] border text-base font-black uppercase tracking-[0.03em] ${
                     active
                       ? "border-cyan-100/70 bg-cyan-100 text-slate-950"
+                      : isCurrentBatter
+                        ? "border-emerald-200/35 bg-emerald-300/12 text-emerald-100"
                       : "border-cyan-300/20 bg-cyan-300/10 text-cyan-50"
                   }`}
                 >
@@ -599,6 +628,10 @@ function WalkupsView({
                 {active ? (
                   <div className="rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950">
                     Live
+                  </div>
+                ) : isCurrentBatter ? (
+                  <div className="rounded-full bg-emerald-300/14 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
+                    Current
                   </div>
                 ) : null}
               </button>
@@ -633,30 +666,50 @@ function WalkupsView({
         ) : null}
       </div>
     </section>
-    {players.length ? (
-      <button
-        type="button"
-        onClick={() => onPlayNextBatter(players)}
-        className="fixed inset-x-4 bottom-20 z-20 mx-auto flex w-auto max-w-3xl items-center gap-3 rounded-[1.8rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(34,197,94,0.16)] backdrop-blur-xl sm:bottom-24"
-      >
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-emerald-300/18 text-lg font-black text-emerald-200">
-          {players.find((player) => player.id === lineupCursorId)?.jerseyNumber || players[0]?.jerseyNumber || "--"}
-        </div>
-        <div className="min-w-0 flex-1 text-left">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
-            Next Batter
+    {players.length && currentBatter && nextBatter ? (
+      <div className="fixed inset-x-4 bottom-20 z-20 mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:bottom-24">
+        <div className="flex items-center gap-3 rounded-[1.7rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(34,197,94,0.12)] backdrop-blur-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-emerald-300/16 text-lg font-black text-emerald-100">
+            {currentBatter.jerseyNumber || "--"}
           </div>
-          <div className="truncate text-lg font-black text-white">
-            {players.find((player) => player.id === lineupCursorId)?.name || players[0]?.name}
+          <div className="min-w-0 flex-1 text-left">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
+              Current Batter
+            </div>
+            <div className="truncate text-base font-black text-white">{currentBatter.name}</div>
+            <div className="text-xs text-emerald-100/70">{currentBatter.positionLabel || "Utility"}</div>
           </div>
-          <div className="text-xs text-emerald-100/70">
-            One tap plays and advances the order
+          <button
+            type="button"
+            onClick={() => onPlayCurrentBatter(currentBatter, players)}
+            className="flex shrink-0 items-center gap-2 rounded-full bg-emerald-400 px-3 py-2 text-slate-950 shadow-lg shadow-emerald-500/20"
+          >
+            <CirclePlay className="h-4 w-4" />
+            <span className="text-xs font-black uppercase tracking-[0.14em]">Play</span>
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 rounded-[1.7rem] border border-orange-300/18 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(251,146,60,0.12)] backdrop-blur-xl">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-orange-300/16 text-lg font-black text-orange-100">
+            {nextBatter.jerseyNumber || "--"}
           </div>
+          <div className="min-w-0 flex-1 text-left">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300">
+              Next Batter
+            </div>
+            <div className="truncate text-base font-black text-white">{nextBatter.name}</div>
+            <div className="text-xs text-orange-100/70">Advances the batting order</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onPlayNextBatter(players)}
+            className="flex shrink-0 items-center gap-2 rounded-full bg-orange-400 px-3 py-2 text-slate-950 shadow-lg shadow-orange-500/20"
+          >
+            <CirclePlay className="h-4 w-4" />
+            <span className="text-xs font-black uppercase tracking-[0.14em]">Next</span>
+          </button>
         </div>
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30">
-          <CirclePlay className="h-6 w-6" />
-        </div>
-      </button>
+      </div>
     ) : null}
     </div>
   );
