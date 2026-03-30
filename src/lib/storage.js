@@ -61,6 +61,24 @@ function createTimelineItem(slot, startMs, track = 0, clipId = "") {
   };
 }
 
+function normalizeTimelineItem(item, index = 0, fallbackAnnouncementClipId = "") {
+  const fallbackSlot = DEFAULT_SEQUENCE[index] ?? DEFAULT_SEQUENCE[0];
+  const slot = PLAYER_SEQUENCE_OPTIONS.some((option) => option.id === item?.slot)
+    ? item.slot
+    : fallbackSlot;
+
+  return {
+    id: item?.id ?? crypto.randomUUID(),
+    slot,
+    startMs: Math.max(0, Number(item?.startMs) || 0),
+    track: Math.max(0, Math.round(Number(item?.track) || 0)),
+    clipId:
+      slot === "announcement"
+        ? item?.clipId ?? fallbackAnnouncementClipId ?? ""
+        : item?.clipId ?? "",
+  };
+}
+
 export function getClipEffectiveDurationMs(slot, clip = null) {
   if (slot === "song") {
     return getSongClipDurationMs(clip);
@@ -202,6 +220,12 @@ export function createEmptyState() {
 function normalizePlayer(player) {
   const normalizedName = player.name ?? "";
   const builtInNameClip = getBuiltInPlayerClip(normalizedName);
+  const normalizedSequence =
+    Array.isArray(player.sequence) && player.sequence.length > 0
+      ? player.sequence.filter((slot) =>
+          PLAYER_SEQUENCE_OPTIONS.some((option) => option.id === slot),
+        )
+      : DEFAULT_SEQUENCE;
   const normalizedPlayer = {
     id: player.id ?? crypto.randomUUID(),
     name: normalizedName,
@@ -213,20 +237,18 @@ function normalizePlayer(player) {
     announcementClipId: player.announcementClipId ?? "",
     numberClipId: player.numberClipId ?? "",
     positionClipId: player.positionClipId ?? "",
-    sequence:
-      Array.isArray(player.sequence) && player.sequence.length > 0
-        ? player.sequence
-        : DEFAULT_SEQUENCE,
+    sequence: normalizedSequence.length > 0 ? normalizedSequence : DEFAULT_SEQUENCE,
   };
 
-  const resetSequencePlayer = {
-    ...normalizedPlayer,
-    sequence: DEFAULT_SEQUENCE,
-  };
-  const normalizedTimeline = buildTimelineFromSequence(resetSequencePlayer);
+  const normalizedTimeline =
+    Array.isArray(player.timeline) && player.timeline.length > 0
+      ? player.timeline.map((item, index) =>
+          normalizeTimelineItem(item, index, normalizedPlayer.announcementClipId),
+        )
+      : buildTimelineFromSequence(normalizedPlayer);
 
   return {
-    ...resetSequencePlayer,
+    ...normalizedPlayer,
     sequence: deriveSequenceFromTimeline(normalizedTimeline),
     timeline: normalizedTimeline,
   };
