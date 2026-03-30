@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { WALKUP_TRIM_MS } from "../lib/storage";
 
 function wait(ms, signal) {
   return new Promise((resolve, reject) => {
@@ -27,8 +28,7 @@ function wait(ms, signal) {
   });
 }
 
-const WALKUP_SONG_MAX_MS = 15000;
-const WALKUP_SONG_FADE_OUT_MS = 800;
+const WALKUP_SONG_FADE_OUT_MS = 1200;
 const STOP_FADE_MS = 140;
 
 function createAudioElement(volume) {
@@ -204,7 +204,9 @@ export function useAudioEngine({ volume, fadeMs }) {
   };
 
   const scheduleEntryTimeouts = (session, entry) => {
-    const remainingMs = Math.max(0, entry.item.durationMs - entry.audio.currentTime * 1000);
+    const trimStartMs = Math.max(0, Number(entry.item.trimStartMs) || 0);
+    const elapsedMs = Math.max(0, entry.audio.currentTime * 1000 - trimStartMs);
+    const remainingMs = Math.max(0, entry.item.durationMs - elapsedMs);
 
     clearTimer(entry.endTimeoutId);
     clearTimer(entry.fadeTimeoutId);
@@ -260,7 +262,8 @@ export function useAudioEngine({ volume, fadeMs }) {
     audio.onerror = finalize;
 
     try {
-      const seekSeconds = Math.max(0, seekMs / 1000);
+      const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
+      const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
       if (seekSeconds > 0) {
         audio.currentTime = seekSeconds;
       }
@@ -331,7 +334,7 @@ export function useAudioEngine({ volume, fadeMs }) {
           Number.isFinite(item.durationMs) && item.durationMs > 0
             ? item.durationMs
             : item.slot === "song"
-              ? WALKUP_SONG_MAX_MS
+              ? WALKUP_TRIM_MS
               : Math.max(400, Math.round((item.duration || 1.2) * 1000)),
       }))
       .sort((left, right) => left.startMs - right.startMs);

@@ -6,6 +6,7 @@ import {
 } from "./builtInAudio";
 
 const STORAGE_KEY = "walk-up-announcer-state-v9";
+export const WALKUP_TRIM_MS = 11000;
 
 export const CLIP_GROUP_OPTIONS = [
   { id: "announcements", label: "Announcements" },
@@ -32,7 +33,7 @@ const DEFAULT_SLOT_DURATION_MS = {
   name: 1100,
   nickname: 1100,
   position: 1300,
-  song: 15000,
+  song: WALKUP_TRIM_MS,
 };
 
 const DEFAULT_SLOT_RESET_SPACING_MS = {
@@ -41,7 +42,7 @@ const DEFAULT_SLOT_RESET_SPACING_MS = {
   position: 1900,
   name: 2200,
   nickname: 1800,
-  song: 15000,
+  song: WALKUP_TRIM_MS,
 };
 
 export function deriveSequenceFromTimeline(timeline = []) {
@@ -137,6 +138,13 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
     if (clip.id === BUILT_IN_SONGS.default_song.id) {
       return BUILT_IN_SONGS.default_song;
     }
+  }
+
+  if (clip.group === "songs") {
+    return {
+      ...clip,
+      trimStartMs: Math.max(0, Number(clip.trimStartMs) || 0),
+    };
   }
 
   return clip;
@@ -252,6 +260,7 @@ export function createClipRecord({ file, duration, group, nickname }) {
     mimeType: file.type,
     size: file.size,
     duration,
+    trimStartMs: group === "songs" ? 0 : undefined,
     createdAt: Date.now(),
     dataUrl: null,
   };

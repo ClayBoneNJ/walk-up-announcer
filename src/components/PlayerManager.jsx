@@ -12,6 +12,7 @@ import {
   PLAYER_SEQUENCE_OPTIONS,
   resolvePlayerSequence,
   TIMELINE_SNAP_MS,
+  WALKUP_TRIM_MS,
 } from "../lib/storage";
 
 const SETUP_TABS = [
@@ -101,8 +102,23 @@ function createPlayerDraft(overrides = {}) {
   };
 }
 
+function getAnnouncementSeedClipId(timeline = [], fallbackClipId = "", libraries = null) {
+  const explicitAnnouncement = [...timeline]
+    .reverse()
+    .find((item) => item.slot === "announcement" && item.clipId)?.clipId;
+
+  return explicitAnnouncement || fallbackClipId || libraries?.announcements?.[0]?.id || "";
+}
+
 function slotLabel(slot) {
   return PLAYER_SEQUENCE_OPTIONS.find((option) => option.id === slot)?.label ?? "Slot";
+}
+
+function formatMsTimestamp(valueMs = 0) {
+  const totalSeconds = Math.max(0, Math.round(valueMs / 1000));
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = (totalSeconds % 60).toString().padStart(2, "0");
+  return `${mins}:${secs}`;
 }
 
 function getTimelineItemValue(item, draft) {
@@ -129,6 +145,10 @@ function getDefaultTrackForSlot(slot) {
 }
 
 function getTimelineItemDurationMs(item, draft, libraries, durationLookup = {}) {
+  if (item.slot === "song") {
+    return WALKUP_TRIM_MS;
+  }
+
   const clip = getDraftClipForItem(item, draft, libraries);
   const clipKey = clip?.dataUrl ?? clip?.src ?? clip?.id ?? "";
   const measuredDurationMs = clipKey ? durationLookup[clipKey] : null;
@@ -610,6 +630,8 @@ function RosterModal({
   const [clipDurationLookup, setClipDurationLookup] = useState({});
   const [sequenceAddValue, setSequenceAddValue] = useState("announcement");
   const [showSequenceAddPicker, setShowSequenceAddPicker] = useState(false);
+  const [songTrimStartMs, setSongTrimStartMs] = useState(0);
+  const [showSongTrimModal, setShowSongTrimModal] = useState(false);
   const [timelineTouched, setTimelineTouched] = useState(false);
   const jerseyOptions = useMemo(
     () =>
@@ -672,7 +694,9 @@ function RosterModal({
         const clipKey = item.dataUrl ?? item.src ?? item.id;
         const measuredDurationMs = clipDurationLookup[clipKey];
         const durationMs =
-          Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
+          item.slot === "song"
+            ? WALKUP_TRIM_MS
+            : Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
             ? measuredDurationMs
             : item.durationMs;
 
@@ -758,8 +782,49 @@ function RosterModal({
     measuredTimeline.find((item) => item.timelineItemId === selectedTimelineId) ?? null;
   const selectedAnnouncementClipId =
     selectedTimelineItem?.slot === "announcement"
-      ? selectedTimelineItem.timelineClipId || draft.announcementClipId || libraries.announcements[0]?.id || ""
+      ? selectedTimelineItem.timelineClipId || ""
       : "";
+  const songClipDurationMs = Math.max(
+    0,
+    Math.round((draft.songClip?.duration || 0) * 1000),
+  );
+  const maxSongTrimStartMs = Math.max(0, songClipDurationMs - WALKUP_TRIM_MS);
+
+  useEffect(() => {
+    const fallbackClipId = getAnnouncementSeedClipId(
+      draft.timeline,
+      draft.announcementClipId,
+      libraries,
+    );
+
+    if (!fallbackClipId) {
+      return;
+    }
+
+    const needsHydration = (draft.timeline ?? []).some(
+      (item) => item.slot === "announcement" && !item.clipId,
+    );
+
+    if (!needsHydration) {
+      return;
+    }
+
+    setDraft((current) => {
+      const currentTimeline = current.timeline ?? [];
+      const nextTimeline = currentTimeline.map((item) =>
+        item.slot === "announcement" && !item.clipId
+          ? { ...item, clipId: fallbackClipId }
+          : item,
+      );
+
+      return {
+        ...current,
+        announcementClipId: current.announcementClipId || fallbackClipId,
+        timeline: nextTimeline,
+        sequence: deriveSequenceFromTimeline(nextTimeline),
+      };
+    });
+  }, [draft.timeline, draft.announcementClipId, libraries, setDraft]);
 
   const updateDraftTimeline = (updater) => {
     setDraft((current) => {
@@ -788,8 +853,17 @@ function RosterModal({
     clip.dataUrl = await fileToDataUrl(file);
     setDraft((current) => ({
       ...current,
-      [key]: clip,
-      }));
+      [key]:
+        group === "songs"
+          ? {
+              ...clip,
+              trimStartMs: Math.min(
+                Math.max(0, Number(current[key]?.trimStartMs) || 0),
+                Math.max(0, Math.round((duration || 0) * 1000) - WALKUP_TRIM_MS),
+              ),
+            }
+          : clip,
+    }));
   };
 
   const sequenceAddOptions = useMemo(() => {
@@ -844,7 +918,7 @@ function RosterModal({
           nextStartMs,
           targetTrack,
           nextSlot === "announcement"
-            ? draft.announcementClipId || libraries.announcements[0]?.id || ""
+            ? getAnnouncementSeedClipId(compactedTimeline, draft.announcementClipId, libraries)
             : "",
         ),
       ];
@@ -888,11 +962,69 @@ function RosterModal({
         item.id === timelineItemId ? { ...item, clipId } : item,
       ),
     );
+  };
 
+  useEffect(() => {
+    if (!showSongTrimModal) {
+      return;
+    }
+
+    setSongTrimStartMs(
+      Math.min(
+        Math.max(0, Number(draft.songClip?.trimStartMs) || 0),
+        maxSongTrimStartMs,
+      ),
+    );
+  }, [showSongTrimModal, draft.songClip?.trimStartMs, maxSongTrimStartMs]);
+
+  const openSongTrimModal = () => {
+    if (!draft.songClip) {
+      return;
+    }
+
+    setSongTrimStartMs(
+      Math.min(
+        Math.max(0, Number(draft.songClip?.trimStartMs) || 0),
+        maxSongTrimStartMs,
+      ),
+    );
+    setShowSongTrimModal(true);
+  };
+
+  const saveSongTrim = () => {
     setDraft((current) => ({
       ...current,
-      announcementClipId: clipId || current.announcementClipId,
+      songClip: current.songClip
+        ? {
+            ...current.songClip,
+            trimStartMs: Math.min(
+              Math.max(0, Number(songTrimStartMs) || 0),
+              Math.max(0, Math.round((current.songClip.duration || 0) * 1000) - WALKUP_TRIM_MS),
+            ),
+          }
+        : current.songClip,
     }));
+    setShowSongTrimModal(false);
+  };
+
+  const previewSongTrim = () => {
+    if (!draft.songClip) {
+      return;
+    }
+
+    onPreviewClip?.({
+      clip: {
+        ...draft.songClip,
+        slot: "song",
+        durationMs: WALKUP_TRIM_MS,
+        trimStartMs: Math.min(Math.max(0, songTrimStartMs), maxSongTrimStartMs),
+        startMs: 0,
+        playerId: draft.id ?? "draft-player",
+        playerName: draft.name || draft.songClip.nickname,
+      },
+      playerId: draft.id ?? "draft-player",
+      playerName: draft.name || draft.songClip.nickname,
+    });
   };
 
   const removeSequenceItem = (timelineItemId) => {
@@ -901,6 +1033,45 @@ function RosterModal({
       currentTimeline.filter((item) => item.id !== timelineItemId),
     );
     setSelectedTimelineId((current) => (current === timelineItemId ? "" : current));
+  };
+
+  const moveSelectedTimelineItem = (deltaMs) => {
+    if (!selectedTimelineId || !deltaMs) {
+      return;
+    }
+
+    setTimelineTouched(true);
+    updateDraftTimeline((currentTimeline) =>
+      currentTimeline.map((item) =>
+        item.id === selectedTimelineId
+          ? {
+              ...item,
+              startMs: Math.max(
+                0,
+                Math.round((item.startMs + deltaMs) / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS,
+              ),
+            }
+          : item,
+      ),
+    );
+  };
+
+  const moveSelectedTimelineTrack = (deltaTrack) => {
+    if (!selectedTimelineId || !deltaTrack) {
+      return;
+    }
+
+    setTimelineTouched(true);
+    updateDraftTimeline((currentTimeline) =>
+      currentTimeline.map((item) =>
+        item.id === selectedTimelineId
+          ? {
+              ...item,
+              track: Math.max(0, Math.min(TRACK_CONFIG.length - 1, item.track + deltaTrack)),
+            }
+          : item,
+      ),
+    );
   };
 
   const previewDraftSequence = () => {
@@ -1203,10 +1374,7 @@ function RosterModal({
                       <select
                         value={sequenceAddValue}
                         onChange={(event) => {
-                          const nextValue = event.target.value;
-                          setSequenceAddValue(nextValue);
-                          addSequenceItem(nextValue);
-                          setShowSequenceAddPicker(false);
+                          setSequenceAddValue(event.target.value);
                         }}
                         className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3 text-sm text-white outline-none"
                         autoFocus
@@ -1217,6 +1385,25 @@ function RosterModal({
                           </option>
                         ))}
                       </select>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            addSequenceItem(sequenceAddValue);
+                            setShowSequenceAddPicker(false);
+                          }}
+                          className="secondary-button flex-1 justify-center"
+                        >
+                          Add
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowSequenceAddPicker(false)}
+                          className="secondary-button flex-1 justify-center"
+                        >
+                          Cancel
+                        </button>
+                      </div>
                     </div>
                   ) : null}
                   </div>
@@ -1224,6 +1411,71 @@ function RosterModal({
               </div>
 
               <div className="mt-4 space-y-4">
+                {selectedTimelineItem ? (
+                  <div className="rounded-[1.35rem] border border-white/8 bg-slate-950/45 p-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300">
+                          Selected Pill
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-white">
+                          {slotLabel(selectedTimelineItem.slot)}
+                        </div>
+                        <div className="mt-1 text-xs text-slate-400">
+                          {getTimelineItemValue(selectedTimelineItem, draft)} • {formatMsTimestamp(selectedTimelineItem.startMs)}
+                        </div>
+                      </div>
+                      {selectedTimelineItem.slot === "song" ? (
+                        <button
+                          type="button"
+                          onClick={openSongTrimModal}
+                          className="secondary-button"
+                        >
+                          Trim Song
+                        </button>
+                      ) : null}
+                    </div>
+
+                    <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedTimelineItem(-500)}
+                        className="secondary-button justify-center"
+                      >
+                        -0.5s
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedTimelineItem(500)}
+                        className="secondary-button justify-center"
+                      >
+                        +0.5s
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedTimelineTrack(-1)}
+                        className="secondary-button justify-center"
+                      >
+                        Track Up
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => moveSelectedTimelineTrack(1)}
+                        className="secondary-button justify-center"
+                      >
+                        Track Down
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => previewSequenceItem(selectedTimelineItem.timelineItemId)}
+                        className="secondary-button justify-center"
+                      >
+                        Preview Pill
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
+
                 <div className="overflow-x-auto pb-2" ref={timelineScrollRef}>
                   <div
                     className="relative min-w-full"
@@ -1251,6 +1503,7 @@ function RosterModal({
                           draft={draft}
                           draggedTimelineId={draggedTimelineId}
                           selectedTimelineId={selectedTimelineId}
+                          onSongDoubleClick={openSongTrimModal}
                           onRemove={removeSequenceItem}
                           onPointerDown={startTimelineDrag}
                           onSelect={setSelectedTimelineId}
@@ -1289,6 +1542,18 @@ function RosterModal({
           </button>
         </form>
       </div>
+
+      {showSongTrimModal ? (
+        <SongTrimModal
+          clip={draft.songClip}
+          trimStartMs={songTrimStartMs}
+          maxTrimStartMs={maxSongTrimStartMs}
+          onChange={setSongTrimStartMs}
+          onClose={() => setShowSongTrimModal(false)}
+          onSave={saveSongTrim}
+          onPreview={previewSongTrim}
+        />
+      ) : null}
     </div>
   );
 }
@@ -1648,7 +1913,7 @@ function TimelineScale({ durationMs }) {
   const seconds = Math.ceil(durationMs / 1000);
 
   return (
-    <div className="mb-3 flex h-8 items-end">
+    <div className="mb-3 flex h-7 items-end sm:h-8">
       {Array.from({ length: seconds + 1 }, (_, index) => index).map((second) => (
         <div
           key={`scale-${second}`}
@@ -1656,7 +1921,7 @@ function TimelineScale({ durationMs }) {
           style={{ width: `${1000 * TIMELINE_PIXELS_PER_MS}px` }}
         >
           <div className="absolute inset-y-0 left-0 w-px bg-white/8" />
-          <div className="absolute bottom-0 left-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <div className="absolute bottom-0 left-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:left-2 sm:text-[10px] sm:tracking-[0.18em]">
             {second}s
           </div>
         </div>
@@ -1670,15 +1935,16 @@ function TimelineTrack({
   items,
   draft,
   draggedTimelineId,
+  onSongDoubleClick,
   onPointerDown,
   selectedTimelineId,
   onSelect,
 }) {
   return (
-    <div className="rounded-[1.45rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))] p-2.5">
+    <div className="rounded-[1.15rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))] p-2 sm:rounded-[1.45rem] sm:p-2.5">
       <div
         className="relative overflow-hidden rounded-[1.35rem] border border-white/6 bg-[linear-gradient(180deg,rgba(8,47,73,0.22),rgba(2,6,23,0.9))]"
-        style={{ height: "102px" }}
+        style={{ height: "88px" }}
       >
         <div
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
@@ -1691,6 +1957,7 @@ function TimelineTrack({
             draft={draft}
             isDragging={draggedTimelineId === item.timelineItemId}
             isSelected={selectedTimelineId === item.timelineItemId}
+            onSongDoubleClick={onSongDoubleClick}
             onPointerDown={onPointerDown}
             onSelect={onSelect}
           />
@@ -1710,6 +1977,7 @@ function TimelineBlock({
   draft,
   isDragging,
   isSelected,
+  onSongDoubleClick,
   onPointerDown,
   onSelect,
 }) {
@@ -1743,7 +2011,14 @@ function TimelineBlock({
         event.stopPropagation();
         onSelect(item.timelineItemId);
       }}
-      className={`absolute top-3 flex h-[76px] select-none items-center rounded-[1.5rem] border px-4 py-3 transition ${
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+        onSelect(item.timelineItemId);
+        if (item.slot === "song") {
+          onSongDoubleClick?.();
+        }
+      }}
+      className={`absolute top-2 flex h-[64px] select-none items-center rounded-[1.15rem] border px-3 py-2.5 transition sm:top-3 sm:h-[76px] sm:rounded-[1.5rem] sm:px-4 sm:py-3 ${
         tone.block
       } ${
         isDragging
@@ -1752,7 +2027,7 @@ function TimelineBlock({
             ? "z-20 ring-2 ring-cyan-100/80 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
             : "z-10 cursor-grab"
       }`}
-      style={{ left: `${left}px`, width: `${visualWidth}px` }}
+      style={{ left: `${left}px`, width: `${Math.max(item.slot === "song" ? 170 : 40, visualWidth)}px` }}
     >
       <div className="min-w-0 flex-1">
         <div
@@ -1760,6 +2035,86 @@ function TimelineBlock({
           className={`overflow-hidden whitespace-normal break-words pr-1 font-black leading-tight tracking-[0.01em] text-current ${labelClassName}`}
         >
           {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SongTrimModal({
+  clip,
+  trimStartMs,
+  maxTrimStartMs,
+  onChange,
+  onClose,
+  onSave,
+  onPreview,
+}) {
+  const windowEndMs = Math.min(
+    Math.max(0, Number(trimStartMs) || 0) + WALKUP_TRIM_MS,
+    Math.max(WALKUP_TRIM_MS, Math.round((clip?.duration || 0) * 1000)),
+  );
+  const totalDurationMs = Math.max(0, Math.round((clip?.duration || 0) * 1000));
+  const canTrim = totalDurationMs > WALKUP_TRIM_MS;
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur">
+      <div className="glass-panel w-full max-w-xl rounded-[2rem] border border-white/10 p-5 shadow-2xl shadow-sky-950/30">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+              Walk-Up Trim
+            </div>
+            <h3 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
+              11 Second Song Window
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">
+              Double-clicking the song pill opens this editor. Move the 11-second window across the original uploaded clip.
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="secondary-button">
+            Close
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
+          <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
+          <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+            {clip?.fileName} • original {formatDuration(clip?.duration)} • playing {formatMsTimestamp(trimStartMs)} to {formatMsTimestamp(windowEndMs)}
+          </div>
+
+          <div className="mt-4">
+            <input
+              type="range"
+              min="0"
+              max={maxTrimStartMs}
+              step="100"
+              value={Math.min(trimStartMs, maxTrimStartMs)}
+              onChange={(event) => onChange(Number(event.target.value))}
+              disabled={!canTrim}
+              className="w-full accent-cyan-300"
+            />
+            <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+              <span>Start {formatMsTimestamp(trimStartMs)}</span>
+              <span>End {formatMsTimestamp(windowEndMs)}</span>
+            </div>
+          </div>
+
+          {!canTrim ? (
+            <div className="mt-3 rounded-2xl border border-white/8 bg-slate-900/80 px-4 py-3 text-sm text-slate-400">
+              This clip is 11 seconds or shorter, so the full song will play as-is.
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button type="button" onClick={onPreview} className="secondary-button">
+            <Play className="h-4 w-4" />
+            Preview Window
+          </button>
+          <button type="button" onClick={onSave} className="primary-button">
+            Save Trim
+          </button>
         </div>
       </div>
     </div>

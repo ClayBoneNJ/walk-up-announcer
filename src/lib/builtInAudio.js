@@ -86,7 +86,7 @@ export const BUILT_IN_LIBRARIES = {
     builtInClip({
       id: "announcement-coming-to-the-plat",
       group: "announcements",
-      nickname: "Coming To The Plat",
+      nickname: "Coming To The Plate",
       fileName: "COMING TO THE PLAT.mp3",
       src: assetSrc("announcements", "COMING TO THE PLAT.mp3"),
     }),
@@ -100,7 +100,7 @@ export const BUILT_IN_LIBRARIES = {
     builtInClip({
       id: "announcement-lets-heare-it-for",
       group: "announcements",
-      nickname: "Lets Heare It For",
+      nickname: "Let's Hear It For",
       fileName: "LETS HEREE IT FOR.mp3",
       src: assetSrc("announcements", "LETS HEREE IT FOR.mp3"),
     }),

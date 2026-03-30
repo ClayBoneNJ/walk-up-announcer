@@ -299,7 +299,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(21,91,185,0.2),transparent_32%),linear-gradient(180deg,_#08111f_0%,_#050914_100%)] text-slate-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-48 pt-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-56 pt-4 sm:px-6 sm:pb-48 lg:px-8">
         <header className="glass-panel mb-4 rounded-[2rem] border border-white/10 p-4 shadow-2xl shadow-sky-950/30">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -554,17 +554,17 @@ function WalkupsView({
 
   return (
     <div className="space-y-4">
-    <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
+    <section className="glass-panel rounded-[1.6rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.26em] text-sky-300 sm:text-xs sm:tracking-[0.3em]">
             Batting Order
           </div>
-          <div className="mt-2 text-sm text-slate-400">
+          <div className="mt-1.5 max-w-[15rem] text-[13px] leading-5 text-slate-400 sm:mt-2 sm:max-w-none sm:text-sm">
             Tap a player to run their walk-up sequence.
           </div>
         </div>
-        <div className="text-xs uppercase tracking-[0.22em] text-slate-500">
+        <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs sm:tracking-[0.22em]">
           {players.length} Players
         </div>
       </div>
@@ -597,7 +597,7 @@ function WalkupsView({
                 setDraggedPlayerId("");
               }}
               onDragEnd={() => setDraggedPlayerId("")}
-              className={`relative flex w-full items-center gap-3 overflow-hidden rounded-[1.7rem] border px-3 py-3 text-left transition ${
+              className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-[1.35rem] border px-2.5 py-2.5 text-left transition sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3 ${
                 active
                   ? "border-cyan-300/70 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(14,165,233,0.14)_45%,rgba(8,47,73,0.65))] shadow-[0_22px_50px_rgba(14,165,233,0.2)]"
                   : isCurrentBatter
@@ -620,7 +620,7 @@ function WalkupsView({
                 className="relative z-10 flex min-w-0 flex-1 items-center gap-3 text-left"
               >
                 <div
-                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.15rem] border text-base font-black uppercase tracking-[0.03em] ${
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border text-sm font-black uppercase tracking-[0.03em] sm:h-12 sm:w-12 sm:rounded-[1.15rem] sm:text-base ${
                     active
                       ? "border-cyan-100/70 bg-cyan-100 text-slate-950"
                       : isCurrentBatter
@@ -631,19 +631,19 @@ function WalkupsView({
                   {player.jerseyNumber || "--"}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-lg font-black tracking-[0.01em] text-white sm:text-xl">
+                  <div className="truncate text-base font-black tracking-[0.01em] text-white sm:text-xl">
                     {player.name}
                   </div>
-                  <div className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">
+                  <div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-cyan-100/70 sm:text-[11px] sm:tracking-[0.18em]">
                     {player.positionLabel || "Utility"}
                   </div>
                 </div>
                 {active ? (
-                  <div className="rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950">
+                  <div className="hidden rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950 sm:block">
                     Live
                   </div>
                 ) : isCurrentBatter ? (
-                  <div className="rounded-full bg-emerald-300/14 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100">
+                  <div className="hidden rounded-full bg-emerald-300/14 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-100 sm:block">
                     Current
                   </div>
                 ) : null}
@@ -651,7 +651,7 @@ function WalkupsView({
               <button
                 type="button"
                 onClick={() => onEditPlayer(player.id)}
-                className="secondary-button relative z-10 h-10 rounded-full border-cyan-300/20 bg-slate-950/55 px-3 text-xs uppercase tracking-[0.14em] text-cyan-50 hover:bg-cyan-300/10"
+                className="secondary-button relative z-10 h-9 rounded-full border-cyan-300/20 bg-slate-950/55 px-2.5 text-[11px] uppercase tracking-[0.12em] text-cyan-50 hover:bg-cyan-300/10 sm:h-10 sm:px-3 sm:text-xs sm:tracking-[0.14em]"
               >
                 Edit
               </button>
@@ -662,7 +662,7 @@ function WalkupsView({
                   event.stopPropagation();
                   handleDragStart(event, player);
                 }}
-                className="icon-button relative z-10 cursor-grab active:cursor-grabbing"
+                className="icon-button relative z-10 hidden cursor-grab active:cursor-grabbing sm:flex"
                 aria-label={`Drag ${player.name}`}
                 title="Drag to reorder lineup"
               >
@@ -680,47 +680,49 @@ function WalkupsView({
       </div>
     </section>
     {players.length && currentBatter && nextBatter ? (
-      <div className="fixed inset-x-4 bottom-20 z-20 mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:bottom-24">
-        <div className="flex items-center gap-3 rounded-[1.7rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(34,197,94,0.12)] backdrop-blur-xl">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-emerald-300/16 text-lg font-black text-emerald-100">
+      <div className="fixed inset-x-3 bottom-[4.65rem] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
+        <div className="grid grid-cols-2 gap-2 rounded-[1.3rem] border border-white/8 bg-slate-950/80 p-2 shadow-[0_18px_44px_rgba(2,6,23,0.45)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="flex items-center gap-2 rounded-[1.1rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2.5 py-2 shadow-[0_18px_40px_rgba(34,197,94,0.12)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] bg-emerald-300/16 text-sm font-black text-emerald-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
             {currentBatter.jerseyNumber || "--"}
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300 sm:text-[11px] sm:tracking-[0.22em]">
               Current Batter
             </div>
-            <div className="truncate text-base font-black text-white">{currentBatter.name}</div>
-            <div className="text-xs text-emerald-100/70">{currentBatter.positionLabel || "Utility"}</div>
+            <div className="truncate text-sm font-black text-white sm:text-base">{currentBatter.name}</div>
+            <div className="text-[11px] text-emerald-100/70 sm:text-xs">{currentBatter.positionLabel || "Utility"}</div>
           </div>
           <button
             type="button"
             onClick={() => onPlayCurrentBatter(currentBatter, players)}
-            className="flex shrink-0 items-center gap-2 rounded-full bg-emerald-400 px-3 py-2 text-slate-950 shadow-lg shadow-emerald-500/20"
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-400 px-2.5 py-1.5 text-slate-950 shadow-lg shadow-emerald-500/20 sm:gap-2 sm:px-3 sm:py-2"
           >
-            <CirclePlay className="h-4 w-4" />
-            <span className="text-xs font-black uppercase tracking-[0.14em]">Play</span>
+            <CirclePlay className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-[11px] font-black uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]">Play</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[1.7rem] border border-orange-300/18 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(251,146,60,0.12)] backdrop-blur-xl">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-orange-300/16 text-lg font-black text-orange-100">
+        <div className="flex items-center gap-2 rounded-[1.1rem] border border-orange-300/18 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2.5 py-2 shadow-[0_18px_40px_rgba(251,146,60,0.12)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] bg-orange-300/16 text-sm font-black text-orange-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
             {nextBatter.jerseyNumber || "--"}
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-orange-300">
+            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-300 sm:text-[11px] sm:tracking-[0.22em]">
               Next Batter
             </div>
-            <div className="truncate text-base font-black text-white">{nextBatter.name}</div>
-            <div className="text-xs text-orange-100/70">Advances the batting order</div>
+            <div className="truncate text-sm font-black text-white sm:text-base">{nextBatter.name}</div>
+            <div className="text-[11px] text-orange-100/70 sm:text-xs">Up next</div>
           </div>
           <button
             type="button"
             onClick={() => onPlayNextBatter(players)}
-            className="flex shrink-0 items-center gap-2 rounded-full bg-orange-400 px-3 py-2 text-slate-950 shadow-lg shadow-orange-500/20"
+            className="flex shrink-0 items-center gap-1.5 rounded-full bg-orange-400 px-2.5 py-1.5 text-slate-950 shadow-lg shadow-orange-500/20 sm:gap-2 sm:px-3 sm:py-2"
           >
-            <CirclePlay className="h-4 w-4" />
-            <span className="text-xs font-black uppercase tracking-[0.14em]">Next</span>
+            <CirclePlay className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+            <span className="text-[11px] font-black uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]">Next</span>
           </button>
+        </div>
         </div>
       </div>
     ) : null}
