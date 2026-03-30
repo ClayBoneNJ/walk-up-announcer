@@ -22,10 +22,10 @@ import {
 } from "./lib/storage";
 
 const TABS = [
-  { id: "walkups", label: "Walkups", icon: Users },
-  { id: "soundboard", label: "Soundboard", icon: AudioLines },
-  { id: "freestyle", label: "Freestyle", icon: Zap },
-  { id: "setup", label: "Setup", icon: Settings2 },
+  { id: "walkups", label: "Walkups", shortLabel: "Walkups", icon: Users },
+  { id: "soundboard", label: "Soundboard", shortLabel: "Board", icon: AudioLines },
+  { id: "freestyle", label: "Freestyle", shortLabel: "Free", icon: Zap },
+  { id: "setup", label: "Setup", shortLabel: "Setup", icon: Settings2 },
 ];
 
 const FREESTYLE_GROUPS = [
@@ -94,6 +94,7 @@ export default function App() {
   const [persistError, setPersistError] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState("");
   const [editingReturnTab, setEditingReturnTab] = useState("");
+  const [lineupCursorId, setLineupCursorId] = useState("");
 
   useEffect(() => {
     setPersistError(!saveState(appState));
@@ -229,6 +230,42 @@ export default function App() {
     });
   };
 
+  useEffect(() => {
+    if (!players.length) {
+      setLineupCursorId("");
+      return;
+    }
+
+    if (!lineupCursorId || !players.some((player) => player.id === lineupCursorId)) {
+      setLineupCursorId(players[0].id);
+    }
+  }, [players, lineupCursorId]);
+
+  const playPlayerFromWalkups = async (player, visiblePlayers = players) => {
+    await playPlayer(player);
+    const currentIndex = visiblePlayers.findIndex((entry) => entry.id === player.id);
+    if (currentIndex === -1 || visiblePlayers.length === 0) {
+      return;
+    }
+
+    const nextPlayer = visiblePlayers[(currentIndex + 1) % visiblePlayers.length];
+    setLineupCursorId(nextPlayer.id);
+  };
+
+  const playNextBatter = async (visiblePlayers = players) => {
+    if (!visiblePlayers.length) {
+      return;
+    }
+
+    const nextIndex = visiblePlayers.findIndex((player) => player.id === lineupCursorId);
+    const batter = visiblePlayers[nextIndex >= 0 ? nextIndex : 0];
+    await playPlayer(batter);
+
+    const followingPlayer =
+      visiblePlayers[((nextIndex >= 0 ? nextIndex : 0) + 1) % visiblePlayers.length];
+    setLineupCursorId(followingPlayer.id);
+  };
+
   const playClip = async ({ clip, playerId = "", playerName = "" }) => {
     await playSequence({
       items: [{ ...clip, playerId, playerName }],
@@ -247,7 +284,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(21,91,185,0.2),transparent_32%),linear-gradient(180deg,_#08111f_0%,_#050914_100%)] text-slate-100">
-      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-28 pt-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-48 pt-4 sm:px-6 lg:px-8">
         <header className="glass-panel mb-4 rounded-[2rem] border border-white/10 p-4 shadow-2xl shadow-sky-950/30">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -334,7 +371,9 @@ export default function App() {
               players={filteredPlayers}
               activePlayback={activePlayback}
               playbackProgress={playbackProgress}
-              onPlayPlayer={playPlayer}
+              lineupCursorId={lineupCursorId}
+              onPlayPlayer={playPlayerFromWalkups}
+              onPlayNextBatter={playNextBatter}
               onReorderPlayers={reorderPlayers}
               onEditPlayer={(playerId) => {
                 setEditingPlayerId(playerId);
@@ -398,7 +437,7 @@ export default function App() {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-3 pb-4 pt-3 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -409,14 +448,14 @@ export default function App() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center justify-center gap-1 rounded-[1.5rem] px-3 py-3 text-xs font-semibold uppercase tracking-[0.12em] transition ${
+                className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] px-1 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] leading-none transition sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.12em] ${
                   active
                     ? "bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/30"
                     : "text-slate-300 hover:bg-white/5"
                 }`}
               >
-                <Icon className="h-4.5 w-4.5" />
-                <span>{tab.label}</span>
+                <Icon className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+                <span className="max-w-full truncate">{tab.shortLabel}</span>
               </button>
             );
           })}
@@ -438,7 +477,9 @@ function WalkupsView({
   players,
   activePlayback,
   playbackProgress,
+  lineupCursorId,
   onPlayPlayer,
+  onPlayNextBatter,
   onReorderPlayers,
   onEditPlayer,
 }) {
@@ -477,6 +518,7 @@ function WalkupsView({
   };
 
   return (
+    <div className="space-y-4">
     <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
       <div className="mb-4 flex items-end justify-between gap-3">
         <div>
@@ -519,7 +561,7 @@ function WalkupsView({
                 setDraggedPlayerId("");
               }}
               onDragEnd={() => setDraggedPlayerId("")}
-              className={`relative flex w-full items-center gap-4 overflow-hidden rounded-[1.8rem] border px-4 py-4 text-left transition ${
+              className={`relative flex w-full items-center gap-3 overflow-hidden rounded-[1.7rem] border px-3 py-3 text-left transition ${
                 active || draggedPlayerId === player.id
                   ? "border-cyan-300/70 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(14,165,233,0.14)_45%,rgba(8,47,73,0.65))] shadow-[0_22px_50px_rgba(14,165,233,0.2)]"
                   : "border-sky-400/15 bg-[linear-gradient(135deg,rgba(8,47,73,0.9),rgba(15,23,42,0.94)_40%,rgba(2,6,23,0.98))] shadow-[0_14px_36px_rgba(2,6,23,0.45)] hover:border-cyan-300/30 hover:shadow-[0_18px_42px_rgba(14,165,233,0.14)]"
@@ -534,23 +576,23 @@ function WalkupsView({
               ) : null}
               <button
                 type="button"
-                onClick={() => onPlayPlayer(player)}
-                className="relative z-10 flex min-w-0 flex-1 items-center gap-4 text-left"
+                onClick={() => onPlayPlayer(player, players)}
+                className="relative z-10 flex min-w-0 flex-1 items-center gap-3 text-left"
               >
                 <div
-                  className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border text-lg font-black uppercase tracking-[0.05em] ${
+                  className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.15rem] border text-base font-black uppercase tracking-[0.03em] ${
                     active
                       ? "border-cyan-100/70 bg-cyan-100 text-slate-950"
                       : "border-cyan-300/20 bg-cyan-300/10 text-cyan-50"
                   }`}
                 >
-                  #{player.jerseyNumber || "--"}
+                  {player.jerseyNumber || "--"}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xl font-black uppercase tracking-[0.05em] text-white">
+                  <div className="truncate text-lg font-black tracking-[0.01em] text-white sm:text-xl">
                     {player.name}
                   </div>
-                  <div className="mt-1 text-xs uppercase tracking-[0.24em] text-cyan-100/70">
+                  <div className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-cyan-100/70">
                     {player.positionLabel || "Utility"}
                   </div>
                 </div>
@@ -563,7 +605,7 @@ function WalkupsView({
               <button
                 type="button"
                 onClick={() => onEditPlayer(player.id)}
-                className="secondary-button relative z-10 border-cyan-300/20 bg-slate-950/55 text-cyan-50 hover:bg-cyan-300/10"
+                className="secondary-button relative z-10 h-10 rounded-full border-cyan-300/20 bg-slate-950/55 px-3 text-xs uppercase tracking-[0.14em] text-cyan-50 hover:bg-cyan-300/10"
               >
                 Edit
               </button>
@@ -591,6 +633,32 @@ function WalkupsView({
         ) : null}
       </div>
     </section>
+    {players.length ? (
+      <button
+        type="button"
+        onClick={() => onPlayNextBatter(players)}
+        className="fixed inset-x-4 bottom-20 z-20 mx-auto flex w-auto max-w-3xl items-center gap-3 rounded-[1.8rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-3 py-3 shadow-[0_18px_40px_rgba(34,197,94,0.16)] backdrop-blur-xl sm:bottom-24"
+      >
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] bg-emerald-300/18 text-lg font-black text-emerald-200">
+          {players.find((player) => player.id === lineupCursorId)?.jerseyNumber || players[0]?.jerseyNumber || "--"}
+        </div>
+        <div className="min-w-0 flex-1 text-left">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-emerald-300">
+            Next Batter
+          </div>
+          <div className="truncate text-lg font-black text-white">
+            {players.find((player) => player.id === lineupCursorId)?.name || players[0]?.name}
+          </div>
+          <div className="text-xs text-emerald-100/70">
+            One tap plays and advances the order
+          </div>
+        </div>
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/30">
+          <CirclePlay className="h-6 w-6" />
+        </div>
+      </button>
+    ) : null}
+    </div>
   );
 }
 
