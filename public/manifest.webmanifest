@@ -1,0 +1,10 @@
+{
+  "name": "Walk-Up Announcer",
+  "short_name": "Walk-Up",
+  "description": "Little League walk-up announcement soundboard and queue app.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050914",
+  "theme_color": "#08111f",
+  "icons": []
+}

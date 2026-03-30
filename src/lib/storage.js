@@ -1,0 +1,278 @@
+import {
+  BUILT_IN_LIBRARIES,
+  BUILT_IN_PLAYER_CLIPS,
+  BUILT_IN_ROSTER,
+  BUILT_IN_SONGS,
+} from "./builtInAudio";
+
+const STORAGE_KEY = "walk-up-announcer-state-v5";
+
+export const CLIP_GROUP_OPTIONS = [
+  { id: "announcements", label: "Announcements" },
+  { id: "positions", label: "Positions" },
+  { id: "numbers", label: "Numbers" },
+  { id: "effects", label: "Effects" },
+];
+
+export const PLAYER_SEQUENCE_OPTIONS = [
+  { id: "announcement", label: "Announcement" },
+  { id: "number", label: "Number" },
+  { id: "name", label: "Name" },
+  { id: "nickname", label: "Nickname" },
+  { id: "position", label: "Position" },
+  { id: "song", label: "Walk-Up Song" },
+];
+
+const DEFAULT_SEQUENCE = ["announcement", "number", "name", "nickname", "position", "song"];
+
+function createPlayer(name, jerseyNumber, positionLabel) {
+  return {
+    id: crypto.randomUUID(),
+    name,
+    jerseyNumber,
+    positionLabel,
+    nameClip: null,
+    nicknameClip: null,
+    songClip: null,
+    announcementClipId: "",
+    numberClipId: "",
+    positionClipId: "",
+    sequence: DEFAULT_SEQUENCE,
+  };
+}
+
+function getBuiltInPlayerClip(playerName) {
+  const key = playerName.toLowerCase().replace(/\s+/g, "_");
+  return BUILT_IN_PLAYER_CLIPS[key] ?? null;
+}
+
+function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
+  if (!clip) {
+    return fallbackBuiltInClip;
+  }
+
+  if (clip.builtIn) {
+    if (fallbackBuiltInClip && clip.group === fallbackBuiltInClip.group) {
+      return fallbackBuiltInClip;
+    }
+
+    if (clip.id === BUILT_IN_SONGS.default_song.id) {
+      return BUILT_IN_SONGS.default_song;
+    }
+  }
+
+  return clip;
+}
+
+function mergeLibraryClips(builtIns, saved = []) {
+  const savedCustom = saved.filter((clip) => !clip?.builtIn);
+  return [...builtIns, ...savedCustom];
+}
+
+export function createEmptyState() {
+  return {
+    libraries: BUILT_IN_LIBRARIES,
+    players: BUILT_IN_ROSTER.map((player) => ({
+      ...createPlayer(player.name, player.jerseyNumber, player.positionLabel),
+      ...player,
+    })),
+    queue: [],
+    settings: {
+      volume: 0.82,
+      fadeMs: 400,
+      search: "",
+      soundboardView: "players",
+      libraryGroup: "announcements",
+    },
+  };
+}
+
+function normalizePlayer(player) {
+  const normalizedName = player.name ?? "";
+  const builtInNameClip = getBuiltInPlayerClip(normalizedName);
+
+  return {
+    id: player.id ?? crypto.randomUUID(),
+    name: normalizedName,
+    jerseyNumber: player.jerseyNumber ?? player.number ?? "",
+    positionLabel: player.positionLabel ?? player.position ?? "",
+    nameClip: normalizeOwnedClip(player.nameClip, builtInNameClip),
+    nicknameClip: normalizeOwnedClip(player.nicknameClip, null),
+    songClip: normalizeOwnedClip(player.songClip, null),
+    announcementClipId: player.announcementClipId ?? "",
+    numberClipId: player.numberClipId ?? "",
+    positionClipId: player.positionClipId ?? "",
+    sequence:
+      Array.isArray(player.sequence) && player.sequence.length > 0
+        ? player.sequence
+        : DEFAULT_SEQUENCE,
+  };
+}
+
+export function loadState() {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return createEmptyState();
+    }
+
+    const parsed = JSON.parse(raw);
+    const empty = createEmptyState();
+
+    return {
+      ...empty,
+      ...parsed,
+      libraries: {
+        announcements: mergeLibraryClips(
+          BUILT_IN_LIBRARIES.announcements,
+          parsed.libraries?.announcements,
+        ),
+        positions: mergeLibraryClips(
+          BUILT_IN_LIBRARIES.positions,
+          parsed.libraries?.positions,
+        ),
+        numbers: mergeLibraryClips(BUILT_IN_LIBRARIES.numbers, parsed.libraries?.numbers),
+        effects: mergeLibraryClips(BUILT_IN_LIBRARIES.effects, parsed.libraries?.effects),
+      },
+      players: (parsed.players ?? empty.players).map(normalizePlayer),
+      settings: {
+        ...empty.settings,
+        ...(parsed.settings ?? {}),
+      },
+    };
+  } catch {
+    return createEmptyState();
+  }
+}
+
+export function saveState(state) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function createClipRecord({ file, duration, group, nickname }) {
+  return {
+    id: crypto.randomUUID(),
+    group,
+    nickname: nickname?.trim() || file.name.replace(/\.[^.]+$/, ""),
+    fileName: file.name,
+    mimeType: file.type,
+    size: file.size,
+    duration,
+    createdAt: Date.now(),
+    dataUrl: null,
+  };
+}
+
+export async function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+export function formatDuration(seconds) {
+  if (!Number.isFinite(seconds)) {
+    return "--:--";
+  }
+
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+
+  return `${mins}:${secs}`;
+}
+
+export function resolvePlayerSequence(player, libraries) {
+  const libraryMap = {
+    announcement: libraries.announcements.find((clip) => clip.id === player.announcementClipId),
+    number: libraries.numbers.find((clip) => clip.id === player.numberClipId),
+    position: libraries.positions.find((clip) => clip.id === player.positionClipId),
+    name: player.nameClip,
+    nickname: player.nicknameClip,
+    song: player.songClip,
+  };
+
+  return (player.sequence ?? DEFAULT_SEQUENCE)
+    .map((slot) => {
+      const clip = libraryMap[slot];
+      return clip
+        ? {
+            ...clip,
+            slot,
+            playerId: player.id,
+            playerName: player.name,
+          }
+        : null;
+    })
+    .filter(Boolean);
+}
+
+export function getPlayerStatus(player) {
+  const filled = [
+    Boolean(player.announcementClipId),
+    Boolean(player.numberClipId),
+    Boolean(player.positionClipId),
+    Boolean(player.nameClip),
+    Boolean(player.nicknameClip),
+    Boolean(player.songClip),
+  ].filter(Boolean).length;
+
+  return {
+    configuredCount: filled,
+    isReady: filled > 0,
+  };
+}
+
+export function getFreestyleGroups(players, libraries) {
+  return {
+    announcements: libraries.announcements,
+    positions: libraries.positions,
+    numbers: libraries.numbers,
+    names: players
+      .filter((player) => player.nameClip?.dataUrl || player.nameClip?.src)
+      .map((player) => ({
+        ...player.nameClip,
+        playerId: player.id,
+        playerName: player.name,
+      })),
+    nicknames: players
+      .filter((player) => player.nicknameClip?.dataUrl || player.nicknameClip?.src)
+      .map((player) => ({
+        ...player.nicknameClip,
+        playerId: player.id,
+        playerName: player.name,
+      })),
+    songs: players
+      .filter((player) => player.songClip?.dataUrl || player.songClip?.src)
+      .map((player) => ({
+        ...player.songClip,
+        playerId: player.id,
+        playerName: player.name,
+      })),
+    effects: libraries.effects,
+  };
+}
+
+export function getClipByReference({ group, clipId, playerId, libraries, players }) {
+  if (group === "names") {
+    return players.find((player) => player.id === playerId)?.nameClip ?? null;
+  }
+
+  if (group === "songs") {
+    return players.find((player) => player.id === playerId)?.songClip ?? null;
+  }
+
+  if (group === "nicknames") {
+    return players.find((player) => player.id === playerId)?.nicknameClip ?? null;
+  }
+
+  return libraries[group]?.find((clip) => clip.id === clipId) ?? null;
+}
