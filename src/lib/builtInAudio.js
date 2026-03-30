@@ -44,6 +44,8 @@ const BUILT_IN_NAME_FILES = [
   "TRISTAN AQUINO.mp3",
 ];
 
+const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
+
 const DEFAULT_POSITIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "C"];
 
 export const BUILT_IN_LIBRARIES = {
@@ -98,14 +100,14 @@ export const BUILT_IN_LIBRARIES = {
       src: assetSrc("announcements", "NOW PITCHING.mp3"),
     }),
   ],
-  numbers: Array.from({ length: 10 }, (_, index) => {
-    const number = index + 1;
+  numbers: BUILT_IN_NUMBER_FILES.map((fileName) => {
+    const number = fileName.replace(/\.mp3$/i, "");
     return builtInClip({
       id: `number-${number}`,
       group: "numbers",
       nickname: `#${number}`,
-      fileName: `${number}.mp3`,
-      src: assetSrc("numbers", `${number}.mp3`),
+      fileName,
+      src: assetSrc("numbers", fileName),
     });
   }),
   positions: [
@@ -160,7 +162,7 @@ export const BUILT_IN_SONGS = {
 export const BUILT_IN_ROSTER = BUILT_IN_NAME_FILES.map((fileName, index) => {
   const name = titleCaseFromFileName(fileName);
   const key = name.toLowerCase().replace(/\s+/g, "_");
-  const jerseyNumber = index < 10 ? String(index + 1) : "";
+  const jerseyNumber = BUILT_IN_NUMBER_FILES[index]?.replace(/\.mp3$/i, "") ?? "";
   const positionLabel = DEFAULT_POSITIONS[index] ?? "";
   const announcementClipId =
     index % 2 === 0 ? "announcement-now-batting" : "announcement-up-next";
@@ -174,6 +176,6 @@ export const BUILT_IN_ROSTER = BUILT_IN_NAME_FILES.map((fileName, index) => {
     positionClipId: positionLabel ? `position-${positionLabel.toLowerCase()}` : "",
     nameClip: BUILT_IN_PLAYER_CLIPS[key],
     songClip: index === 0 ? BUILT_IN_SONGS.default_song : null,
-    sequence: ["announcement", "number", "name", "position", "song"],
+    sequence: ["announcement", "number", "position", "name"],
   };
 });

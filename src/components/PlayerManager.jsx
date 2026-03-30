@@ -1,14 +1,17 @@
-import { useEffect, useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, GripVertical, Play, Plus, Trash2, Upload } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowDown, ArrowUp, Play, Plus, Trash2, Upload } from "lucide-react";
 import { getAudioDuration } from "../lib/audio";
 import {
   CLIP_GROUP_OPTIONS,
   createClipRecord,
+  deriveSequenceFromTimeline,
   fileToDataUrl,
   formatDuration,
+  getClipEffectiveDurationMs,
   getPlayerStatus,
   PLAYER_SEQUENCE_OPTIONS,
   resolvePlayerSequence,
+  TIMELINE_SNAP_MS,
 } from "../lib/storage";
 
 const SETUP_TABS = [
@@ -17,25 +20,70 @@ const SETUP_TABS = [
   { id: "upload", label: "Upload Audio" },
 ];
 
-const SEQUENCE_GROUPS = [
-  { id: "announcements", label: "Announcements", slot: "announcement" },
-  { id: "numbers", label: "Numbers", slot: "number" },
-  { id: "positions", label: "Positions", slot: "position" },
-  { id: "names", label: "Names", slot: "name" },
-  { id: "nicknames", label: "Nicknames", slot: "nickname" },
-  { id: "songs", label: "Songs", slot: "song" },
+const ROSTER_SEQUENCE_SLOTS = ["announcement", "number", "name", "nickname", "position", "song"];
+const TIMELINE_PIXELS_PER_MS = 0.06;
+const TIMELINE_MIN_DURATION_MS = 6000;
+const TIMELINE_SIDE_PADDING_MS = 1500;
+
+const TRACK_CONFIG = [
+  { id: 0, label: "Track 1" },
+  { id: 1, label: "Track 2" },
 ];
 
-const ROSTER_SEQUENCE_SLOTS = ["announcement", "number", "name", "nickname", "position", "song"];
+const SLOT_TONES = {
+  announcement: {
+    block:
+      "border-emerald-300/30 bg-[linear-gradient(135deg,rgba(34,197,94,0.9),rgba(16,185,129,0.72))] text-emerald-950 shadow-[0_16px_30px_rgba(16,185,129,0.22)]",
+    chip: "bg-emerald-950/12 text-emerald-950/80",
+  },
+  number: {
+    block:
+      "border-sky-300/26 bg-[linear-gradient(135deg,rgba(56,189,248,0.78),rgba(14,165,233,0.62))] text-sky-950 shadow-[0_16px_30px_rgba(14,165,233,0.18)]",
+    chip: "bg-sky-950/12 text-sky-950/80",
+  },
+  name: {
+    block:
+      "border-fuchsia-300/26 bg-[linear-gradient(135deg,rgba(232,121,249,0.8),rgba(217,70,239,0.62))] text-fuchsia-950 shadow-[0_16px_30px_rgba(217,70,239,0.18)]",
+    chip: "bg-fuchsia-950/12 text-fuchsia-950/80",
+  },
+  nickname: {
+    block:
+      "border-rose-300/26 bg-[linear-gradient(135deg,rgba(251,113,133,0.8),rgba(244,63,94,0.62))] text-rose-950 shadow-[0_16px_30px_rgba(244,63,94,0.18)]",
+    chip: "bg-rose-950/12 text-rose-950/80",
+  },
+  position: {
+    block:
+      "border-amber-300/26 bg-[linear-gradient(135deg,rgba(250,204,21,0.82),rgba(245,158,11,0.62))] text-amber-950 shadow-[0_16px_30px_rgba(245,158,11,0.18)]",
+    chip: "bg-amber-950/12 text-amber-950/80",
+  },
+  song: {
+    block:
+      "border-red-300/28 bg-[linear-gradient(135deg,rgba(248,113,113,0.86),rgba(239,68,68,0.64))] text-red-950 shadow-[0_16px_30px_rgba(239,68,68,0.2)]",
+    chip: "bg-red-950/12 text-red-950/80",
+  },
+};
+
+function createTimelineItem(slot, startMs = 0, track = 0, clipId = "") {
+  return {
+    id: crypto.randomUUID(),
+    slot,
+    startMs,
+    track,
+    clipId,
+  };
+}
 
 function createPlayerDraft(overrides = {}) {
-  const incomingSequence = Array.isArray(overrides.sequence) ? overrides.sequence : [];
-  const normalizedSequence = [
-    ...incomingSequence.filter((slot, index) => {
-      return ROSTER_SEQUENCE_SLOTS.includes(slot) && incomingSequence.indexOf(slot) === index;
-    }),
-    ...ROSTER_SEQUENCE_SLOTS.filter((slot) => !incomingSequence.includes(slot)),
-  ];
+  const incomingTimeline = Array.isArray(overrides.timeline) ? overrides.timeline : [];
+  const normalizedTimeline =
+    incomingTimeline.length > 0
+      ? incomingTimeline
+      : [
+          createTimelineItem("announcement", 0, 0, overrides.announcementClipId ?? ""),
+          createTimelineItem("number", 1400, 1),
+          createTimelineItem("position", 2300, 0),
+          createTimelineItem("name", 3600, 1),
+        ];
 
   return {
     name: "",
@@ -47,86 +95,151 @@ function createPlayerDraft(overrides = {}) {
     nameClip: null,
     nicknameClip: null,
     songClip: null,
-    sequence: normalizedSequence,
+    timeline: normalizedTimeline,
+    sequence: deriveSequenceFromTimeline(normalizedTimeline),
     ...overrides,
   };
-}
-
-function normalizeRosterSequence(sequence) {
-  const incomingSequence = Array.isArray(sequence) ? sequence : [];
-
-  return [
-    ...incomingSequence.filter((slot, index) => {
-      return ROSTER_SEQUENCE_SLOTS.includes(slot) && incomingSequence.indexOf(slot) === index;
-    }),
-    ...ROSTER_SEQUENCE_SLOTS.filter((slot) => !incomingSequence.includes(slot)),
-  ];
-}
-
-function getSequenceSelectValue(draft, slot) {
-  switch (slot) {
-    case "announcement":
-      return draft.announcementClipId ? `announcements:${draft.announcementClipId}` : "";
-    case "number":
-      return draft.numberClipId ? `numbers:${draft.numberClipId}` : "";
-    case "position":
-      return draft.positionClipId ? `positions:${draft.positionClipId}` : "";
-    case "name":
-      return draft.nameClip ? `names:${draft.nameClip.id}` : "";
-    case "nickname":
-      return draft.nicknameClip ? `nicknames:${draft.nicknameClip.id}` : "";
-    case "song":
-      return draft.songClip ? `songs:${draft.songClip.id}` : "";
-    default:
-      return "";
-  }
-}
-
-function applySequenceSelection(draft, selection) {
-  if (!selection) {
-    return draft;
-  }
-
-  const [group, clipId] = selection.split(":");
-  const next = { ...draft };
-
-  if (group === "announcements") {
-    next.announcementClipId = clipId;
-    return next;
-  }
-
-  if (group === "numbers") {
-    next.numberClipId = clipId;
-    return next;
-  }
-
-  if (group === "positions") {
-    next.positionClipId = clipId;
-    return next;
-  }
-
-  return next;
 }
 
 function slotLabel(slot) {
   return PLAYER_SEQUENCE_OPTIONS.find((option) => option.id === slot)?.label ?? "Slot";
 }
 
-function getRosterSequenceValue(slot, draft) {
-  switch (slot) {
+function getTimelineItemValue(item, draft) {
+  switch (item.slot) {
+    case "announcement":
+      return item.nickname || "Select announcement";
     case "number":
-      return draft.jerseyNumber ? `#${draft.jerseyNumber}` : "Choose jersey number";
+      return draft.jerseyNumber ? `#${draft.jerseyNumber}` : "Choose jersey";
     case "name":
       return draft.nameClip?.nickname ?? "Upload name clip";
     case "nickname":
       return draft.nicknameClip?.nickname ?? "Upload nickname clip";
-    case "song":
-      return draft.songClip?.nickname ?? "Upload walk-up song";
     case "position":
       return draft.positionLabel || "Choose position";
+    case "song":
+      return draft.songClip?.nickname ?? "Upload walk-up";
     default:
-      return "";
+      return "Clip";
   }
+}
+
+function getDefaultTrackForSlot(slot) {
+  return slot === "song" || slot === "announcement" ? 0 : 1;
+}
+
+function getTimelineItemDurationMs(item, draft, libraries, durationLookup = {}) {
+  const clip = getDraftClipForItem(item, draft, libraries);
+  const clipKey = clip?.dataUrl ?? clip?.src ?? clip?.id ?? "";
+  const measuredDurationMs = clipKey ? durationLookup[clipKey] : null;
+
+  if (Number.isFinite(measuredDurationMs) && measuredDurationMs > 0) {
+    return measuredDurationMs;
+  }
+
+  return getClipEffectiveDurationMs(item.slot, clip);
+}
+
+function getNextTimelineStartMs(
+  timeline = [],
+  draft,
+  libraries,
+  durationLookup = {},
+  fallbackMs = 0,
+  targetTrack = null,
+) {
+  const relevantTimeline =
+    targetTrack == null ? timeline : timeline.filter((item) => item.track === targetTrack);
+
+  if (!relevantTimeline.length) {
+    return fallbackMs;
+  }
+
+  const furthestEndMs = relevantTimeline.reduce((maxValue, item) => {
+    return Math.max(
+      maxValue,
+      item.startMs + getTimelineItemDurationMs(item, draft, libraries, durationLookup),
+    );
+  }, 0);
+
+  return furthestEndMs + TIMELINE_SNAP_MS;
+}
+
+function getPlayheadMsFromPointer(event, scrollContainer, durationMs) {
+  if (!scrollContainer) {
+    return 0;
+  }
+
+  const rect = scrollContainer.getBoundingClientRect();
+  const contentX = event.clientX - rect.left + scrollContainer.scrollLeft;
+  const rawMs = contentX / TIMELINE_PIXELS_PER_MS;
+  return Math.max(0, Math.min(durationMs, Math.round(rawMs / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS));
+}
+
+function getDraftClipForItem(item, draft, libraries) {
+  switch (item.slot) {
+    case "announcement":
+      return (
+        libraries.announcements.find((clip) => clip.id === (item.clipId || draft.announcementClipId)) ??
+        null
+      );
+    case "number":
+      return libraries.numbers.find((clip) => clip.id === draft.numberClipId) ?? null;
+    case "position":
+      return libraries.positions.find((clip) => clip.id === draft.positionClipId) ?? null;
+    case "name":
+      return draft.nameClip ?? null;
+    case "nickname":
+      return draft.nicknameClip ?? null;
+    case "song":
+      return draft.songClip ?? null;
+    default:
+      return null;
+  }
+}
+
+function normalizeTimelineLayout(timeline, draft, libraries, durationLookup = {}) {
+  const byTrack = TRACK_CONFIG.map((track) => {
+    const trackItems = timeline
+      .filter((item) => item.track === track.id)
+      .sort((left, right) => left.startMs - right.startMs);
+
+    return trackItems.reduce((accumulator, item, index) => {
+      if (index === 0) {
+        accumulator.push({ ...item, startMs: Math.max(0, item.startMs) });
+        return accumulator;
+      }
+
+      const previous = accumulator[accumulator.length - 1];
+      const previousEndMs =
+        Math.max(0, previous.startMs) +
+        getTimelineItemDurationMs(previous, draft, libraries, durationLookup);
+
+      accumulator.push({
+        ...item,
+        startMs: Math.max(previousEndMs, item.startMs),
+      });
+
+      return accumulator;
+    }, []);
+  }).flat();
+
+  return timeline.map((item) => byTrack.find((candidate) => candidate.id === item.id) ?? item);
+}
+
+function compactTimelineSequence(timeline, draft, libraries, durationLookup = {}) {
+  const sortedTimeline = [...timeline].sort((left, right) => left.startMs - right.startMs);
+  let cursorMs = 0;
+
+  return sortedTimeline.map((item) => {
+    const nextItem = {
+      ...item,
+      startMs: cursorMs,
+    };
+
+    cursorMs += getTimelineItemDurationMs(nextItem, draft, libraries, durationLookup);
+    return nextItem;
+  });
 }
 
 export function PlayerManager({
@@ -144,6 +257,11 @@ export function PlayerManager({
   onQueueClip,
   onPlayPlayer,
   onPreviewClip,
+  onPreviewSequence,
+  activePlayback,
+  playbackProgress,
+  playbackTimeMs,
+  playbackTotalMs,
   editingPlayerId,
   onEditingPlayerHandled,
   editingReturnTab,
@@ -424,6 +542,12 @@ export function PlayerManager({
           draft={playerDraft}
           setDraft={setPlayerDraft}
           libraries={libraries}
+          onPreviewClip={onPreviewClip}
+          onPreviewSequence={onPreviewSequence}
+          activePlayback={activePlayback}
+          playbackProgress={playbackProgress}
+          playbackTimeMs={playbackTimeMs}
+          playbackTotalMs={playbackTotalMs}
           onClose={closeRosterModal}
           onSubmit={handlePlayerSubmit}
         />
@@ -463,13 +587,36 @@ function RosterRow({ player, onOpen, onRemovePlayer }) {
   );
 }
 
-function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
-  const [draggedSequenceIndex, setDraggedSequenceIndex] = useState(null);
+function RosterModal({
+  mode,
+  draft,
+  setDraft,
+  libraries,
+  onPreviewClip,
+  onPreviewSequence,
+  activePlayback,
+  playbackProgress,
+  playbackTimeMs,
+  playbackTotalMs,
+  onClose,
+  onSubmit,
+}) {
+  const timelineScrollRef = useRef(null);
+  const dragStateRef = useRef(null);
+  const [draggedTimelineId, setDraggedTimelineId] = useState("");
+  const [selectedTimelineId, setSelectedTimelineId] = useState("");
+  const [playheadMs, setPlayheadMs] = useState(0);
+  const [previewPlayheadMs, setPreviewPlayheadMs] = useState(null);
+  const [clipDurationLookup, setClipDurationLookup] = useState({});
   const [sequenceAddValue, setSequenceAddValue] = useState("announcement");
   const [showSequenceAddPicker, setShowSequenceAddPicker] = useState(false);
+  const [timelineTouched, setTimelineTouched] = useState(false);
   const jerseyOptions = useMemo(
-    () => Array.from({ length: 99 }, (_, index) => String(index + 1)),
-    [],
+    () =>
+      libraries.numbers
+        .map((clip) => clip.nickname.replace("#", ""))
+        .filter(Boolean),
+    [libraries.numbers],
   );
 
   const positionOptions = useMemo(
@@ -507,12 +654,128 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
         id: "announcements",
         label: "Announcements",
         options: libraries.announcements.map((clip) => ({
-          value: `announcements:${clip.id}`,
+          value: clip.id,
           label: clip.nickname,
         })),
       },
     ];
   }, [libraries.announcements]);
+
+  const resolvedTimeline = useMemo(
+    () => resolvePlayerSequence(draft, libraries),
+    [draft, libraries],
+  );
+
+  const measuredTimeline = useMemo(
+    () =>
+      resolvedTimeline.map((item) => {
+        const clipKey = item.dataUrl ?? item.src ?? item.id;
+        const measuredDurationMs = clipDurationLookup[clipKey];
+        const durationMs =
+          Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
+            ? measuredDurationMs
+            : item.durationMs;
+
+        return {
+          ...item,
+          durationMs,
+          endMs: item.startMs + durationMs,
+        };
+      }),
+    [resolvedTimeline, clipDurationLookup],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const clipsToMeasure = measuredTimeline.filter((item) => {
+      const clipKey = item.dataUrl ?? item.src ?? item.id;
+      return clipKey && !clipDurationLookup[clipKey];
+    });
+
+    if (!clipsToMeasure.length) {
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    Promise.all(
+      clipsToMeasure.map(
+        (item) =>
+          new Promise((resolve) => {
+            const audio = new Audio();
+            const clipKey = item.dataUrl ?? item.src ?? item.id;
+
+            const cleanup = () => {
+              audio.onloadedmetadata = null;
+              audio.onerror = null;
+              audio.removeAttribute("src");
+              audio.load();
+            };
+
+            audio.onloadedmetadata = () => {
+              const durationMs = Number.isFinite(audio.duration) && audio.duration > 0
+                ? Math.round(audio.duration * 1000)
+                : item.durationMs;
+              cleanup();
+              resolve([clipKey, durationMs]);
+            };
+
+            audio.onerror = () => {
+              cleanup();
+              resolve([clipKey, item.durationMs]);
+            };
+
+            audio.src = item.dataUrl ?? item.src;
+          }),
+      ),
+    ).then((entries) => {
+      if (cancelled) {
+        return;
+      }
+
+      setClipDurationLookup((current) => ({
+        ...current,
+        ...Object.fromEntries(entries),
+      }));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [measuredTimeline, clipDurationLookup]);
+
+  const timelineDurationMs = useMemo(() => {
+    const maxEndMs = measuredTimeline.reduce((maxValue, item) => Math.max(maxValue, item.endMs), 0);
+    return Math.max(TIMELINE_MIN_DURATION_MS, maxEndMs + TIMELINE_SIDE_PADDING_MS);
+  }, [measuredTimeline]);
+
+  const timelineWidth = Math.max(780, Math.round(timelineDurationMs * TIMELINE_PIXELS_PER_MS));
+  const isDraftSequencePlaying =
+    activePlayback?.type === "player" && activePlayback?.playerId === "draft-player";
+  const renderedPlayheadMs = previewPlayheadMs ?? playheadMs;
+  const selectedTimelineItem =
+    measuredTimeline.find((item) => item.timelineItemId === selectedTimelineId) ?? null;
+  const selectedAnnouncementClipId =
+    selectedTimelineItem?.slot === "announcement"
+      ? selectedTimelineItem.timelineClipId || draft.announcementClipId || libraries.announcements[0]?.id || ""
+      : "";
+
+  const updateDraftTimeline = (updater) => {
+    setDraft((current) => {
+      const nextTimeline = normalizeTimelineLayout(
+        updater(current.timeline ?? []),
+        current,
+        libraries,
+        clipDurationLookup,
+      );
+      return {
+        ...current,
+        timeline: nextTimeline,
+        sequence: deriveSequenceFromTimeline(nextTimeline),
+      };
+    });
+  };
 
   const uploadDraftClip = async ({ file, group, fallbackNickname, key }) => {
     const duration = await getAudioDuration(file);
@@ -526,48 +789,7 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
     setDraft((current) => ({
       ...current,
       [key]: clip,
-    }));
-  };
-
-  const updateSequenceItem = (index, nextValue) => {
-    setDraft((current) => ({
-      ...applySequenceSelection(
-        current,
-        nextValue,
-      ),
-      sequence: current.sequence.map((slot, slotIndex) => {
-        if (slotIndex !== index) {
-          return slot;
-        }
-
-        if (!nextValue) {
-          return "announcement";
-        }
-
-        const [group] = nextValue.split(":");
-        return SEQUENCE_GROUPS.find((item) => item.id === group)?.slot ?? "";
-      }),
-    }));
-  };
-
-  const removeSequenceItem = (index) => {
-    setDraft((current) => ({
-      ...current,
-      sequence: current.sequence.filter((_, slotIndex) => slotIndex !== index),
-    }));
-  };
-
-  const reorderSequenceItem = (fromIndex, toIndex) => {
-    if (fromIndex === toIndex || fromIndex == null || toIndex == null) {
-      return;
-    }
-
-    setDraft((current) => {
-      const next = [...current.sequence];
-      const [moved] = next.splice(fromIndex, 1);
-      next.splice(toIndex, 0, moved);
-      return { ...current, sequence: next };
-    });
+      }));
   };
 
   const sequenceAddOptions = useMemo(() => {
@@ -575,99 +797,241 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
     const options = [{ id: "announcement", label: slotLabel("announcement") }];
 
     uniqueSlots.forEach((slot) => {
-      if (!draft.sequence.includes(slot)) {
+      if (!(draft.timeline ?? []).some((item) => item.slot === slot)) {
         options.push({ id: slot, label: slotLabel(slot) });
       }
     });
 
     return options;
-  }, [draft.sequence]);
+  }, [draft.timeline]);
 
   const addSequenceItem = (nextSlot = sequenceAddValue) => {
     if (!nextSlot) {
       return;
     }
 
-    setDraft((current) => {
+    setTimelineTouched(true);
+    updateDraftTimeline((currentTimeline) => {
       if (
         nextSlot !== "announcement" &&
         ["number", "name", "nickname", "position", "song"].includes(nextSlot) &&
-        current.sequence.includes(nextSlot)
+        currentTimeline.some((item) => item.slot === nextSlot)
       ) {
-        return current;
+        return currentTimeline;
       }
 
-      return {
-        ...current,
-        sequence: [...current.sequence, nextSlot],
-      };
+      const targetTrack = getDefaultTrackForSlot(nextSlot);
+      const compactedTimeline = compactTimelineSequence(
+        currentTimeline,
+        draft,
+        libraries,
+        clipDurationLookup,
+      );
+      const visibleTrackTimeline = compactedTimeline.filter((item) => item.track === targetTrack);
+      const nextStartMs = getNextTimelineStartMs(
+        visibleTrackTimeline,
+        draft,
+        libraries,
+        clipDurationLookup,
+        nextSlot === "song" ? 1000 : 0,
+        targetTrack,
+      );
+
+      return [
+        ...compactedTimeline,
+        createTimelineItem(
+          nextSlot,
+          nextStartMs,
+          targetTrack,
+          nextSlot === "announcement"
+            ? draft.announcementClipId || libraries.announcements[0]?.id || ""
+            : "",
+        ),
+      ];
     });
   };
 
-  const previewSequenceItem = (slot) => {
-    let clip = null;
-
-    if (slot === "announcement") {
-      clip = libraries.announcements.find((item) => item.id === draft.announcementClipId) ?? null;
-    } else if (slot === "number") {
-      clip = libraries.numbers.find((item) => item.id === draft.numberClipId) ?? null;
-    } else if (slot === "position") {
-      clip = libraries.positions.find((item) => item.id === draft.positionClipId) ?? null;
-    } else if (slot === "name") {
-      clip = draft.nameClip;
-    } else if (slot === "nickname") {
-      clip = draft.nicknameClip;
-    } else if (slot === "song") {
-      clip = draft.songClip;
+  useEffect(() => {
+    if (!sequenceAddOptions.length) {
+      return;
     }
 
-    if (!clip) {
+    if (!sequenceAddOptions.some((option) => option.id === sequenceAddValue)) {
+      setSequenceAddValue(sequenceAddOptions[0].id);
+    }
+  }, [sequenceAddOptions, sequenceAddValue]);
+
+  const previewSequenceItem = (timelineItemId) => {
+    const item = measuredTimeline.find((entry) => entry.timelineItemId === timelineItemId);
+    if (!item) {
       return;
     }
 
     onPreviewClip?.({
       clip: {
-        ...clip,
-        slot,
+        ...item,
+        id: item.timelineItemId,
+        timelineItemId: item.timelineItemId,
+        startMs: 0,
         playerId: draft.id ?? "draft-player",
-        playerName: draft.name || clip.nickname,
+        playerName: draft.name || item.nickname,
       },
       playerId: draft.id ?? "draft-player",
-      playerName: draft.name || clip.nickname,
+      playerName: draft.name || item.nickname,
     });
   };
 
-  const handleSequenceDragStart = (event, index, slot) => {
-    setDraggedSequenceIndex(index);
-    event.dataTransfer.effectAllowed = "move";
+  const updateAnnouncementSelection = (timelineItemId, clipId) => {
+    setTimelineTouched(true);
+    updateDraftTimeline((currentTimeline) =>
+      currentTimeline.map((item) =>
+        item.id === timelineItemId ? { ...item, clipId } : item,
+      ),
+    );
 
-    const sourceRow = event.currentTarget.closest("[data-sequence-row='true']");
-    if (!sourceRow) {
+    setDraft((current) => ({
+      ...current,
+      announcementClipId: clipId || current.announcementClipId,
+    }));
+  };
+
+  const removeSequenceItem = (timelineItemId) => {
+    setTimelineTouched(true);
+    updateDraftTimeline((currentTimeline) =>
+      currentTimeline.filter((item) => item.id !== timelineItemId),
+    );
+    setSelectedTimelineId((current) => (current === timelineItemId ? "" : current));
+  };
+
+  const previewDraftSequence = () => {
+    if (!measuredTimeline.length) {
       return;
     }
 
-    const rowRect = sourceRow.getBoundingClientRect();
-    const ghost = sourceRow.cloneNode(true);
-    ghost.style.width = `${rowRect.width}px`;
-    ghost.style.maxWidth = `${rowRect.width}px`;
-    ghost.style.position = "fixed";
-    ghost.style.top = "-9999px";
-    ghost.style.left = "-9999px";
-    ghost.style.pointerEvents = "none";
-    ghost.style.zIndex = "9999";
-    ghost.style.opacity = "0.95";
-    ghost.style.transform = "scale(1)";
-    ghost.style.boxShadow = "0 24px 60px rgba(8, 47, 73, 0.45)";
-    ghost.classList.add("border-sky-300/40", "bg-sky-400/10");
-
-    document.body.appendChild(ghost);
-    event.dataTransfer.setDragImage(ghost, rowRect.width - 36, rowRect.height / 2);
-
-    requestAnimationFrame(() => {
-      if (ghost.parentNode) {
-        ghost.parentNode.removeChild(ghost);
-      }
+    onPreviewSequence?.({
+      items: measuredTimeline,
+      playerName: draft.name || "Draft Sequence",
+      startOffsetMs: playheadMs,
     });
+  };
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const dragState = dragStateRef.current;
+      if (!dragState) {
+        return;
+      }
+
+      if (dragState.kind === "playhead") {
+        setPlayheadMs(getPlayheadMsFromPointer(event, timelineScrollRef.current, timelineDurationMs));
+        return;
+      }
+
+      const deltaX = event.clientX - dragState.startX;
+      const deltaY = event.clientY - dragState.startY;
+      const deltaMs = Math.round(deltaX / TIMELINE_PIXELS_PER_MS / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS;
+      const nextTrack = Math.max(0, Math.min(1, dragState.originTrack + Math.round(deltaY / 110)));
+
+      updateDraftTimeline((currentTimeline) =>
+        currentTimeline.map((item) =>
+          item.id === dragState.itemId
+            ? {
+                ...item,
+                startMs: Math.max(0, dragState.originStartMs + deltaMs),
+                track: nextTrack,
+              }
+            : item,
+        ),
+      );
+    };
+
+    const handlePointerUp = () => {
+      dragStateRef.current = null;
+      setDraggedTimelineId("");
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [timelineDurationMs]);
+
+  useEffect(() => {
+    if (isDraftSequencePlaying) {
+      setPreviewPlayheadMs(
+        Math.max(
+          0,
+          Math.min(
+            timelineDurationMs,
+            Number.isFinite(playbackTimeMs)
+              ? playbackTimeMs
+              : playbackTotalMs > 0
+                ? playbackProgress * playbackTotalMs
+                : 0,
+          ),
+        ),
+      );
+      return;
+    }
+
+    setPreviewPlayheadMs(null);
+  }, [isDraftSequencePlaying, playbackProgress, playbackTimeMs, playbackTotalMs, timelineDurationMs]);
+
+  useEffect(() => {
+    if (timelineTouched || !measuredTimeline.length) {
+      return;
+    }
+
+    const compactedTimeline = compactTimelineSequence(
+      draft.timeline ?? [],
+      draft,
+      libraries,
+      clipDurationLookup,
+    );
+
+    const currentStarts = (draft.timeline ?? []).map((item) => item.startMs).join(",");
+    const nextStarts = compactedTimeline.map((item) => item.startMs).join(",");
+
+    if (currentStarts === nextStarts) {
+      return;
+    }
+
+    setDraft((current) => ({
+      ...current,
+      timeline: compactedTimeline,
+      sequence: deriveSequenceFromTimeline(compactedTimeline),
+    }));
+  }, [clipDurationLookup, draft, libraries, measuredTimeline, timelineTouched, setDraft]);
+
+  const startTimelineDrag = (event, item) => {
+    if (event.target.closest("[data-timeline-action='true']")) {
+      return;
+    }
+
+    setTimelineTouched(true);
+    dragStateRef.current = {
+      kind: "item",
+      itemId: item.timelineItemId,
+      startX: event.clientX,
+      startY: event.clientY,
+      originStartMs: item.startMs,
+      originTrack: item.track,
+    };
+    setDraggedTimelineId(item.timelineItemId);
+    setSelectedTimelineId(item.timelineItemId);
+  };
+
+  const movePlayheadToPointer = (event) => {
+    setPlayheadMs(getPlayheadMsFromPointer(event, timelineScrollRef.current, timelineDurationMs));
+  };
+
+  const startPlayheadDrag = (event) => {
+    event.stopPropagation();
+    dragStateRef.current = { kind: "playhead" };
+    movePlayheadToPointer(event);
   };
 
   return (
@@ -724,18 +1088,7 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
                 <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
                   Player-Owned Uploads
                 </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  <Uploader
-                    buttonLabel="Upload Name"
-                    onFile={(file) =>
-                      uploadDraftClip({
-                        file,
-                        group: "names",
-                        fallbackNickname: draft.name || "Player name",
-                        key: "nameClip",
-                      })
-                    }
-                  />
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <Uploader
                     buttonLabel="Upload Nickname"
                     onFile={(file) =>
@@ -773,16 +1126,71 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                    Walk-Up Sequence
-                  </div>
-                  <div className="mt-2 text-xs uppercase tracking-[0.18em] text-slate-500">
-                    Add, remove, and arrange pills. Announcement can repeat. Number, name, nickname, position, and walk-up stay unique.
+                    Walk-Up Timeline
                   </div>
                 </div>
-                <div className="relative">
+                <div className="flex items-center gap-2">
+                  {selectedTimelineItem?.slot === "announcement" ? (
+                    <div className="relative">
+                      <select
+                        value={selectedAnnouncementClipId}
+                        onChange={(event) =>
+                          updateAnnouncementSelection(selectedTimelineItem.timelineItemId, event.target.value)
+                        }
+                        className="w-44 rounded-2xl border border-cyan-300/30 bg-slate-900/85 px-3 py-3 text-sm text-white outline-none"
+                      >
+                        {libraries.announcements.map((clip) => (
+                          <option key={clip.id} value={clip.id}>
+                            {clip.nickname}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : null}
                   <button
                     type="button"
-                    onClick={() => setShowSequenceAddPicker((current) => !current)}
+                    onClick={() => setPlayheadMs(0)}
+                    className="secondary-button"
+                    title="Back to start"
+                  >
+                    |&lt;
+                  </button>
+                  <button
+                    type="button"
+                    onClick={previewDraftSequence}
+                    className="secondary-button"
+                  >
+                    <Play className="h-4 w-4" />
+                    Preview
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedTimelineId) {
+                        removeSequenceItem(selectedTimelineId);
+                      }
+                    }}
+                    disabled={!selectedTimelineId}
+                    className={`flex h-12 w-12 items-center justify-center rounded-full border transition ${
+                      selectedTimelineId
+                        ? "border-rose-300/40 bg-rose-400/15 text-rose-100 hover:bg-rose-400/20"
+                        : "border-white/10 bg-slate-900/80 text-slate-500"
+                    }`}
+                    title={selectedTimelineId ? "Delete selected clip" : "Select a clip to delete"}
+                  >
+                    <Trash2 className="h-4.5 w-4.5" />
+                  </button>
+                  <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (sequenceAddOptions.length === 1) {
+                        addSequenceItem(sequenceAddOptions[0].id);
+                        return;
+                      }
+
+                      setShowSequenceAddPicker((current) => !current);
+                    }}
                     className="secondary-button h-12 w-12 justify-center rounded-full p-0"
                     aria-label="Add sequence pill"
                     title="Add sequence pill"
@@ -811,92 +1219,66 @@ function RosterModal({ mode, draft, setDraft, libraries, onClose, onSubmit }) {
                       </select>
                     </div>
                   ) : null}
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {draft.sequence.map((slot, index) => (
+              <div className="mt-4 space-y-4">
+                <div className="overflow-x-auto pb-2" ref={timelineScrollRef}>
                   <div
-                    key={`draft-sequence-${index}`}
-                    data-sequence-row="true"
-                    draggable
-                    onDragStart={(event) => handleSequenceDragStart(event, index, slot)}
-                    onDragOver={(event) => {
-                      event.preventDefault();
-                      event.dataTransfer.dropEffect = "move";
-                    }}
-                    onDragEnter={(event) => {
-                      event.preventDefault();
-                      if (draggedSequenceIndex == null || draggedSequenceIndex === index) {
+                    className="relative min-w-full"
+                    style={{ width: `max(100%, ${timelineWidth}px)` }}
+                    onPointerDown={(event) => {
+                      if (event.target.closest("[data-timeline-block='true']") || event.target.closest("[data-playhead='true']")) {
                         return;
                       }
-
-                      reorderSequenceItem(draggedSequenceIndex, index);
-                      setDraggedSequenceIndex(index);
+                      movePlayheadToPointer(event);
                     }}
-                    onDrop={(event) => {
-                      event.preventDefault();
-                      setDraggedSequenceIndex(null);
-                    }}
-                    onDragEnd={() => setDraggedSequenceIndex(null)}
-                    className={`rounded-2xl border bg-slate-950/55 p-3 transition ${
-                      draggedSequenceIndex === index
-                        ? "border-sky-300/40 bg-sky-400/10"
-                        : "border-white/8"
-                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="min-w-[7.5rem] rounded-2xl border border-sky-300/20 bg-sky-400/10 px-3 py-3 text-center text-xs font-bold uppercase tracking-[0.2em] text-sky-100">
-                        {slotLabel(slot)}
-                      </div>
-                      {slot === "announcement" ? (
-                        <SequenceSelect
-                          value={getSequenceSelectValue(draft, slot)}
-                          optionGroups={draftSequenceOptions}
-                          onChange={(value) => updateSequenceItem(index, value)}
+                    <TimelineScale durationMs={timelineDurationMs} />
+                    <TimelinePlayhead
+                      left={renderedPlayheadMs * TIMELINE_PIXELS_PER_MS}
+                      onPointerDown={startPlayheadDrag}
+                      isPlaying={isDraftSequencePlaying}
+                    />
+                    <div className="space-y-2">
+                      {TRACK_CONFIG.map((track) => (
+                        <TimelineTrack
+                          key={track.id}
+                          track={track}
+                          durationMs={timelineDurationMs}
+                          items={measuredTimeline.filter((item) => item.track === track.id)}
+                          draft={draft}
+                          draggedTimelineId={draggedTimelineId}
+                          selectedTimelineId={selectedTimelineId}
+                          onRemove={removeSequenceItem}
+                          onPointerDown={startTimelineDrag}
+                          onSelect={setSelectedTimelineId}
                         />
-                      ) : (
-                        <LockedSequencePill value={getRosterSequenceValue(slot, draft)} />
-                      )}
-                      <button
-                        type="button"
-                        draggable={false}
-                        onMouseDown={(event) => event.stopPropagation()}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          previewSequenceItem(slot);
-                        }}
-                        className="icon-button"
-                        aria-label={`Preview ${slotLabel(slot)}`}
-                        title="Preview pill"
-                      >
-                        <Play className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => removeSequenceItem(index)}
-                        className="icon-button danger"
-                        aria-label={`Remove ${slotLabel(slot)}`}
-                        title="Remove pill"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        draggable
-                        onDragStart={(event) => {
-                          event.stopPropagation();
-                          handleSequenceDragStart(event, index, slot);
-                        }}
-                        className="icon-button cursor-grab active:cursor-grabbing"
-                        aria-label={`Drag ${slotLabel(slot)}`}
-                        title="Drag to reorder"
-                      >
-                        <GripVertical className="h-4 w-4" />
-                      </button>
+                      ))}
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {measuredTimeline
+                    .slice()
+                    .sort((left, right) => left.startMs - right.startMs)
+                    .map((item) => (
+                      <div
+                        key={`legend-${item.timelineItemId}`}
+                        className="rounded-2xl border border-white/8 bg-slate-950/45 px-3 py-2 text-sm text-slate-300"
+                      >
+                        <span className="font-semibold text-white">{slotLabel(item.slot)}</span>
+                        <span className="ml-2 text-slate-400">
+                          {getTimelineItemValue(item, draft)}
+                        </span>
+                        <span className="ml-2 text-xs uppercase tracking-[0.18em] text-slate-500">
+                          {item.startMs / 1000}s
+                        </span>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
           </div>
@@ -1262,6 +1644,128 @@ function ClipMetaCard({ clip, label }) {
   );
 }
 
+function TimelineScale({ durationMs }) {
+  const seconds = Math.ceil(durationMs / 1000);
+
+  return (
+    <div className="mb-3 flex h-8 items-end">
+      {Array.from({ length: seconds + 1 }, (_, index) => index).map((second) => (
+        <div
+          key={`scale-${second}`}
+          className="relative h-full shrink-0"
+          style={{ width: `${1000 * TIMELINE_PIXELS_PER_MS}px` }}
+        >
+          <div className="absolute inset-y-0 left-0 w-px bg-white/8" />
+          <div className="absolute bottom-0 left-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            {second}s
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TimelineTrack({
+  track,
+  items,
+  draft,
+  draggedTimelineId,
+  onPointerDown,
+  selectedTimelineId,
+  onSelect,
+}) {
+  return (
+    <div className="rounded-[1.45rem] border border-white/8 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(2,6,23,0.98))] p-2.5">
+      <div
+        className="relative overflow-hidden rounded-[1.35rem] border border-white/6 bg-[linear-gradient(180deg,rgba(8,47,73,0.22),rgba(2,6,23,0.9))]"
+        style={{ height: "102px" }}
+      >
+        <div
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
+          style={{ backgroundSize: `${TIMELINE_SNAP_MS * TIMELINE_PIXELS_PER_MS}px 100%` }}
+        />
+        {items.map((item) => (
+          <TimelineBlock
+            key={item.timelineItemId}
+            item={item}
+            draft={draft}
+            isDragging={draggedTimelineId === item.timelineItemId}
+            isSelected={selectedTimelineId === item.timelineItemId}
+            onPointerDown={onPointerDown}
+            onSelect={onSelect}
+          />
+        ))}
+        {!items.length ? (
+          <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+            Drop clips on this track
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+function TimelineBlock({
+  item,
+  draft,
+  isDragging,
+  isSelected,
+  onPointerDown,
+  onSelect,
+}) {
+  const tone = SLOT_TONES[item.slot] ?? SLOT_TONES.announcement;
+  const label = getTimelineItemValue(item, draft);
+  const durationWidth = item.durationMs * TIMELINE_PIXELS_PER_MS;
+  const visualWidth =
+    item.slot === "song"
+      ? Math.max(220, Math.min(360, durationWidth * 0.38))
+      : Math.max(42, durationWidth);
+  const left = item.startMs * TIMELINE_PIXELS_PER_MS;
+  const isTinyPill = visualWidth < 62;
+  const isSmallPill = visualWidth < 92;
+  const isMediumPill = visualWidth < 135;
+  const isLargePill = visualWidth >= 220;
+  const labelClassName = isTinyPill
+    ? "line-clamp-4 text-[9px]"
+    : isSmallPill
+      ? "line-clamp-3 text-[11px]"
+      : isMediumPill
+        ? "line-clamp-3 text-[13px]"
+        : isLargePill
+          ? "line-clamp-2 text-base"
+          : "line-clamp-2 text-[14px]";
+
+  return (
+    <div
+      data-timeline-block="true"
+      onPointerDown={(event) => onPointerDown(event, item)}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect(item.timelineItemId);
+      }}
+      className={`absolute top-3 flex h-[76px] select-none items-center rounded-[1.5rem] border px-4 py-3 transition ${
+        tone.block
+      } ${
+        isDragging
+          ? "z-20 scale-[1.02] cursor-grabbing ring-2 ring-white/40"
+          : isSelected
+            ? "z-20 ring-2 ring-cyan-100/80 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
+            : "z-10 cursor-grab"
+      }`}
+      style={{ left: `${left}px`, width: `${visualWidth}px` }}
+    >
+      <div className="min-w-0 flex-1">
+        <div
+          title={label}
+          className={`overflow-hidden whitespace-normal break-words pr-1 font-black leading-tight tracking-[0.01em] text-current ${labelClassName}`}
+        >
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SelectField({ label, value, options, onChange }) {
   return (
     <div>
@@ -1284,12 +1788,12 @@ function SelectField({ label, value, options, onChange }) {
   );
 }
 
-function SequenceSelect({ value, optionGroups, onChange }) {
+function SequenceSelect({ value, optionGroups, onChange, className = "" }) {
   return (
     <select
       value={value}
       onChange={(event) => onChange(event.target.value)}
-      className="flex-1 rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none"
+      className={`w-full rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3 text-sm text-white outline-none ${className}`}
     >
       <option value="">Empty slot</option>
       {optionGroups.map((group) => (
@@ -1305,11 +1809,29 @@ function SequenceSelect({ value, optionGroups, onChange }) {
   );
 }
 
-function LockedSequencePill({ value }) {
+function TimelinePlayhead({ left, onPointerDown, isPlaying }) {
   return (
-    <div className="flex-1 rounded-2xl border border-white/10 bg-slate-900/60 px-4 py-3">
-      <div className="text-sm font-semibold text-white">{value}</div>
-    </div>
+    <button
+      type="button"
+      data-playhead="true"
+      onPointerDown={onPointerDown}
+      className={`absolute z-30 h-[244px] w-6 -translate-x-1/2 bg-transparent transition-[left] ${
+        isPlaying ? "duration-100 ease-linear" : "duration-75"
+      }`}
+      style={{ left: `${left}px`, top: "0px" }}
+      title="Drag playhead"
+    >
+      <div
+        className={`absolute left-1/2 top-0 h-5 w-5 -translate-x-1/2 rounded-full border border-cyan-200/70 bg-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.35)] ${
+          isPlaying ? "scale-110" : ""
+        }`}
+      />
+      <div
+        className={`absolute left-1/2 top-5 h-[219px] w-[3px] -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.45)] ${
+          isPlaying ? "opacity-100" : "opacity-85"
+        }`}
+      />
+    </button>
   );
 }
 

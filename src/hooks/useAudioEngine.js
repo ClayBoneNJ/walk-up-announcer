@@ -27,17 +27,19 @@ function wait(ms, signal) {
   });
 }
 
+const WALKUP_SONG_MAX_MS = 15000;
+const WALKUP_SONG_FADE_OUT_MS = 800;
+const STOP_FADE_MS = 140;
+
 function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
+  audio.loop = false;
   audio.volume = volume;
   return audio;
 }
 
-const WALKUP_SONG_MAX_MS = 15000;
-const WALKUP_SONG_FADE_OUT_MS = 800;
-
-async function fadeOutAndStop(audio, signal, durationMs = 140) {
+async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
   if (!audio || !audio.src) {
     return;
   }
@@ -60,260 +62,370 @@ async function fadeOutAndStop(audio, signal, durationMs = 140) {
   audio.load();
 }
 
+function clearTimer(timerId) {
+  if (timerId) {
+    window.clearTimeout(timerId);
+  }
+}
+
 export function useAudioEngine({ volume, fadeMs }) {
-  const primaryRef = useRef(null);
-  const secondaryRef = useRef(null);
-  const abortRef = useRef(null);
+  const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
+  const requestIdRef = useRef(0);
   const [activePlayback, setActivePlayback] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackProgress, setPlaybackProgress] = useState(0);
+  const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
+  const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
 
-  useEffect(() => {
-    primaryRef.current = createAudioElement(volume);
-    secondaryRef.current = createAudioElement(volume);
-
-    return () => {
-      primaryRef.current?.pause();
-      secondaryRef.current?.pause();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (primaryRef.current) {
-      primaryRef.current.volume = volume;
-    }
-
-    if (secondaryRef.current) {
-      secondaryRef.current.volume = volume;
-    }
-  }, [volume]);
-
-  const stopAll = async () => {
-    abortRef.current?.abort();
-    abortRef.current = null;
+  const stopProgressLoop = () => {
     if (progressFrameRef.current) {
       window.cancelAnimationFrame(progressFrameRef.current);
       progressFrameRef.current = null;
     }
+  };
 
-    const stopController = new AbortController();
-    await Promise.all(
-      [primaryRef.current, secondaryRef.current].map((audio) =>
-        fadeOutAndStop(audio, stopController.signal),
-      ),
-    );
-
+  const resetUiState = () => {
+    stopProgressLoop();
     setActivePlayback(null);
     setIsPaused(false);
     setPlaybackProgress(0);
+    setPlaybackTimeMs(0);
+    setPlaybackTotalMs(0);
   };
 
-  const playAsset = async (audio, asset, signal, onProgress) => {
-    audio.src = asset.dataUrl ?? asset.src;
-    audio.loop = false;
-    audio.currentTime = 0;
-    audio.volume = 0;
-    const maxPlaybackSeconds =
-      asset.slot === "song" ? WALKUP_SONG_MAX_MS / 1000 : Number.POSITIVE_INFINITY;
+  const teardownSession = async (session, fadeOut = true) => {
+    if (!session) {
+      return;
+    }
 
-    const playbackEnded = new Promise((resolve, reject) => {
-      let clipEndTimeoutId = null;
-      let clipFadeTimeoutId = null;
-      let clipDuration = Math.min(
-        audio.duration || asset.duration || maxPlaybackSeconds,
-        maxPlaybackSeconds,
-      );
+    session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
+    session.pendingStarts = [];
 
-      const handleEnded = () => {
-        cleanup();
-        resolve();
-      };
+    const stopController = new AbortController();
+    const activeEntries = [...session.activeEntries.values()];
 
-      const handleError = () => {
-        cleanup();
-        reject(new Error(`Could not play ${asset.fileName}.`));
-      };
-
-      const handleAbort = () => {
-        cleanup();
-        reject(new DOMException("Playback cancelled", "AbortError"));
-      };
-
-      const updateProgress = () => {
-        const nextDuration = Math.min(
-          audio.duration || asset.duration || maxPlaybackSeconds,
-          maxPlaybackSeconds,
-        );
-        clipDuration = nextDuration;
-        const clipProgress = clipDuration > 0 ? audio.currentTime / clipDuration : 0;
-        onProgress?.(Math.max(0, Math.min(1, clipProgress)));
-
-        if (!audio.paused && !audio.ended) {
-          progressFrameRef.current = window.requestAnimationFrame(updateProgress);
-        }
-      };
-
-      const handleLoadedMetadata = () => {
-        if (!Number.isFinite(maxPlaybackSeconds)) {
-          if (progressFrameRef.current) {
-            window.cancelAnimationFrame(progressFrameRef.current);
-          }
-          progressFrameRef.current = window.requestAnimationFrame(updateProgress);
-          return;
-        }
-
-        const cappedDurationMs = Math.max(
-          0,
-          Math.min(audio.duration || maxPlaybackSeconds, maxPlaybackSeconds) * 1000,
-        );
-
-        window.clearTimeout(clipEndTimeoutId);
-        window.clearTimeout(clipFadeTimeoutId);
-
-        if (asset.slot === "song") {
-          const fadeDelayMs = Math.max(0, cappedDurationMs - WALKUP_SONG_FADE_OUT_MS);
-
-          clipFadeTimeoutId = window.setTimeout(async () => {
-            await fadeOutAndStop(audio, signal, WALKUP_SONG_FADE_OUT_MS).catch(() => {});
-            cleanup();
-            resolve();
-          }, fadeDelayMs);
-        } else {
-          clipEndTimeoutId = window.setTimeout(() => {
-            audio.pause();
-            audio.currentTime = 0;
-            cleanup();
-            resolve();
-          }, cappedDurationMs);
-        }
-
-        if (progressFrameRef.current) {
-          window.cancelAnimationFrame(progressFrameRef.current);
-        }
-        progressFrameRef.current = window.requestAnimationFrame(updateProgress);
-      };
-
-      const cleanup = () => {
-        audio.onended = null;
-        audio.onerror = null;
-        audio.onloadedmetadata = null;
-        window.clearTimeout(clipEndTimeoutId);
-        window.clearTimeout(clipFadeTimeoutId);
-        if (progressFrameRef.current) {
-          window.cancelAnimationFrame(progressFrameRef.current);
-          progressFrameRef.current = null;
-        }
-        signal.removeEventListener("abort", handleAbort);
-      };
-
-      audio.onended = handleEnded;
-      audio.onerror = handleError;
-      audio.onloadedmetadata = handleLoadedMetadata;
-      signal.addEventListener("abort", handleAbort, { once: true });
+    activeEntries.forEach((entry) => {
+      clearTimer(entry.endTimeoutId);
+      clearTimer(entry.fadeTimeoutId);
+      entry.audio.onended = null;
+      entry.audio.onerror = null;
     });
 
-    await audio.play();
+    await Promise.all(
+      activeEntries.map((entry) =>
+        fadeOut ? fadeOutAndStop(entry.audio, stopController.signal) : Promise.resolve().then(() => {
+          entry.audio.pause();
+          entry.audio.currentTime = 0;
+          entry.audio.removeAttribute("src");
+          entry.audio.load();
+        }),
+      ),
+    );
 
-    if (audio.readyState >= 1) {
-      audio.onloadedmetadata?.();
+    session.activeEntries.clear();
+  };
+
+  const stopAll = async () => {
+    const session = sessionRef.current;
+    if (session) {
+      session.controller.abort();
+      sessionRef.current = null;
+      if (!session.resolved) {
+        session.resolved = true;
+        session.reject?.(new DOMException("Playback cancelled", "AbortError"));
+      }
+      await teardownSession(session, true);
+    }
+
+    resetUiState();
+  };
+
+  useEffect(() => {
+    return () => {
+      const session = sessionRef.current;
+      if (!session) {
+        return;
+      }
+
+      session.controller.abort();
+      if (!session.resolved) {
+        session.resolved = true;
+        session.reject?.(new DOMException("Playback cancelled", "AbortError"));
+      }
+      teardownSession(session, false);
+    };
+  }, []);
+
+  const startProgressLoop = (session) => {
+    stopProgressLoop();
+
+    const tick = () => {
+      if (!sessionRef.current || sessionRef.current.id !== session.id || session.paused) {
+        return;
+      }
+
+      const elapsedMs = performance.now() - session.anchorMs;
+      const nextProgress =
+        session.totalDurationMs > 0 ? Math.max(0, Math.min(1, elapsedMs / session.totalDurationMs)) : 0;
+      setPlaybackTimeMs(Math.max(0, Math.min(session.totalDurationMs, elapsedMs)));
+      setPlaybackProgress(nextProgress);
+
+      if (nextProgress < 1) {
+        progressFrameRef.current = window.requestAnimationFrame(tick);
+      }
+    };
+
+    progressFrameRef.current = window.requestAnimationFrame(tick);
+  };
+
+  const finishSessionIfComplete = (session) => {
+    if (session.completedItemIds.size < session.items.length) {
+      return;
+    }
+
+    if (session.resolved) {
+      return;
+    }
+
+    session.resolved = true;
+    sessionRef.current = null;
+    resetUiState();
+    session.resolve();
+  };
+
+  const markItemComplete = (session, itemId) => {
+    if (session.completedItemIds.has(itemId)) {
+      return;
+    }
+
+    session.completedItemIds.add(itemId);
+    finishSessionIfComplete(session);
+  };
+
+  const scheduleEntryTimeouts = (session, entry) => {
+    const remainingMs = Math.max(0, entry.item.durationMs - entry.audio.currentTime * 1000);
+
+    clearTimer(entry.endTimeoutId);
+    clearTimer(entry.fadeTimeoutId);
+
+    if (entry.item.slot === "song") {
+      const fadeDelayMs = Math.max(0, remainingMs - WALKUP_SONG_FADE_OUT_MS);
+      entry.fadeTimeoutId = window.setTimeout(async () => {
+        await fadeOutAndStop(entry.audio, session.controller.signal, WALKUP_SONG_FADE_OUT_MS).catch(() => {});
+        session.activeEntries.delete(entry.item.id);
+        markItemComplete(session, entry.item.id);
+      }, fadeDelayMs);
+      return;
+    }
+  };
+
+  const startItemPlayback = async (session, item, seekMs = 0) => {
+    if (session.controller.signal.aborted || session.paused) {
+      return;
+    }
+
+    const audio = createAudioElement(volume);
+    audio.src = item.dataUrl ?? item.src;
+    audio.volume = fadeMs > 0 ? 0 : volume;
+
+    const entry = {
+      item,
+      audio,
+      endTimeoutId: null,
+      fadeTimeoutId: null,
+    };
+
+    session.activeEntries.set(item.id, entry);
+    session.startedItemIds.add(item.id);
+    setActivePlayback({
+      ...session.descriptor,
+      playerId: item.playerId ?? session.descriptor.playerId,
+      playerName: item.playerName ?? session.descriptor.playerName,
+      assetId: item.id,
+      assetLabel: item.nickname,
+      track: item.track,
+    });
+
+    const finalize = () => {
+      clearTimer(entry.endTimeoutId);
+      clearTimer(entry.fadeTimeoutId);
+      entry.audio.onended = null;
+      entry.audio.onerror = null;
+      session.activeEntries.delete(item.id);
+      markItemComplete(session, item.id);
+    };
+
+    audio.onended = finalize;
+    audio.onerror = finalize;
+
+    try {
+      const seekSeconds = Math.max(0, seekMs / 1000);
+      if (seekSeconds > 0) {
+        audio.currentTime = seekSeconds;
+      }
+      await audio.play();
+    } catch {
+      finalize();
+      return;
     }
 
     if (fadeMs > 0) {
       const steps = 8;
       for (let index = 1; index <= steps; index += 1) {
-        if (signal.aborted) {
-          throw new DOMException("Playback cancelled", "AbortError");
+        if (session.controller.signal.aborted || session.paused) {
+          return;
         }
 
         audio.volume = volume * (index / steps);
-        await wait(fadeMs / steps, signal);
+        await wait(fadeMs / steps, session.controller.signal).catch(() => {});
       }
     } else {
       audio.volume = volume;
     }
 
-    await playbackEnded;
+    scheduleEntryTimeouts(session, entry);
   };
 
-  const playSequence = async ({ items, descriptor }) => {
+  const schedulePendingStarts = (session) => {
+    session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
+
+    session.pendingStarts = session.pendingStarts.map((entry) => {
+      if (session.startedItemIds.has(entry.item.id)) {
+        return entry;
+      }
+
+      const remainingMs = Math.max(0, entry.item.startMs - session.offsetMs);
+      const timeoutId = window.setTimeout(() => {
+        startItemPlayback(session, entry.item, entry.seekMs);
+      }, remainingMs);
+
+      return {
+        ...entry,
+        remainingMs,
+        timeoutId,
+      };
+    });
+  };
+
+  const playSequence = async ({ items, descriptor, startOffsetMs = 0 }) => {
+    requestIdRef.current += 1;
+    const requestId = requestIdRef.current;
+
     await stopAll();
+
+    if (requestId !== requestIdRef.current) {
+      return;
+    }
 
     if (!items.length) {
       return;
     }
 
-    const controller = new AbortController();
-    abortRef.current = controller;
+    const normalizedItems = [...items]
+      .map((item, index) => ({
+        ...item,
+        id: item.timelineItemId ?? item.id ?? `${descriptor.playerId || "clip"}-${index}`,
+        startMs: Math.max(0, Number(item.startMs) || 0),
+        durationMs:
+          Number.isFinite(item.durationMs) && item.durationMs > 0
+            ? item.durationMs
+            : item.slot === "song"
+              ? WALKUP_SONG_MAX_MS
+              : Math.max(400, Math.round((item.duration || 1.2) * 1000)),
+      }))
+      .sort((left, right) => left.startMs - right.startMs);
+
+    const filteredItems = normalizedItems.filter(
+      (item) => item.startMs + item.durationMs > startOffsetMs,
+    );
+
+    const totalDurationMs = normalizedItems.reduce(
+      (maxValue, item) => Math.max(maxValue, item.startMs + item.durationMs),
+      0,
+    );
+
+    const session = {
+      id: crypto.randomUUID(),
+      controller: new AbortController(),
+      descriptor,
+      items: filteredItems,
+      totalDurationMs,
+      offsetMs: Math.max(0, startOffsetMs),
+      anchorMs: performance.now() - Math.max(0, startOffsetMs),
+      paused: false,
+      pendingStarts: filteredItems.map((item) => ({
+        item,
+        seekMs: Math.max(0, startOffsetMs - item.startMs),
+        remainingMs: Math.max(0, item.startMs - startOffsetMs),
+        timeoutId: null,
+      })),
+      activeEntries: new Map(),
+      startedItemIds: new Set(),
+      completedItemIds: new Set(
+        normalizedItems
+          .filter((item) => item.startMs + item.durationMs <= startOffsetMs)
+          .map((item) => item.id),
+      ),
+      resolved: false,
+      resolve: null,
+      reject: null,
+    };
+
     setActivePlayback(descriptor);
-    setPlaybackProgress(0);
+    setPlaybackTotalMs(totalDurationMs);
+    setPlaybackTimeMs(Math.max(0, startOffsetMs));
+    setPlaybackProgress(totalDurationMs > 0 ? Math.max(0, Math.min(1, startOffsetMs / totalDurationMs)) : 0);
+    sessionRef.current = session;
+    startProgressLoop(session);
+    schedulePendingStarts(session);
 
-    try {
-      // Alternate between two audio elements so we can swap sources cleanly and
-      // leave room for future crossfades without changing the public hook API.
-      for (let index = 0; index < items.length; index += 1) {
-        const asset = items[index];
-        const activeAudio = index % 2 === 0 ? primaryRef.current : secondaryRef.current;
-        const inactiveAudio = index % 2 === 0 ? secondaryRef.current : primaryRef.current;
-
-        inactiveAudio.pause();
-        inactiveAudio.currentTime = 0;
-        inactiveAudio.removeAttribute("src");
-        inactiveAudio.load();
-
-        setActivePlayback({
-          ...descriptor,
-          playerId: asset.playerId ?? descriptor.playerId,
-          playerName: asset.playerName ?? descriptor.playerName,
-          assetId: asset.id,
-          assetLabel: asset.nickname,
-          index,
-          total: items.length,
-        });
-
-        setPlaybackProgress(index / items.length);
-
-        await playAsset(activeAudio, asset, controller.signal, (clipProgress) => {
-          setPlaybackProgress((index + clipProgress) / items.length);
-        });
-
-        setPlaybackProgress((index + 1) / items.length);
-      }
-    } finally {
-      if (!controller.signal.aborted) {
-        setActivePlayback(null);
-        setIsPaused(false);
-        setPlaybackProgress(0);
-      }
-    }
+    return new Promise((resolve, reject) => {
+      session.resolve = resolve;
+      session.reject = reject;
+    });
   };
 
   const togglePause = async () => {
-    const audios = [primaryRef.current, secondaryRef.current].filter(Boolean);
-    const playing = audios.find((audio) => !audio.paused && !audio.ended);
-
-    if (!playing && !isPaused) {
+    const session = sessionRef.current;
+    if (!session) {
       return;
     }
 
-    if (isPaused) {
-      await Promise.all(
-        audios
-          .filter((audio) => audio.src)
-          .map(async (audio) => {
-            try {
-              await audio.play();
-            } catch {
-              return null;
-            }
-            return null;
-          }),
-      );
+    if (session.paused) {
+      session.paused = false;
+      session.anchorMs = performance.now() - session.offsetMs;
+
+      session.activeEntries.forEach((entry) => {
+        entry.audio.play().catch(() => null);
+        scheduleEntryTimeouts(session, entry);
+      });
+
+      schedulePendingStarts(session);
+      startProgressLoop(session);
       setIsPaused(false);
       return;
     }
 
-    audios.forEach((audio) => audio.pause());
+    session.offsetMs = performance.now() - session.anchorMs;
+    session.paused = true;
+    stopProgressLoop();
+
+    session.pendingStarts.forEach((entry) => {
+      if (session.startedItemIds.has(entry.item.id)) {
+        return;
+      }
+
+      clearTimer(entry.timeoutId);
+      entry.remainingMs = Math.max(0, entry.item.startMs - session.offsetMs);
+    });
+
+    session.activeEntries.forEach((entry) => {
+      clearTimer(entry.endTimeoutId);
+      clearTimer(entry.fadeTimeoutId);
+      entry.audio.pause();
+    });
+
     setIsPaused(true);
   };
 
@@ -321,6 +433,8 @@ export function useAudioEngine({ volume, fadeMs }) {
     activePlayback,
     isPaused,
     playbackProgress,
+    playbackTimeMs,
+    playbackTotalMs,
     playSequence,
     stopAll,
     togglePause,

@@ -101,7 +101,16 @@ export default function App() {
   }, [appState]);
 
   const { libraries, players, settings } = appState;
-  const { activePlayback, isPaused, playbackProgress, playSequence, stopAll, togglePause } = useAudioEngine({
+  const {
+    activePlayback,
+    isPaused,
+    playbackProgress,
+    playbackTimeMs,
+    playbackTotalMs,
+    playSequence,
+    stopAll,
+    togglePause,
+  } = useAudioEngine({
     volume: settings.volume,
     fadeMs: settings.fadeMs,
   });
@@ -288,11 +297,6 @@ export default function App() {
     });
   };
 
-  const resetApp = async () => {
-    await stopAll();
-    setAppState(createEmptyState());
-  };
-
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(21,91,185,0.2),transparent_32%),linear-gradient(180deg,_#08111f_0%,_#050914_100%)] text-slate-100">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-48 pt-4 sm:px-6 lg:px-8">
@@ -382,6 +386,8 @@ export default function App() {
               players={filteredPlayers}
               activePlayback={activePlayback}
               playbackProgress={playbackProgress}
+              playbackTimeMs={playbackTimeMs}
+              playbackTotalMs={playbackTotalMs}
               lineupCursorId={lineupCursorId}
               onPlayPlayer={playPlayerFromWalkups}
               onPlayCurrentBatter={playTrackedBatter}
@@ -435,6 +441,21 @@ export default function App() {
               onQueueClip={() => {}}
               onPlayPlayer={playPlayer}
               onPreviewClip={playClip}
+              onPreviewSequence={async ({ items, playerName = "", startOffsetMs = 0 }) => {
+                await playSequence({
+                  items,
+                  descriptor: {
+                    type: "player",
+                    playerId: "draft-player",
+                    playerName: playerName || "Draft Sequence",
+                  },
+                  startOffsetMs,
+                });
+              }}
+              activePlayback={activePlayback}
+              playbackProgress={playbackProgress}
+              playbackTimeMs={playbackTimeMs}
+              playbackTotalMs={playbackTotalMs}
               editingPlayerId={editingPlayerId}
               onEditingPlayerHandled={() => setEditingPlayerId("")}
               editingReturnTab={editingReturnTab}
@@ -473,14 +494,6 @@ export default function App() {
           })}
         </div>
       </nav>
-
-      <button
-        type="button"
-        onClick={resetApp}
-        className="fixed right-4 top-4 z-20 rounded-full border border-white/10 bg-slate-950/80 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300 backdrop-blur transition hover:border-rose-300/20 hover:text-rose-200"
-      >
-        Reset
-      </button>
     </div>
   );
 }

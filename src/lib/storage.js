@@ -5,7 +5,7 @@ import {
   BUILT_IN_SONGS,
 } from "./builtInAudio";
 
-const STORAGE_KEY = "walk-up-announcer-state-v5";
+const STORAGE_KEY = "walk-up-announcer-state-v8";
 
 export const CLIP_GROUP_OPTIONS = [
   { id: "announcements", label: "Announcements" },
@@ -23,9 +23,71 @@ export const PLAYER_SEQUENCE_OPTIONS = [
   { id: "song", label: "Walk-Up Song" },
 ];
 
-const DEFAULT_SEQUENCE = ["announcement", "number", "name", "nickname", "position", "song"];
+const DEFAULT_SEQUENCE = ["announcement", "number", "position", "name"];
+export const TIMELINE_SNAP_MS = 100;
+export const DEFAULT_TIMELINE_TRACKS = 2;
+const DEFAULT_SLOT_DURATION_MS = {
+  announcement: 1400,
+  number: 900,
+  name: 1100,
+  nickname: 1100,
+  position: 1300,
+  song: 15000,
+};
+
+const DEFAULT_SLOT_RESET_SPACING_MS = {
+  announcement: 1900,
+  number: 1200,
+  position: 1900,
+  name: 2200,
+  nickname: 1800,
+  song: 15000,
+};
+
+export function deriveSequenceFromTimeline(timeline = []) {
+  const sortedTimeline = [...timeline].sort((left, right) => left.startMs - right.startMs);
+  return sortedTimeline.map((item) => item.slot);
+}
+
+function createTimelineItem(slot, startMs, track = 0, clipId = "") {
+  return {
+    id: crypto.randomUUID(),
+    slot,
+    startMs,
+    track,
+    clipId,
+  };
+}
+
+export function getClipEffectiveDurationMs(slot, clip = null) {
+  if (slot === "song") {
+    return 15000;
+  }
+
+  if (Number.isFinite(clip?.duration) && clip.duration > 0) {
+    return Math.round(clip.duration * 1000);
+  }
+
+  return DEFAULT_SLOT_DURATION_MS[slot] ?? 1200;
+}
+
+function buildTimelineFromSequence(playerLike = {}) {
+  let cursorMs = 0;
+
+  return (playerLike.sequence ?? DEFAULT_SEQUENCE).map((slot, index) => {
+    const item = createTimelineItem(
+      slot,
+      cursorMs,
+      index % DEFAULT_TIMELINE_TRACKS,
+      slot === "announcement" ? playerLike.announcementClipId ?? "" : "",
+    );
+    cursorMs += DEFAULT_SLOT_RESET_SPACING_MS[slot] ?? DEFAULT_SLOT_DURATION_MS[slot] ?? 1500;
+    return item;
+  });
+}
 
 function createPlayer(name, jerseyNumber, positionLabel) {
+  const timeline = buildTimelineFromSequence({ sequence: DEFAULT_SEQUENCE });
   return {
     id: crypto.randomUUID(),
     name,
@@ -37,8 +99,24 @@ function createPlayer(name, jerseyNumber, positionLabel) {
     announcementClipId: "",
     numberClipId: "",
     positionClipId: "",
-    sequence: DEFAULT_SEQUENCE,
+    sequence: deriveSequenceFromTimeline(timeline),
+    timeline,
   };
+}
+
+function getPlayerClipBySlot(player, slot, libraries, item = null) {
+  const libraryMap = {
+    announcement: libraries.announcements.find(
+      (clip) => clip.id === (item?.clipId || player.announcementClipId),
+    ),
+    number: libraries.numbers.find((clip) => clip.id === player.numberClipId),
+    position: libraries.positions.find((clip) => clip.id === player.positionClipId),
+    name: player.nameClip,
+    nickname: player.nicknameClip,
+    song: player.songClip,
+  };
+
+  return libraryMap[slot] ?? null;
 }
 
 function getBuiltInPlayerClip(playerName) {
@@ -90,8 +168,7 @@ export function createEmptyState() {
 function normalizePlayer(player) {
   const normalizedName = player.name ?? "";
   const builtInNameClip = getBuiltInPlayerClip(normalizedName);
-
-  return {
+  const normalizedPlayer = {
     id: player.id ?? crypto.randomUUID(),
     name: normalizedName,
     jerseyNumber: player.jerseyNumber ?? player.number ?? "",
@@ -106,6 +183,18 @@ function normalizePlayer(player) {
       Array.isArray(player.sequence) && player.sequence.length > 0
         ? player.sequence
         : DEFAULT_SEQUENCE,
+  };
+
+  const resetSequencePlayer = {
+    ...normalizedPlayer,
+    sequence: DEFAULT_SEQUENCE,
+  };
+  const normalizedTimeline = buildTimelineFromSequence(resetSequencePlayer);
+
+  return {
+    ...resetSequencePlayer,
+    sequence: deriveSequenceFromTimeline(normalizedTimeline),
+    timeline: normalizedTimeline,
   };
 }
 
@@ -191,22 +280,25 @@ export function formatDuration(seconds) {
 }
 
 export function resolvePlayerSequence(player, libraries) {
-  const libraryMap = {
-    announcement: libraries.announcements.find((clip) => clip.id === player.announcementClipId),
-    number: libraries.numbers.find((clip) => clip.id === player.numberClipId),
-    position: libraries.positions.find((clip) => clip.id === player.positionClipId),
-    name: player.nameClip,
-    nickname: player.nicknameClip,
-    song: player.songClip,
-  };
+  const timeline = Array.isArray(player.timeline) && player.timeline.length > 0
+    ? player.timeline
+    : buildTimelineFromSequence(player);
 
-  return (player.sequence ?? DEFAULT_SEQUENCE)
-    .map((slot) => {
-      const clip = libraryMap[slot];
+  return [...timeline]
+    .sort((left, right) => left.startMs - right.startMs)
+    .map((item) => {
+      const clip = getPlayerClipBySlot(player, item.slot, libraries, item);
+      const durationMs = getClipEffectiveDurationMs(item.slot, clip);
       return clip
         ? {
             ...clip,
-            slot,
+            slot: item.slot,
+            timelineItemId: item.id,
+            timelineClipId: item.clipId ?? "",
+            startMs: item.startMs,
+            track: item.track,
+            durationMs,
+            endMs: item.startMs + durationMs,
             playerId: player.id,
             playerName: player.name,
           }
