@@ -648,6 +648,7 @@ function RosterModal({
     () => libraries.positions.map((clip) => clip.nickname),
     [libraries.positions],
   );
+  const draftBuiltInSongId = draft.songClip?.builtIn ? draft.songClip.id : "";
 
   const handleJerseyChange = (jerseyNumber) => {
     const matchingNumberClip = libraries.numbers.find(
@@ -895,6 +896,15 @@ function RosterModal({
               ),
             }
           : clip,
+    }));
+  };
+
+  const handleBuiltInSongChange = (clipId) => {
+    const nextSongClip = libraries.songs.find((clip) => clip.id === clipId) ?? null;
+
+    setDraft((current) => ({
+      ...current,
+      songClip: nextSongClip,
     }));
   };
 
@@ -1307,6 +1317,12 @@ function RosterModal({
                   Player-Owned Uploads
                 </div>
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <SelectField
+                    label="Built-In Walk-Up Song"
+                    value={draftBuiltInSongId}
+                    options={libraries.songs}
+                    onChange={handleBuiltInSongChange}
+                  />
                   <Uploader
                     buttonLabel="Upload Nickname"
                     onFile={(file) =>
@@ -1624,6 +1640,7 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
     () => resolvePlayerSequence(player, libraries),
     [player, libraries],
   );
+  const builtInSongId = player.songClip?.builtIn ? player.songClip.id : "";
 
   const uploadNameClip = async (file) => {
     const duration = await getAudioDuration(file);
@@ -1772,6 +1789,17 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
               options={libraries.positions}
               onChange={(value) =>
                 onUpdatePlayer(player.id, (current) => ({ ...current, positionClipId: value }))
+              }
+            />
+            <SelectField
+              label="Walk-Up Song"
+              value={builtInSongId}
+              options={libraries.songs}
+              onChange={(value) =>
+                onUpdatePlayer(player.id, (current) => ({
+                  ...current,
+                  songClip: libraries.songs.find((clip) => clip.id === value) ?? null,
+                }))
               }
             />
             <div>

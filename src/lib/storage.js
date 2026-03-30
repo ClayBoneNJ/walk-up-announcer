@@ -135,8 +135,8 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
       return fallbackBuiltInClip;
     }
 
-    if (clip.id === BUILT_IN_SONGS.default_song.id) {
-      return BUILT_IN_SONGS.default_song;
+    if (clip.group === "songs") {
+      return BUILT_IN_LIBRARIES.songs.find((builtInClip) => builtInClip.id === clip.id) ?? clip;
     }
   }
 
@@ -229,6 +229,7 @@ export function loadState() {
           parsed.libraries?.positions,
         ),
         numbers: mergeLibraryClips(BUILT_IN_LIBRARIES.numbers, parsed.libraries?.numbers),
+        songs: mergeLibraryClips(BUILT_IN_LIBRARIES.songs, parsed.libraries?.songs),
         effects: mergeLibraryClips(BUILT_IN_LIBRARIES.effects, parsed.libraries?.effects),
       },
       players: (parsed.players ?? empty.players).map(normalizePlayer),
@@ -351,13 +352,16 @@ export function getFreestyleGroups(players, libraries) {
         playerId: player.id,
         playerName: player.name,
       })),
-    songs: players
-      .filter((player) => player.songClip?.dataUrl || player.songClip?.src)
-      .map((player) => ({
-        ...player.songClip,
-        playerId: player.id,
-        playerName: player.name,
-      })),
+    songs: [
+      ...libraries.songs,
+      ...players
+        .filter((player) => player.songClip?.dataUrl || player.songClip?.src)
+        .map((player) => ({
+          ...player.songClip,
+          playerId: player.id,
+          playerName: player.name,
+        })),
+    ],
     effects: libraries.effects,
   };
 }
@@ -368,7 +372,9 @@ export function getClipByReference({ group, clipId, playerId, libraries, players
   }
 
   if (group === "songs") {
-    return players.find((player) => player.id === playerId)?.songClip ?? null;
+    return players.find((player) => player.id === playerId)?.songClip ??
+      libraries.songs?.find((clip) => clip.id === clipId) ??
+      null;
   }
 
   if (group === "nicknames") {

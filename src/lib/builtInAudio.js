@@ -45,6 +45,17 @@ const BUILT_IN_NAME_FILES = [
 ];
 
 const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
+const BUILT_IN_SONG_FILES = [
+  "Can't Stop Won't Stop - Stop Drop Roll.mp3",
+  "Digital Underground - The Humpty Dance.mp3",
+  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3",
+  "EoO - BAD BUNNY.mp3",
+  "Foo Fighters - Everlong.mp3",
+  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3",
+  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3",
+  "System Of A Down - Toxicity (Official HD Video).mp3",
+  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3",
+];
 
 const DEFAULT_ROSTER_ASSIGNMENTS = [
   { jerseyNumber: "9", positionLabel: "P" },
@@ -141,6 +152,21 @@ export const BUILT_IN_LIBRARIES = {
       src: assetSrc("positions", fileName),
     }),
   ),
+  songs: BUILT_IN_SONG_FILES.map((fileName) => {
+    const baseName = fileName.replace(/\.mp3$/i, "");
+    const songId = baseName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
+    return builtInClip({
+      id: `song-${songId}`,
+      group: "songs",
+      nickname: baseName,
+      fileName,
+      src: assetSrc("songs", fileName),
+    });
+  }),
   effects: [],
 };
 
@@ -162,13 +188,9 @@ export const BUILT_IN_PLAYER_CLIPS = Object.fromEntries(
 );
 
 export const BUILT_IN_SONGS = {
-  default_song: builtInClip({
-    id: "song-stop-drop-roll",
-    group: "songs",
-    nickname: "Stop Drop Roll",
-    fileName: "Can't Stop Won't Stop - Stop Drop Roll.mp3",
-    src: assetSrc("songs", "Can't Stop Won't Stop - Stop Drop Roll.mp3"),
-  }),
+  default_song:
+    BUILT_IN_LIBRARIES.songs.find((clip) => clip.fileName === "Can't Stop Won't Stop - Stop Drop Roll.mp3") ??
+    BUILT_IN_LIBRARIES.songs[0],
 };
 
 export const BUILT_IN_ROSTER = BUILT_IN_NAME_FILES.map((fileName, index) => {
