@@ -5,7 +5,7 @@ import {
   BUILT_IN_SONGS,
 } from "./builtInAudio";
 
-const STORAGE_KEY = "walk-up-announcer-state-v8";
+const STORAGE_KEY = "walk-up-announcer-state-v9";
 
 export const CLIP_GROUP_OPTIONS = [
   { id: "announcements", label: "Announcements" },

@@ -46,7 +46,19 @@ const BUILT_IN_NAME_FILES = [
 
 const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
 
-const DEFAULT_POSITIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF", "P", "C"];
+const DEFAULT_ROSTER_ASSIGNMENTS = [
+  { jerseyNumber: "9", positionLabel: "P" },
+  { jerseyNumber: "48", positionLabel: "C" },
+  { jerseyNumber: "28", positionLabel: "3B" },
+  { jerseyNumber: "33", positionLabel: "2B" },
+  { jerseyNumber: "2", positionLabel: "3B" },
+  { jerseyNumber: "23", positionLabel: "SS" },
+  { jerseyNumber: "88", positionLabel: "LF" },
+  { jerseyNumber: "28", positionLabel: "CF" },
+  { jerseyNumber: "33", positionLabel: "RF" },
+  { jerseyNumber: "13", positionLabel: "P" },
+  { jerseyNumber: "17", positionLabel: "C" },
+];
 
 export const BUILT_IN_LIBRARIES = {
   announcements: [
@@ -162,8 +174,9 @@ export const BUILT_IN_SONGS = {
 export const BUILT_IN_ROSTER = BUILT_IN_NAME_FILES.map((fileName, index) => {
   const name = titleCaseFromFileName(fileName);
   const key = name.toLowerCase().replace(/\s+/g, "_");
-  const jerseyNumber = BUILT_IN_NUMBER_FILES[index]?.replace(/\.mp3$/i, "") ?? "";
-  const positionLabel = DEFAULT_POSITIONS[index] ?? "";
+  const rosterAssignment = DEFAULT_ROSTER_ASSIGNMENTS[index] ?? {};
+  const jerseyNumber = rosterAssignment.jerseyNumber ?? "";
+  const positionLabel = rosterAssignment.positionLabel ?? "";
   const announcementClipId =
     index % 2 === 0 ? "announcement-now-batting" : "announcement-up-next";
 
