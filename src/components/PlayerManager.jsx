@@ -25,6 +25,7 @@ const ROSTER_SEQUENCE_SLOTS = ["announcement", "number", "name", "nickname", "po
 const TIMELINE_PIXELS_PER_MS = 0.06;
 const TIMELINE_MIN_DURATION_MS = 6000;
 const TIMELINE_SIDE_PADDING_MS = 1500;
+const TIMELINE_MOBILE_MIN_WIDTH = 280;
 
 const TRACK_CONFIG = [
   { id: 0, label: "Track 1" },
@@ -185,14 +186,14 @@ function getNextTimelineStartMs(
   return furthestEndMs + TIMELINE_SNAP_MS;
 }
 
-function getPlayheadMsFromPointer(event, scrollContainer, durationMs) {
+function getPlayheadMsFromPointer(event, scrollContainer, durationMs, pixelsPerMs) {
   if (!scrollContainer) {
     return 0;
   }
 
   const rect = scrollContainer.getBoundingClientRect();
   const contentX = event.clientX - rect.left + scrollContainer.scrollLeft;
-  const rawMs = contentX / TIMELINE_PIXELS_PER_MS;
+  const rawMs = contentX / pixelsPerMs;
   return Math.max(0, Math.min(durationMs, Math.round(rawMs / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS));
 }
 
@@ -622,6 +623,7 @@ function RosterModal({
   onSubmit,
 }) {
   const timelineScrollRef = useRef(null);
+  const timelineViewportRef = useRef(null);
   const dragStateRef = useRef(null);
   const [draggedTimelineId, setDraggedTimelineId] = useState("");
   const [selectedTimelineId, setSelectedTimelineId] = useState("");
@@ -633,6 +635,7 @@ function RosterModal({
   const [songTrimStartMs, setSongTrimStartMs] = useState(0);
   const [showSongTrimModal, setShowSongTrimModal] = useState(false);
   const [timelineTouched, setTimelineTouched] = useState(false);
+  const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
   const jerseyOptions = useMemo(
     () =>
       libraries.numbers
@@ -773,8 +776,18 @@ function RosterModal({
     const maxEndMs = measuredTimeline.reduce((maxValue, item) => Math.max(maxValue, item.endMs), 0);
     return Math.max(TIMELINE_MIN_DURATION_MS, maxEndMs + TIMELINE_SIDE_PADDING_MS);
   }, [measuredTimeline]);
-
-  const timelineWidth = Math.max(780, Math.round(timelineDurationMs * TIMELINE_PIXELS_PER_MS));
+  const isCompactTimeline = timelineViewportWidth > 0 && timelineViewportWidth < 640;
+  const desktopTimelineWidth = Math.max(
+    Math.max(780, timelineViewportWidth || 0),
+    Math.round(timelineDurationMs * TIMELINE_PIXELS_PER_MS),
+  );
+  const timelineWidth = isCompactTimeline
+    ? Math.max(TIMELINE_MOBILE_MIN_WIDTH, timelineViewportWidth || TIMELINE_MOBILE_MIN_WIDTH)
+    : desktopTimelineWidth;
+  const timelinePixelsPerMs = Math.max(
+    0.01,
+    timelineWidth / Math.max(timelineDurationMs, 1),
+  );
   const isDraftSequencePlaying =
     activePlayback?.type === "player" && activePlayback?.playerId === "draft-player";
   const renderedPlayheadMs = previewPlayheadMs ?? playheadMs;
@@ -789,6 +802,22 @@ function RosterModal({
     Math.round((draft.songClip?.duration || 0) * 1000),
   );
   const maxSongTrimStartMs = Math.max(0, songClipDurationMs - WALKUP_TRIM_MS);
+
+  useEffect(() => {
+    const updateTimelineViewportWidth = () => {
+      const nextWidth = Math.round(timelineViewportRef.current?.clientWidth || 0);
+      if (nextWidth > 0) {
+        setTimelineViewportWidth(nextWidth);
+      }
+    };
+
+    updateTimelineViewportWidth();
+    window.addEventListener("resize", updateTimelineViewportWidth);
+
+    return () => {
+      window.removeEventListener("resize", updateTimelineViewportWidth);
+    };
+  }, []);
 
   useEffect(() => {
     const fallbackClipId = getAnnouncementSeedClipId(
@@ -1094,13 +1123,21 @@ function RosterModal({
       }
 
       if (dragState.kind === "playhead") {
-        setPlayheadMs(getPlayheadMsFromPointer(event, timelineScrollRef.current, timelineDurationMs));
+        setPlayheadMs(
+          getPlayheadMsFromPointer(
+            event,
+            timelineScrollRef.current,
+            timelineDurationMs,
+            timelinePixelsPerMs,
+          ),
+        );
         return;
       }
 
       const deltaX = event.clientX - dragState.startX;
       const deltaY = event.clientY - dragState.startY;
-      const deltaMs = Math.round(deltaX / TIMELINE_PIXELS_PER_MS / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS;
+      const deltaMs =
+        Math.round(deltaX / timelinePixelsPerMs / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS;
       const nextTrack = Math.max(0, Math.min(1, dragState.originTrack + Math.round(deltaY / 110)));
 
       updateDraftTimeline((currentTimeline) =>
@@ -1128,7 +1165,7 @@ function RosterModal({
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [timelineDurationMs]);
+  }, [timelineDurationMs, timelinePixelsPerMs]);
 
   useEffect(() => {
     if (isDraftSequencePlaying) {
@@ -1196,7 +1233,14 @@ function RosterModal({
   };
 
   const movePlayheadToPointer = (event) => {
-    setPlayheadMs(getPlayheadMsFromPointer(event, timelineScrollRef.current, timelineDurationMs));
+    setPlayheadMs(
+      getPlayheadMsFromPointer(
+        event,
+        timelineScrollRef.current,
+        timelineDurationMs,
+        timelinePixelsPerMs,
+      ),
+    );
   };
 
   const startPlayheadDrag = (event) => {
@@ -1439,36 +1483,36 @@ function RosterModal({
                     <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
                       <button
                         type="button"
-                        onClick={() => moveSelectedTimelineItem(-500)}
-                        className="secondary-button justify-center"
+                        onClick={() => moveSelectedTimelineItem(-100)}
+                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                       >
-                        -0.5s
+                        -0.1s
                       </button>
                       <button
                         type="button"
-                        onClick={() => moveSelectedTimelineItem(500)}
-                        className="secondary-button justify-center"
+                        onClick={() => moveSelectedTimelineItem(100)}
+                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                       >
-                        +0.5s
+                        +0.1s
                       </button>
                       <button
                         type="button"
                         onClick={() => moveSelectedTimelineTrack(-1)}
-                        className="secondary-button justify-center"
+                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                       >
                         Track Up
                       </button>
                       <button
                         type="button"
                         onClick={() => moveSelectedTimelineTrack(1)}
-                        className="secondary-button justify-center"
+                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                       >
                         Track Down
                       </button>
                       <button
                         type="button"
                         onClick={() => previewSequenceItem(selectedTimelineItem.timelineItemId)}
-                        className="secondary-button justify-center"
+                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                       >
                         Preview Pill
                       </button>
@@ -1476,10 +1520,11 @@ function RosterModal({
                   </div>
                 ) : null}
 
-                <div className="overflow-x-auto pb-2" ref={timelineScrollRef}>
+                <div className="overflow-hidden pb-2" ref={timelineViewportRef}>
+                  <div className="overflow-hidden" ref={timelineScrollRef}>
                   <div
-                    className="relative min-w-full"
-                    style={{ width: `max(100%, ${timelineWidth}px)` }}
+                    className="relative"
+                    style={{ width: `${timelineWidth}px`, maxWidth: "100%" }}
                     onPointerDown={(event) => {
                       if (event.target.closest("[data-timeline-block='true']") || event.target.closest("[data-playhead='true']")) {
                         return;
@@ -1487,9 +1532,9 @@ function RosterModal({
                       movePlayheadToPointer(event);
                     }}
                   >
-                    <TimelineScale durationMs={timelineDurationMs} />
+                    <TimelineScale durationMs={timelineDurationMs} pixelsPerMs={timelinePixelsPerMs} />
                     <TimelinePlayhead
-                      left={renderedPlayheadMs * TIMELINE_PIXELS_PER_MS}
+                      left={renderedPlayheadMs * timelinePixelsPerMs}
                       onPointerDown={startPlayheadDrag}
                       isPlaying={isDraftSequencePlaying}
                     />
@@ -1502,6 +1547,8 @@ function RosterModal({
                           items={measuredTimeline.filter((item) => item.track === track.id)}
                           draft={draft}
                           draggedTimelineId={draggedTimelineId}
+                          isCompactTimeline={isCompactTimeline}
+                          pixelsPerMs={timelinePixelsPerMs}
                           selectedTimelineId={selectedTimelineId}
                           onSongDoubleClick={openSongTrimModal}
                           onRemove={removeSequenceItem}
@@ -1511,6 +1558,7 @@ function RosterModal({
                       ))}
                     </div>
                   </div>
+                  </div>
                 </div>
 
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1518,9 +1566,15 @@ function RosterModal({
                     .slice()
                     .sort((left, right) => left.startMs - right.startMs)
                     .map((item) => (
-                      <div
+                      <button
+                        type="button"
                         key={`legend-${item.timelineItemId}`}
-                        className="rounded-2xl border border-white/8 bg-slate-950/45 px-3 py-2 text-sm text-slate-300"
+                        onClick={() => setSelectedTimelineId(item.timelineItemId)}
+                        className={`rounded-2xl border px-3 py-2 text-left text-sm transition ${
+                          selectedTimelineId === item.timelineItemId
+                            ? "border-cyan-200/70 bg-cyan-300/10 text-cyan-50"
+                            : "border-white/8 bg-slate-950/45 text-slate-300"
+                        }`}
                       >
                         <span className="font-semibold text-white">{slotLabel(item.slot)}</span>
                         <span className="ml-2 text-slate-400">
@@ -1529,7 +1583,7 @@ function RosterModal({
                         <span className="ml-2 text-xs uppercase tracking-[0.18em] text-slate-500">
                           {item.startMs / 1000}s
                         </span>
-                      </div>
+                      </button>
                     ))}
                 </div>
               </div>
@@ -1909,7 +1963,7 @@ function ClipMetaCard({ clip, label }) {
   );
 }
 
-function TimelineScale({ durationMs }) {
+function TimelineScale({ durationMs, pixelsPerMs }) {
   const seconds = Math.ceil(durationMs / 1000);
 
   return (
@@ -1918,7 +1972,7 @@ function TimelineScale({ durationMs }) {
         <div
           key={`scale-${second}`}
           className="relative h-full shrink-0"
-          style={{ width: `${1000 * TIMELINE_PIXELS_PER_MS}px` }}
+          style={{ width: `${1000 * pixelsPerMs}px` }}
         >
           <div className="absolute inset-y-0 left-0 w-px bg-white/8" />
           <div className="absolute bottom-0 left-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-500 sm:left-2 sm:text-[10px] sm:tracking-[0.18em]">
@@ -1935,8 +1989,10 @@ function TimelineTrack({
   items,
   draft,
   draggedTimelineId,
+  isCompactTimeline,
   onSongDoubleClick,
   onPointerDown,
+  pixelsPerMs,
   selectedTimelineId,
   onSelect,
 }) {
@@ -1948,7 +2004,7 @@ function TimelineTrack({
       >
         <div
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)]"
-          style={{ backgroundSize: `${TIMELINE_SNAP_MS * TIMELINE_PIXELS_PER_MS}px 100%` }}
+          style={{ backgroundSize: `${TIMELINE_SNAP_MS * pixelsPerMs}px 100%` }}
         />
         {items.map((item) => (
           <TimelineBlock
@@ -1956,9 +2012,11 @@ function TimelineTrack({
             item={item}
             draft={draft}
             isDragging={draggedTimelineId === item.timelineItemId}
+            isCompactTimeline={isCompactTimeline}
             isSelected={selectedTimelineId === item.timelineItemId}
             onSongDoubleClick={onSongDoubleClick}
             onPointerDown={onPointerDown}
+            pixelsPerMs={pixelsPerMs}
             onSelect={onSelect}
           />
         ))}
@@ -1976,19 +2034,21 @@ function TimelineBlock({
   item,
   draft,
   isDragging,
+  isCompactTimeline,
   isSelected,
   onSongDoubleClick,
   onPointerDown,
+  pixelsPerMs,
   onSelect,
 }) {
   const tone = SLOT_TONES[item.slot] ?? SLOT_TONES.announcement;
   const label = getTimelineItemValue(item, draft);
-  const durationWidth = item.durationMs * TIMELINE_PIXELS_PER_MS;
+  const durationWidth = item.durationMs * pixelsPerMs;
   const visualWidth =
     item.slot === "song"
-      ? Math.max(220, Math.min(360, durationWidth * 0.38))
-      : Math.max(42, durationWidth);
-  const left = item.startMs * TIMELINE_PIXELS_PER_MS;
+      ? Math.max(isCompactTimeline ? 88 : 170, Math.min(isCompactTimeline ? 160 : 360, durationWidth))
+      : Math.max(isCompactTimeline ? 30 : 40, durationWidth);
+  const left = item.startMs * pixelsPerMs;
   const isTinyPill = visualWidth < 62;
   const isSmallPill = visualWidth < 92;
   const isMediumPill = visualWidth < 135;
@@ -2027,7 +2087,7 @@ function TimelineBlock({
             ? "z-20 ring-2 ring-cyan-100/80 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]"
             : "z-10 cursor-grab"
       }`}
-      style={{ left: `${left}px`, width: `${Math.max(item.slot === "song" ? 170 : 40, visualWidth)}px` }}
+      style={{ left: `${left}px`, width: `${visualWidth}px` }}
     >
       <div className="min-w-0 flex-1">
         <div
