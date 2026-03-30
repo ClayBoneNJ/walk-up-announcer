@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { WALKUP_TRIM_MS } from "../lib/storage";
+import { MIN_WALKUP_TRIM_MS, WALKUP_TRIM_MS } from "../lib/storage";
 
 function wait(ms, signal) {
   return new Promise((resolve, reject) => {
@@ -205,6 +205,10 @@ export function useAudioEngine({ volume, fadeMs }) {
 
   const scheduleEntryTimeouts = (session, entry) => {
     const trimStartMs = Math.max(0, Number(entry.item.trimStartMs) || 0);
+    const trimEndMs = Math.max(
+      trimStartMs + MIN_WALKUP_TRIM_MS,
+      Number(entry.item.trimEndMs) || (trimStartMs + entry.item.durationMs),
+    );
     const elapsedMs = Math.max(0, entry.audio.currentTime * 1000 - trimStartMs);
     const remainingMs = Math.max(0, entry.item.durationMs - elapsedMs);
 
@@ -212,9 +216,24 @@ export function useAudioEngine({ volume, fadeMs }) {
     clearTimer(entry.fadeTimeoutId);
 
     if (entry.item.slot === "song") {
-      const fadeDelayMs = Math.max(0, remainingMs - WALKUP_SONG_FADE_OUT_MS);
+      const fadeStartMs = Math.min(
+        trimEndMs,
+        Math.max(trimStartMs, Number(entry.item.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - WALKUP_SONG_FADE_OUT_MS)),
+      );
+      const fadeEndMs = Math.min(
+        trimEndMs,
+        Math.max(fadeStartMs, Number(entry.item.fadeOutEndMs) || trimEndMs),
+      );
+      const currentPositionMs = Math.max(trimStartMs, entry.audio.currentTime * 1000);
+      const fadeDelayMs = Math.max(0, fadeStartMs - currentPositionMs);
+      const fadeDurationMs = Math.max(0, fadeEndMs - Math.max(currentPositionMs, fadeStartMs));
+
       entry.fadeTimeoutId = window.setTimeout(async () => {
-        await fadeOutAndStop(entry.audio, session.controller.signal, WALKUP_SONG_FADE_OUT_MS).catch(() => {});
+        await fadeOutAndStop(
+          entry.audio,
+          session.controller.signal,
+          fadeDurationMs || Math.max(0, trimEndMs - fadeStartMs) || STOP_FADE_MS,
+        ).catch(() => {});
         session.activeEntries.delete(entry.item.id);
         markItemComplete(session, entry.item.id);
       }, fadeDelayMs);
@@ -334,7 +353,11 @@ export function useAudioEngine({ volume, fadeMs }) {
           Number.isFinite(item.durationMs) && item.durationMs > 0
             ? item.durationMs
             : item.slot === "song"
-              ? WALKUP_TRIM_MS
+              ? Math.max(
+                  MIN_WALKUP_TRIM_MS,
+                  (Number(item.trimEndMs) || ((Number(item.trimStartMs) || 0) + WALKUP_TRIM_MS)) -
+                    (Number(item.trimStartMs) || 0),
+                )
               : Math.max(400, Math.round((item.duration || 1.2) * 1000)),
       }))
       .sort((left, right) => left.startMs - right.startMs);

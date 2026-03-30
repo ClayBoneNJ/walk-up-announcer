@@ -5,8 +5,9 @@ import {
   BUILT_IN_SONGS,
 } from "./builtInAudio";
 
-const STORAGE_KEY = "walk-up-announcer-state-v9";
-export const WALKUP_TRIM_MS = 11000;
+const STORAGE_KEY = "walk-up-announcer-state-v10";
+export const WALKUP_TRIM_MS = 15000;
+export const MIN_WALKUP_TRIM_MS = 1000;
 
 export const CLIP_GROUP_OPTIONS = [
   { id: "announcements", label: "Announcements" },
@@ -62,7 +63,7 @@ function createTimelineItem(slot, startMs, track = 0, clipId = "") {
 
 export function getClipEffectiveDurationMs(slot, clip = null) {
   if (slot === "song") {
-    return 15000;
+    return getSongClipDurationMs(clip);
   }
 
   if (Number.isFinite(clip?.duration) && clip.duration > 0) {
@@ -141,9 +142,33 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
   }
 
   if (clip.group === "songs") {
+    const totalDurationMs = Number.isFinite(clip.duration) && clip.duration > 0
+      ? Math.round(clip.duration * 1000)
+      : 0;
+    const trimStartMs = Math.max(0, Number(clip.trimStartMs) || 0);
+    const defaultTrimEndMs =
+      totalDurationMs > 0 ? Math.min(totalDurationMs, trimStartMs + WALKUP_TRIM_MS) : trimStartMs + WALKUP_TRIM_MS;
+    const trimEndMs = Math.max(
+      trimStartMs + MIN_WALKUP_TRIM_MS,
+      Number(clip.trimEndMs) || defaultTrimEndMs,
+    );
+    const clampedTrimEndMs = totalDurationMs > 0 ? Math.min(trimEndMs, totalDurationMs) : trimEndMs;
+    const defaultFadeOutStartMs = Math.max(trimStartMs, clampedTrimEndMs - 1200);
+    const fadeOutStartMs = Math.min(
+      clampedTrimEndMs,
+      Math.max(trimStartMs, Number(clip.fadeOutStartMs) || defaultFadeOutStartMs),
+    );
+    const fadeOutEndMs = Math.min(
+      clampedTrimEndMs,
+      Math.max(fadeOutStartMs, Number(clip.fadeOutEndMs) || clampedTrimEndMs),
+    );
+
     return {
       ...clip,
-      trimStartMs: Math.max(0, Number(clip.trimStartMs) || 0),
+      trimStartMs,
+      trimEndMs: clampedTrimEndMs,
+      fadeOutStartMs,
+      fadeOutEndMs,
     };
   }
 
@@ -162,6 +187,7 @@ export function createEmptyState() {
       ...createPlayer(player.name, player.jerseyNumber, player.positionLabel),
       ...player,
     })),
+    publishedRevision: "",
     queue: [],
     settings: {
       volume: 0.82,
@@ -206,6 +232,22 @@ function normalizePlayer(player) {
   };
 }
 
+function normalizeLibraries(libraries = {}) {
+  return {
+    announcements: mergeLibraryClips(
+      BUILT_IN_LIBRARIES.announcements,
+      libraries.announcements,
+    ),
+    positions: mergeLibraryClips(
+      BUILT_IN_LIBRARIES.positions,
+      libraries.positions,
+    ),
+    numbers: mergeLibraryClips(BUILT_IN_LIBRARIES.numbers, libraries.numbers),
+    songs: mergeLibraryClips(BUILT_IN_LIBRARIES.songs, libraries.songs),
+    effects: mergeLibraryClips(BUILT_IN_LIBRARIES.effects, libraries.effects),
+  };
+}
+
 export function loadState() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -219,20 +261,9 @@ export function loadState() {
     return {
       ...empty,
       ...parsed,
-      libraries: {
-        announcements: mergeLibraryClips(
-          BUILT_IN_LIBRARIES.announcements,
-          parsed.libraries?.announcements,
-        ),
-        positions: mergeLibraryClips(
-          BUILT_IN_LIBRARIES.positions,
-          parsed.libraries?.positions,
-        ),
-        numbers: mergeLibraryClips(BUILT_IN_LIBRARIES.numbers, parsed.libraries?.numbers),
-        songs: mergeLibraryClips(BUILT_IN_LIBRARIES.songs, parsed.libraries?.songs),
-        effects: mergeLibraryClips(BUILT_IN_LIBRARIES.effects, parsed.libraries?.effects),
-      },
+      libraries: normalizeLibraries(parsed.libraries ?? {}),
       players: (parsed.players ?? empty.players).map(normalizePlayer),
+      publishedRevision: parsed.publishedRevision ?? "",
       settings: {
         ...empty.settings,
         ...(parsed.settings ?? {}),
@@ -253,6 +284,13 @@ export function saveState(state) {
 }
 
 export function createClipRecord({ file, duration, group, nickname }) {
+  const durationMs = Number.isFinite(duration) && duration > 0 ? Math.round(duration * 1000) : 0;
+  const trimEndMs = group === "songs"
+    ? durationMs > 0
+      ? Math.min(durationMs, WALKUP_TRIM_MS)
+      : WALKUP_TRIM_MS
+    : undefined;
+
   return {
     id: crypto.randomUUID(),
     group,
@@ -262,8 +300,45 @@ export function createClipRecord({ file, duration, group, nickname }) {
     size: file.size,
     duration,
     trimStartMs: group === "songs" ? 0 : undefined,
+    trimEndMs,
+    fadeOutStartMs: group === "songs" ? Math.max(0, (trimEndMs ?? WALKUP_TRIM_MS) - 1200) : undefined,
+    fadeOutEndMs: group === "songs" ? trimEndMs : undefined,
     createdAt: Date.now(),
     dataUrl: null,
+  };
+}
+
+export function getSongClipDurationMs(clip = null) {
+  if (!clip) {
+    return WALKUP_TRIM_MS;
+  }
+
+  const trimStartMs = Math.max(0, Number(clip.trimStartMs) || 0);
+  const trimEndMs = Math.max(trimStartMs + MIN_WALKUP_TRIM_MS, Number(clip.trimEndMs) || (trimStartMs + WALKUP_TRIM_MS));
+  return trimEndMs - trimStartMs;
+}
+
+export function createPublishedTeamSnapshot(state, publishedRevision = Date.now()) {
+  return {
+    schemaVersion: 1,
+    publishedRevision,
+    players: state.players ?? [],
+    libraries: state.libraries ?? BUILT_IN_LIBRARIES,
+  };
+}
+
+export function applyPublishedTeamSnapshot(currentState, snapshot) {
+  if (!snapshot?.publishedRevision) {
+    return currentState;
+  }
+
+  const empty = createEmptyState();
+
+  return {
+    ...currentState,
+    libraries: normalizeLibraries(snapshot.libraries ?? empty.libraries),
+    players: (snapshot.players ?? empty.players).map(normalizePlayer),
+    publishedRevision: snapshot.publishedRevision,
   };
 }
 

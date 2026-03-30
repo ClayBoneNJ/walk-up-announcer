@@ -14,6 +14,8 @@ import {
 import { PlayerManager } from "./components/PlayerManager";
 import { useAudioEngine } from "./hooks/useAudioEngine";
 import {
+  applyPublishedTeamSnapshot,
+  createPublishedTeamSnapshot,
   createEmptyState,
   getFreestyleGroups,
   loadState,
@@ -100,6 +102,34 @@ export default function App() {
     setPersistError(!saveState(appState));
   }, [appState]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch(`${import.meta.env.BASE_URL}published-team-data.json`, { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((snapshot) => {
+        if (cancelled || !snapshot?.publishedRevision) {
+          return;
+        }
+
+        setAppState((current) => {
+          if (
+            current.publishedRevision &&
+            String(current.publishedRevision) >= String(snapshot.publishedRevision)
+          ) {
+            return current;
+          }
+
+          return applyPublishedTeamSnapshot(current, snapshot);
+        });
+      })
+      .catch(() => null);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const { libraries, players, settings } = appState;
   const {
     activePlayback,
@@ -132,6 +162,21 @@ export default function App() {
   );
 
   const updateState = (updater) => setAppState((current) => updater(current));
+
+  const downloadTeamSnapshot = () => {
+    const snapshot = createPublishedTeamSnapshot(appState);
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], {
+      type: "application/json",
+    });
+    const objectUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = "walk-up-team-snapshot.json";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(objectUrl);
+  };
 
   const addPlayer = (player) => {
     updateState((current) => ({
@@ -456,6 +501,7 @@ export default function App() {
               playbackProgress={playbackProgress}
               playbackTimeMs={playbackTimeMs}
               playbackTotalMs={playbackTotalMs}
+              onDownloadTeamSnapshot={downloadTeamSnapshot}
               editingPlayerId={editingPlayerId}
               onEditingPlayerHandled={() => setEditingPlayerId("")}
               editingReturnTab={editingReturnTab}

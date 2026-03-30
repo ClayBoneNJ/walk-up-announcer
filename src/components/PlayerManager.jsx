@@ -9,6 +9,8 @@ import {
   formatDuration,
   getClipEffectiveDurationMs,
   getPlayerStatus,
+  getSongClipDurationMs,
+  MIN_WALKUP_TRIM_MS,
   PLAYER_SEQUENCE_OPTIONS,
   resolvePlayerSequence,
   TIMELINE_SNAP_MS,
@@ -146,10 +148,6 @@ function getDefaultTrackForSlot(slot) {
 }
 
 function getTimelineItemDurationMs(item, draft, libraries, durationLookup = {}) {
-  if (item.slot === "song") {
-    return WALKUP_TRIM_MS;
-  }
-
   const clip = getDraftClipForItem(item, draft, libraries);
   const clipKey = clip?.dataUrl ?? clip?.src ?? clip?.id ?? "";
   const measuredDurationMs = clipKey ? durationLookup[clipKey] : null;
@@ -283,6 +281,7 @@ export function PlayerManager({
   playbackProgress,
   playbackTimeMs,
   playbackTotalMs,
+  onDownloadTeamSnapshot,
   editingPlayerId,
   onEditingPlayerHandled,
   editingReturnTab,
@@ -389,6 +388,22 @@ export function PlayerManager({
               {tab.label}
             </button>
           ))}
+        </div>
+      </section>
+
+      <section className="glass-panel rounded-[1.6rem] border border-white/8 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+              Team Sync
+            </div>
+            <div className="mt-1 text-sm text-slate-400">
+              App and code changes can ship anytime. Team data only changes on other devices when you download a snapshot and tell me to sync it.
+            </div>
+          </div>
+          <button type="button" onClick={onDownloadTeamSnapshot} className="secondary-button">
+            Download Team Snapshot
+          </button>
         </div>
       </section>
 
@@ -633,6 +648,9 @@ function RosterModal({
   const [sequenceAddValue, setSequenceAddValue] = useState("announcement");
   const [showSequenceAddPicker, setShowSequenceAddPicker] = useState(false);
   const [songTrimStartMs, setSongTrimStartMs] = useState(0);
+  const [songTrimEndMs, setSongTrimEndMs] = useState(WALKUP_TRIM_MS);
+  const [songFadeStartMs, setSongFadeStartMs] = useState(Math.max(0, WALKUP_TRIM_MS - 1200));
+  const [songFadeEndMs, setSongFadeEndMs] = useState(WALKUP_TRIM_MS);
   const [showSongTrimModal, setShowSongTrimModal] = useState(false);
   const [timelineTouched, setTimelineTouched] = useState(false);
   const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
@@ -698,9 +716,7 @@ function RosterModal({
         const clipKey = item.dataUrl ?? item.src ?? item.id;
         const measuredDurationMs = clipDurationLookup[clipKey];
         const durationMs =
-          item.slot === "song"
-            ? WALKUP_TRIM_MS
-            : Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
+          Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
             ? measuredDurationMs
             : item.durationMs;
 
@@ -809,7 +825,12 @@ function RosterModal({
       ? measuredSongClipDurationMs
       : Math.round((draft.songClip?.duration || 0) * 1000),
   );
-  const maxSongTrimStartMs = Math.max(0, songClipDurationMs - WALKUP_TRIM_MS);
+  const draftSongTrimStartMs = Math.max(0, Number(draft.songClip?.trimStartMs) || 0);
+  const draftSongTrimEndMs = Math.max(
+    draftSongTrimStartMs + MIN_WALKUP_TRIM_MS,
+    Number(draft.songClip?.trimEndMs) || Math.min(songClipDurationMs || WALKUP_TRIM_MS, draftSongTrimStartMs + WALKUP_TRIM_MS),
+  );
+  const maxSongTrimStartMs = Math.max(0, songClipDurationMs - MIN_WALKUP_TRIM_MS);
 
   useEffect(() => {
     const updateTimelineViewportWidth = () => {
@@ -894,10 +915,19 @@ function RosterModal({
         group === "songs"
           ? {
               ...clip,
-              trimStartMs: Math.min(
-                Math.max(0, Number(current[key]?.trimStartMs) || 0),
-                Math.max(0, Math.round((duration || 0) * 1000) - WALKUP_TRIM_MS),
-              ),
+              trimStartMs: 0,
+              trimEndMs:
+                Number.isFinite(duration) && duration > 0
+                  ? Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS)
+                  : WALKUP_TRIM_MS,
+              fadeOutStartMs:
+                Number.isFinite(duration) && duration > 0
+                  ? Math.max(0, Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS) - 1200)
+                  : Math.max(0, WALKUP_TRIM_MS - 1200),
+              fadeOutEndMs:
+                Number.isFinite(duration) && duration > 0
+                  ? Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS)
+                  : WALKUP_TRIM_MS,
             }
           : clip,
     }));
@@ -1016,12 +1046,22 @@ function RosterModal({
     }
 
     setSongTrimStartMs(
+      Math.min(draftSongTrimStartMs, maxSongTrimStartMs),
+    );
+    setSongTrimEndMs(Math.min(Math.max(draftSongTrimEndMs, draftSongTrimStartMs + MIN_WALKUP_TRIM_MS), songClipDurationMs || draftSongTrimEndMs));
+    setSongFadeStartMs(
       Math.min(
-        Math.max(0, Number(draft.songClip?.trimStartMs) || 0),
-        maxSongTrimStartMs,
+        Math.max(draftSongTrimStartMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
+        draftSongTrimEndMs,
       ),
     );
-  }, [showSongTrimModal, draft.songClip?.trimStartMs, maxSongTrimStartMs]);
+    setSongFadeEndMs(
+      Math.min(
+        Math.max(Number(draft.songClip?.fadeOutEndMs) || draftSongTrimEndMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
+        draftSongTrimEndMs,
+      ),
+    );
+  }, [showSongTrimModal, draft.songClip?.trimStartMs, draft.songClip?.trimEndMs, draft.songClip?.fadeOutStartMs, draft.songClip?.fadeOutEndMs, draftSongTrimStartMs, draftSongTrimEndMs, maxSongTrimStartMs, songClipDurationMs]);
 
   const openSongTrimModal = () => {
     if (!draft.songClip) {
@@ -1029,24 +1069,48 @@ function RosterModal({
     }
 
     setSongTrimStartMs(
+      Math.min(draftSongTrimStartMs, maxSongTrimStartMs),
+    );
+    setSongTrimEndMs(draftSongTrimEndMs);
+    setSongFadeStartMs(
       Math.min(
-        Math.max(0, Number(draft.songClip?.trimStartMs) || 0),
-        maxSongTrimStartMs,
+        Math.max(draftSongTrimStartMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
+        draftSongTrimEndMs,
+      ),
+    );
+    setSongFadeEndMs(
+      Math.min(
+        Math.max(Number(draft.songClip?.fadeOutEndMs) || draftSongTrimEndMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
+        draftSongTrimEndMs,
       ),
     );
     setShowSongTrimModal(true);
   };
 
   const saveSongTrim = () => {
+    const nextTrimStartMs = Math.min(Math.max(0, Number(songTrimStartMs) || 0), maxSongTrimStartMs);
+    const nextTrimEndMs = Math.min(
+      Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, Number(songTrimEndMs) || (nextTrimStartMs + WALKUP_TRIM_MS)),
+      Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, songClipDurationMs || (nextTrimStartMs + WALKUP_TRIM_MS)),
+    );
+    const nextFadeStartMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextTrimStartMs, Number(songFadeStartMs) || Math.max(nextTrimStartMs, nextTrimEndMs - 1200)),
+    );
+    const nextFadeEndMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextFadeStartMs, Number(songFadeEndMs) || nextTrimEndMs),
+    );
+
     setDraft((current) => ({
       ...current,
       songClip: current.songClip
         ? {
             ...current.songClip,
-            trimStartMs: Math.min(
-              Math.max(0, Number(songTrimStartMs) || 0),
-              Math.max(0, Math.round((current.songClip.duration || 0) * 1000) - WALKUP_TRIM_MS),
-            ),
+            trimStartMs: nextTrimStartMs,
+            trimEndMs: nextTrimEndMs,
+            fadeOutStartMs: nextFadeStartMs,
+            fadeOutEndMs: nextFadeEndMs,
           }
         : current.songClip,
     }));
@@ -1062,8 +1126,14 @@ function RosterModal({
       clip: {
         ...draft.songClip,
         slot: "song",
-        durationMs: WALKUP_TRIM_MS,
+        durationMs: Math.max(MIN_WALKUP_TRIM_MS, songTrimEndMs - songTrimStartMs),
         trimStartMs: Math.min(Math.max(0, songTrimStartMs), maxSongTrimStartMs),
+        trimEndMs: Math.max(songTrimStartMs + MIN_WALKUP_TRIM_MS, songTrimEndMs),
+        fadeOutStartMs: Math.max(songTrimStartMs, Math.min(songFadeStartMs, songTrimEndMs)),
+        fadeOutEndMs: Math.max(
+          Math.max(songTrimStartMs, Math.min(songFadeStartMs, songTrimEndMs)),
+          Math.min(songFadeEndMs, songTrimEndMs),
+        ),
         startMs: 0,
         playerId: draft.id ?? "draft-player",
         playerName: draft.name || draft.songClip.nickname,
@@ -1625,8 +1695,14 @@ function RosterModal({
           clip={draft.songClip}
           clipDurationMs={songClipDurationMs}
           trimStartMs={songTrimStartMs}
+          trimEndMs={songTrimEndMs}
+          fadeOutStartMs={songFadeStartMs}
+          fadeOutEndMs={songFadeEndMs}
           maxTrimStartMs={maxSongTrimStartMs}
-          onChange={setSongTrimStartMs}
+          onStartChange={setSongTrimStartMs}
+          onEndChange={setSongTrimEndMs}
+          onFadeStartChange={setSongFadeStartMs}
+          onFadeEndChange={setSongFadeEndMs}
           onClose={() => setShowSongTrimModal(false)}
           onSave={saveSongTrim}
           onPreview={previewSongTrim}
@@ -2141,21 +2217,36 @@ function SongTrimModal({
   clip,
   clipDurationMs,
   trimStartMs,
+  trimEndMs,
+  fadeOutStartMs,
+  fadeOutEndMs,
   maxTrimStartMs,
-  onChange,
+  onStartChange,
+  onEndChange,
+  onFadeStartChange,
+  onFadeEndChange,
   onClose,
   onSave,
   onPreview,
 }) {
-  const windowEndMs = Math.min(
-    Math.max(0, Number(trimStartMs) || 0) + WALKUP_TRIM_MS,
-    Math.max(WALKUP_TRIM_MS, clipDurationMs || Math.round((clip?.duration || 0) * 1000)),
-  );
   const totalDurationMs = Math.max(
     0,
     clipDurationMs || Math.round((clip?.duration || 0) * 1000),
   );
-  const canTrim = totalDurationMs > WALKUP_TRIM_MS;
+  const safeTrimStartMs = Math.max(0, Number(trimStartMs) || 0);
+  const safeTrimEndMs = Math.min(
+    Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, Number(trimEndMs) || (safeTrimStartMs + WALKUP_TRIM_MS)),
+    Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs || (safeTrimStartMs + WALKUP_TRIM_MS)),
+  );
+  const safeFadeStartMs = Math.min(
+    safeTrimEndMs,
+    Math.max(safeTrimStartMs, Number(fadeOutStartMs) || Math.max(safeTrimStartMs, safeTrimEndMs - 1200)),
+  );
+  const safeFadeEndMs = Math.min(
+    safeTrimEndMs,
+    Math.max(safeFadeStartMs, Number(fadeOutEndMs) || safeTrimEndMs),
+  );
+  const canTrim = totalDurationMs > MIN_WALKUP_TRIM_MS;
 
   return (
     <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur">
@@ -2166,10 +2257,10 @@ function SongTrimModal({
               Walk-Up Trim
             </div>
             <h3 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
-              11 Second Song Window
+              15 Second Default Window
             </h3>
             <p className="mt-2 text-sm text-slate-300">
-              Double-clicking the song pill opens this editor. Move the 11-second window across the original uploaded clip.
+              Double-clicking the song pill opens this editor. Keep the full song, then set custom start, end, and fade-out points for the playback window.
             </p>
           </div>
           <button type="button" onClick={onClose} className="secondary-button">
@@ -2180,29 +2271,92 @@ function SongTrimModal({
         <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-            {clip?.fileName} • original {formatDuration(totalDurationMs / 1000)} • playing {formatMsTimestamp(trimStartMs)} to {formatMsTimestamp(windowEndMs)}
+            {clip?.fileName} • original {formatDuration(totalDurationMs / 1000)} • playing {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 space-y-4">
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+                <span>Window Start</span>
+                <span>{formatMsTimestamp(safeTrimStartMs)}</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={Math.max(0, totalDurationMs - MIN_WALKUP_TRIM_MS)}
+                step="100"
+                value={Math.min(safeTrimStartMs, Math.max(0, totalDurationMs - MIN_WALKUP_TRIM_MS))}
+                onChange={(event) => onStartChange(Number(event.target.value))}
+                disabled={!canTrim}
+                className="w-full accent-cyan-300"
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+                <span>Window End</span>
+                <span>{formatMsTimestamp(safeTrimEndMs)}</span>
+              </div>
+              <input
+                type="range"
+                min={safeTrimStartMs + MIN_WALKUP_TRIM_MS}
+                max={Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs)}
+                step="100"
+                value={safeTrimEndMs}
+                onChange={(event) => onEndChange(Number(event.target.value))}
+                disabled={!canTrim}
+                className="w-full accent-cyan-300"
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+                <span>Fade Start</span>
+                <span>{formatMsTimestamp(safeFadeStartMs)}</span>
+              </div>
+              <input
+                type="range"
+                min={safeTrimStartMs}
+                max={safeTrimEndMs}
+                step="100"
+                value={safeFadeStartMs}
+                onChange={(event) => onFadeStartChange(Number(event.target.value))}
+                disabled={!canTrim}
+                className="w-full accent-cyan-300"
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+                <span>Fade End</span>
+                <span>{formatMsTimestamp(safeFadeEndMs)}</span>
+              </div>
+              <input
+                type="range"
+                min={safeFadeStartMs}
+                max={safeTrimEndMs}
+                step="100"
+                value={safeFadeEndMs}
+                onChange={(event) => onFadeEndChange(Number(event.target.value))}
+                disabled={!canTrim}
+                className="w-full accent-cyan-300"
+              />
+            </div>
+
             <input
-              type="range"
-              min="0"
-              max={maxTrimStartMs}
-              step="100"
-              value={Math.min(trimStartMs, maxTrimStartMs)}
-              onChange={(event) => onChange(Number(event.target.value))}
-              disabled={!canTrim}
-              className="w-full accent-cyan-300"
+              readOnly
+              value=""
+              className="hidden"
             />
-            <div className="mt-2 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
-              <span>Start {formatMsTimestamp(trimStartMs)}</span>
-              <span>End {formatMsTimestamp(windowEndMs)}</span>
+            <div className="flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+              <span>Window {formatDuration((safeTrimEndMs - safeTrimStartMs) / 1000)}</span>
+              <span>Fade {formatDuration((safeFadeEndMs - safeFadeStartMs) / 1000)}</span>
             </div>
           </div>
 
           {!canTrim ? (
             <div className="mt-3 rounded-2xl border border-white/8 bg-slate-900/80 px-4 py-3 text-sm text-slate-400">
-              This clip is 11 seconds or shorter, so the full song will play as-is.
+              This clip is very short, so the available trim window is limited by the original file length.
             </div>
           ) : null}
         </div>
