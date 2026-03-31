@@ -62,6 +62,24 @@ async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
   audio.load();
 }
 
+async function fadeVolume(audio, signal, fromVolume, toVolume, durationMs) {
+  if (!audio || durationMs <= 0) {
+    audio.volume = toVolume;
+    return;
+  }
+
+  const steps = 8;
+  for (let index = 1; index <= steps; index += 1) {
+    if (signal?.aborted) {
+      return;
+    }
+
+    const progress = index / steps;
+    audio.volume = fromVolume + (toVolume - fromVolume) * progress;
+    await wait(durationMs / steps, signal).catch(() => {});
+  }
+}
+
 function clearTimer(timerId) {
   if (timerId) {
     window.clearTimeout(timerId);
@@ -292,7 +310,31 @@ export function useAudioEngine({ volume, fadeMs }) {
       return;
     }
 
-    if (fadeMs > 0) {
+    if (item.slot === "song") {
+      const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
+      const trimEndMs = Math.max(
+        trimStartMs + MIN_WALKUP_TRIM_MS,
+        Number(item.trimEndMs) || (trimStartMs + item.durationMs),
+      );
+      const fadeInEndMs = Math.min(
+        trimEndMs,
+        Math.max(trimStartMs, Number(item.fadeInEndMs) || Math.min(trimEndMs, trimStartMs + 800)),
+      );
+      const currentPositionMs = Math.max(trimStartMs, audio.currentTime * 1000);
+
+      if (fadeInEndMs > trimStartMs && currentPositionMs < fadeInEndMs) {
+        const fadeInDurationMs = Math.max(0, fadeInEndMs - currentPositionMs);
+        const startingVolume =
+          fadeInEndMs === trimStartMs
+            ? volume
+            : volume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
+
+        audio.volume = Math.max(0, Math.min(volume, startingVolume));
+        await fadeVolume(audio, session.controller.signal, audio.volume, volume, fadeInDurationMs);
+      } else {
+        audio.volume = volume;
+      }
+    } else if (fadeMs > 0) {
       const steps = 8;
       for (let index = 1; index <= steps; index += 1) {
         if (session.controller.signal.aborted || session.paused) {

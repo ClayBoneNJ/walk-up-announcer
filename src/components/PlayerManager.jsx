@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Play, Plus, Trash2, Upload } from "lucide-react";
-import { getAudioDuration } from "../lib/audio";
+import { getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
 import {
   CLIP_GROUP_OPTIONS,
   createClipRecord,
@@ -184,17 +184,6 @@ function getNextTimelineStartMs(
   return furthestEndMs + TIMELINE_SNAP_MS;
 }
 
-function getPlayheadMsFromPointer(event, scrollContainer, durationMs, pixelsPerMs) {
-  if (!scrollContainer) {
-    return 0;
-  }
-
-  const rect = scrollContainer.getBoundingClientRect();
-  const contentX = event.clientX - rect.left + scrollContainer.scrollLeft;
-  const rawMs = contentX / pixelsPerMs;
-  return Math.max(0, Math.min(durationMs, Math.round(rawMs / TIMELINE_SNAP_MS) * TIMELINE_SNAP_MS));
-}
-
 function getDraftClipForItem(item, draft, libraries) {
   switch (item.slot) {
     case "announcement":
@@ -277,10 +266,6 @@ export function PlayerManager({
   onPlayPlayer,
   onPreviewClip,
   onPreviewSequence,
-  activePlayback,
-  playbackProgress,
-  playbackTimeMs,
-  playbackTotalMs,
   onDownloadTeamSnapshot,
   editingPlayerId,
   onEditingPlayerHandled,
@@ -580,10 +565,6 @@ export function PlayerManager({
           libraries={libraries}
           onPreviewClip={onPreviewClip}
           onPreviewSequence={onPreviewSequence}
-          activePlayback={activePlayback}
-          playbackProgress={playbackProgress}
-          playbackTimeMs={playbackTimeMs}
-          playbackTotalMs={playbackTotalMs}
           onClose={closeRosterModal}
           onSubmit={handlePlayerSubmit}
         />
@@ -630,10 +611,6 @@ function RosterModal({
   libraries,
   onPreviewClip,
   onPreviewSequence,
-  activePlayback,
-  playbackProgress,
-  playbackTimeMs,
-  playbackTotalMs,
   onClose,
   onSubmit,
 }) {
@@ -642,15 +619,14 @@ function RosterModal({
   const dragStateRef = useRef(null);
   const [draggedTimelineId, setDraggedTimelineId] = useState("");
   const [selectedTimelineId, setSelectedTimelineId] = useState("");
-  const [playheadMs, setPlayheadMs] = useState(0);
-  const [previewPlayheadMs, setPreviewPlayheadMs] = useState(null);
   const [clipDurationLookup, setClipDurationLookup] = useState({});
   const [sequenceAddValue, setSequenceAddValue] = useState("announcement");
   const [showSequenceAddPicker, setShowSequenceAddPicker] = useState(false);
   const [songTrimStartMs, setSongTrimStartMs] = useState(0);
   const [songTrimEndMs, setSongTrimEndMs] = useState(WALKUP_TRIM_MS);
-  const [songFadeStartMs, setSongFadeStartMs] = useState(Math.max(0, WALKUP_TRIM_MS - 1200));
-  const [songFadeEndMs, setSongFadeEndMs] = useState(WALKUP_TRIM_MS);
+  const [songFadeInEndMs, setSongFadeInEndMs] = useState(Math.min(WALKUP_TRIM_MS, 800));
+  const [songFadeOutStartMs, setSongFadeOutStartMs] = useState(Math.max(0, WALKUP_TRIM_MS - 1200));
+  const [songFadeOutEndMs, setSongFadeOutEndMs] = useState(WALKUP_TRIM_MS);
   const [showSongTrimModal, setShowSongTrimModal] = useState(false);
   const [timelineTouched, setTimelineTouched] = useState(false);
   const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
@@ -808,9 +784,6 @@ function RosterModal({
     0.01,
     timelineWidth / Math.max(timelineDurationMs, 1),
   );
-  const isDraftSequencePlaying =
-    activePlayback?.type === "player" && activePlayback?.playerId === "draft-player";
-  const renderedPlayheadMs = previewPlayheadMs ?? playheadMs;
   const selectedTimelineItem =
     measuredTimeline.find((item) => item.timelineItemId === selectedTimelineId) ?? null;
   const selectedAnnouncementClipId =
@@ -829,6 +802,10 @@ function RosterModal({
   const draftSongTrimEndMs = Math.max(
     draftSongTrimStartMs + MIN_WALKUP_TRIM_MS,
     Number(draft.songClip?.trimEndMs) || Math.min(songClipDurationMs || WALKUP_TRIM_MS, draftSongTrimStartMs + WALKUP_TRIM_MS),
+  );
+  const draftSongFadeInEndMs = Math.min(
+    draftSongTrimEndMs,
+    Math.max(draftSongTrimStartMs, Number(draft.songClip?.fadeInEndMs) || Math.min(draftSongTrimEndMs, draftSongTrimStartMs + 800)),
   );
   const maxSongTrimStartMs = Math.max(0, songClipDurationMs - MIN_WALKUP_TRIM_MS);
 
@@ -920,6 +897,10 @@ function RosterModal({
                 Number.isFinite(duration) && duration > 0
                   ? Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS)
                   : WALKUP_TRIM_MS,
+              fadeInEndMs:
+                Number.isFinite(duration) && duration > 0
+                  ? Math.min(Math.round(duration * 1000), 800)
+                  : 800,
               fadeOutStartMs:
                 Number.isFinite(duration) && duration > 0
                   ? Math.max(0, Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS) - 1200)
@@ -1049,19 +1030,25 @@ function RosterModal({
       Math.min(draftSongTrimStartMs, maxSongTrimStartMs),
     );
     setSongTrimEndMs(Math.min(Math.max(draftSongTrimEndMs, draftSongTrimStartMs + MIN_WALKUP_TRIM_MS), songClipDurationMs || draftSongTrimEndMs));
-    setSongFadeStartMs(
+    setSongFadeInEndMs(
+      Math.min(
+        draftSongTrimEndMs,
+        Math.max(draftSongTrimStartMs, draftSongFadeInEndMs),
+      ),
+    );
+    setSongFadeOutStartMs(
       Math.min(
         Math.max(draftSongTrimStartMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
         draftSongTrimEndMs,
       ),
     );
-    setSongFadeEndMs(
+    setSongFadeOutEndMs(
       Math.min(
         Math.max(Number(draft.songClip?.fadeOutEndMs) || draftSongTrimEndMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
         draftSongTrimEndMs,
       ),
     );
-  }, [showSongTrimModal, draft.songClip?.trimStartMs, draft.songClip?.trimEndMs, draft.songClip?.fadeOutStartMs, draft.songClip?.fadeOutEndMs, draftSongTrimStartMs, draftSongTrimEndMs, maxSongTrimStartMs, songClipDurationMs]);
+  }, [showSongTrimModal, draft.songClip?.trimStartMs, draft.songClip?.trimEndMs, draft.songClip?.fadeInEndMs, draft.songClip?.fadeOutStartMs, draft.songClip?.fadeOutEndMs, draftSongTrimStartMs, draftSongTrimEndMs, draftSongFadeInEndMs, maxSongTrimStartMs, songClipDurationMs]);
 
   const openSongTrimModal = () => {
     if (!draft.songClip) {
@@ -1072,13 +1059,19 @@ function RosterModal({
       Math.min(draftSongTrimStartMs, maxSongTrimStartMs),
     );
     setSongTrimEndMs(draftSongTrimEndMs);
-    setSongFadeStartMs(
+    setSongFadeInEndMs(
+      Math.min(
+        draftSongTrimEndMs,
+        Math.max(draftSongTrimStartMs, draftSongFadeInEndMs),
+      ),
+    );
+    setSongFadeOutStartMs(
       Math.min(
         Math.max(draftSongTrimStartMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
         draftSongTrimEndMs,
       ),
     );
-    setSongFadeEndMs(
+    setSongFadeOutEndMs(
       Math.min(
         Math.max(Number(draft.songClip?.fadeOutEndMs) || draftSongTrimEndMs, Number(draft.songClip?.fadeOutStartMs) || Math.max(draftSongTrimStartMs, draftSongTrimEndMs - 1200)),
         draftSongTrimEndMs,
@@ -1093,13 +1086,17 @@ function RosterModal({
       Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, Number(songTrimEndMs) || (nextTrimStartMs + WALKUP_TRIM_MS)),
       Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, songClipDurationMs || (nextTrimStartMs + WALKUP_TRIM_MS)),
     );
-    const nextFadeStartMs = Math.min(
+    const nextFadeInEndMs = Math.min(
       nextTrimEndMs,
-      Math.max(nextTrimStartMs, Number(songFadeStartMs) || Math.max(nextTrimStartMs, nextTrimEndMs - 1200)),
+      Math.max(nextTrimStartMs, Number(songFadeInEndMs) || Math.min(nextTrimEndMs, nextTrimStartMs + 800)),
     );
-    const nextFadeEndMs = Math.min(
+    const nextFadeOutStartMs = Math.min(
       nextTrimEndMs,
-      Math.max(nextFadeStartMs, Number(songFadeEndMs) || nextTrimEndMs),
+      Math.max(nextTrimStartMs, Number(songFadeOutStartMs) || Math.max(nextTrimStartMs, nextTrimEndMs - 1200)),
+    );
+    const nextFadeOutEndMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextFadeOutStartMs, Number(songFadeOutEndMs) || nextTrimEndMs),
     );
 
     setDraft((current) => ({
@@ -1109,8 +1106,9 @@ function RosterModal({
             ...current.songClip,
             trimStartMs: nextTrimStartMs,
             trimEndMs: nextTrimEndMs,
-            fadeOutStartMs: nextFadeStartMs,
-            fadeOutEndMs: nextFadeEndMs,
+            fadeInEndMs: nextFadeInEndMs,
+            fadeOutStartMs: nextFadeOutStartMs,
+            fadeOutEndMs: nextFadeOutEndMs,
           }
         : current.songClip,
     }));
@@ -1129,10 +1127,11 @@ function RosterModal({
         durationMs: Math.max(MIN_WALKUP_TRIM_MS, songTrimEndMs - songTrimStartMs),
         trimStartMs: Math.min(Math.max(0, songTrimStartMs), maxSongTrimStartMs),
         trimEndMs: Math.max(songTrimStartMs + MIN_WALKUP_TRIM_MS, songTrimEndMs),
-        fadeOutStartMs: Math.max(songTrimStartMs, Math.min(songFadeStartMs, songTrimEndMs)),
+        fadeInEndMs: Math.max(songTrimStartMs, Math.min(songFadeInEndMs, songTrimEndMs)),
+        fadeOutStartMs: Math.max(songTrimStartMs, Math.min(songFadeOutStartMs, songTrimEndMs)),
         fadeOutEndMs: Math.max(
-          Math.max(songTrimStartMs, Math.min(songFadeStartMs, songTrimEndMs)),
-          Math.min(songFadeEndMs, songTrimEndMs),
+          Math.max(songTrimStartMs, Math.min(songFadeOutStartMs, songTrimEndMs)),
+          Math.min(songFadeOutEndMs, songTrimEndMs),
         ),
         startMs: 0,
         playerId: draft.id ?? "draft-player",
@@ -1198,7 +1197,6 @@ function RosterModal({
     onPreviewSequence?.({
       items: measuredTimeline,
       playerName: draft.name || "Draft Sequence",
-      startOffsetMs: playheadMs,
     });
   };
 
@@ -1206,18 +1204,6 @@ function RosterModal({
     const handlePointerMove = (event) => {
       const dragState = dragStateRef.current;
       if (!dragState) {
-        return;
-      }
-
-      if (dragState.kind === "playhead") {
-        setPlayheadMs(
-          getPlayheadMsFromPointer(
-            event,
-            timelineScrollRef.current,
-            timelineDurationMs,
-            timelinePixelsPerMs,
-          ),
-        );
         return;
       }
 
@@ -1252,28 +1238,7 @@ function RosterModal({
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [timelineDurationMs, timelinePixelsPerMs]);
-
-  useEffect(() => {
-    if (isDraftSequencePlaying) {
-      setPreviewPlayheadMs(
-        Math.max(
-          0,
-          Math.min(
-            timelineDurationMs,
-            Number.isFinite(playbackTimeMs)
-              ? playbackTimeMs
-              : playbackTotalMs > 0
-                ? playbackProgress * playbackTotalMs
-                : 0,
-          ),
-        ),
-      );
-      return;
-    }
-
-    setPreviewPlayheadMs(null);
-  }, [isDraftSequencePlaying, playbackProgress, playbackTimeMs, playbackTotalMs, timelineDurationMs]);
+  }, [timelinePixelsPerMs]);
 
   useEffect(() => {
     if (timelineTouched || !measuredTimeline.length) {
@@ -1317,23 +1282,6 @@ function RosterModal({
     };
     setDraggedTimelineId(item.timelineItemId);
     setSelectedTimelineId(item.timelineItemId);
-  };
-
-  const movePlayheadToPointer = (event) => {
-    setPlayheadMs(
-      getPlayheadMsFromPointer(
-        event,
-        timelineScrollRef.current,
-        timelineDurationMs,
-        timelinePixelsPerMs,
-      ),
-    );
-  };
-
-  const startPlayheadDrag = (event) => {
-    event.stopPropagation();
-    dragStateRef.current = { kind: "playhead" };
-    movePlayheadToPointer(event);
   };
 
   return (
@@ -1455,14 +1403,6 @@ function RosterModal({
                       </select>
                     </div>
                   ) : null}
-                  <button
-                    type="button"
-                    onClick={() => setPlayheadMs(0)}
-                    className="secondary-button px-3"
-                    title="Back to start"
-                  >
-                    |&lt;
-                  </button>
                   <button
                     type="button"
                     onClick={previewDraftSequence}
@@ -1618,19 +1558,8 @@ function RosterModal({
                   <div
                     className="relative"
                     style={{ width: `${timelineWidth}px`, maxWidth: "100%" }}
-                    onPointerDown={(event) => {
-                      if (event.target.closest("[data-timeline-block='true']") || event.target.closest("[data-playhead='true']")) {
-                        return;
-                      }
-                      movePlayheadToPointer(event);
-                    }}
                   >
                     <TimelineScale durationMs={timelineDurationMs} pixelsPerMs={timelinePixelsPerMs} />
-                    <TimelinePlayhead
-                      left={renderedPlayheadMs * timelinePixelsPerMs}
-                      onPointerDown={startPlayheadDrag}
-                      isPlaying={isDraftSequencePlaying}
-                    />
                     <div className="space-y-2">
                       {TRACK_CONFIG.map((track) => (
                         <TimelineTrack
@@ -1696,13 +1625,15 @@ function RosterModal({
           clipDurationMs={songClipDurationMs}
           trimStartMs={songTrimStartMs}
           trimEndMs={songTrimEndMs}
-          fadeOutStartMs={songFadeStartMs}
-          fadeOutEndMs={songFadeEndMs}
+          fadeInEndMs={songFadeInEndMs}
+          fadeOutStartMs={songFadeOutStartMs}
+          fadeOutEndMs={songFadeOutEndMs}
           maxTrimStartMs={maxSongTrimStartMs}
           onStartChange={setSongTrimStartMs}
           onEndChange={setSongTrimEndMs}
-          onFadeStartChange={setSongFadeStartMs}
-          onFadeEndChange={setSongFadeEndMs}
+          onFadeInEndChange={setSongFadeInEndMs}
+          onFadeOutStartChange={setSongFadeOutStartMs}
+          onFadeOutEndChange={setSongFadeOutEndMs}
           onClose={() => setShowSongTrimModal(false)}
           onSave={saveSongTrim}
           onPreview={previewSongTrim}
@@ -2213,7 +2144,7 @@ function TimelineBlock({
   );
 }
 
-function SongTrimModal({
+function LegacySongTrimModal({
   clip,
   clipDurationMs,
   trimStartMs,
@@ -2375,6 +2306,342 @@ function SongTrimModal({
   );
 }
 
+function SongTrimModal({
+  clip,
+  clipDurationMs,
+  trimStartMs,
+  trimEndMs,
+  fadeInEndMs,
+  fadeOutStartMs,
+  fadeOutEndMs,
+  maxTrimStartMs,
+  onStartChange,
+  onEndChange,
+  onFadeInEndChange,
+  onFadeOutStartChange,
+  onFadeOutEndChange,
+  onClose,
+  onSave,
+  onPreview,
+}) {
+  const editorRef = useRef(null);
+  const dragHandleRef = useRef(null);
+  const [waveformPeaks, setWaveformPeaks] = useState([]);
+  const totalDurationMs = Math.max(0, clipDurationMs || Math.round((clip?.duration || 0) * 1000));
+  const safeTrimStartMs = Math.max(0, Number(trimStartMs) || 0);
+  const safeTrimEndMs = Math.min(
+    Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, Number(trimEndMs) || (safeTrimStartMs + WALKUP_TRIM_MS)),
+    Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs || (safeTrimStartMs + WALKUP_TRIM_MS)),
+  );
+  const safeFadeInEndMs = Math.min(
+    safeTrimEndMs,
+    Math.max(safeTrimStartMs, Number(fadeInEndMs) || Math.min(safeTrimEndMs, safeTrimStartMs + 800)),
+  );
+  const safeFadeStartMs = Math.min(
+    safeTrimEndMs,
+    Math.max(safeTrimStartMs, Number(fadeOutStartMs) || Math.max(safeTrimStartMs, safeTrimEndMs - 1200)),
+  );
+  const safeFadeEndMs = Math.min(
+    totalDurationMs || safeTrimEndMs,
+    Math.max(safeFadeStartMs, Number(fadeOutEndMs) || safeTrimEndMs),
+  );
+  const canTrim = totalDurationMs > MIN_WALKUP_TRIM_MS;
+  const editorDurationMs = Math.max(totalDurationMs || 0, safeTrimEndMs, WALKUP_TRIM_MS);
+
+  useEffect(() => {
+    let cancelled = false;
+    const clipSource = clip?.dataUrl ?? clip?.src;
+
+    if (!clipSource) {
+      setWaveformPeaks([]);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    getAudioWaveformPeaks(clipSource, 240)
+      .then((peaks) => {
+        if (!cancelled) {
+          setWaveformPeaks(peaks);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWaveformPeaks([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clip]);
+
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const activeHandle = dragHandleRef.current;
+      if (!activeHandle || !editorRef.current) {
+        return;
+      }
+
+      const rect = editorRef.current.getBoundingClientRect();
+      const relativeX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+      const nextMs =
+        Math.round(((relativeX / Math.max(1, rect.width)) * editorDurationMs) / 100) * 100;
+
+      if (activeHandle === "trimStart") {
+        const clamped = Math.min(maxTrimStartMs, Math.max(0, nextMs));
+        onStartChange(clamped);
+        if (safeFadeInEndMs < clamped) onFadeInEndChange(clamped);
+        if (safeFadeStartMs < clamped) onFadeOutStartChange(clamped);
+        if (safeFadeEndMs < clamped) onFadeOutEndChange(clamped);
+        return;
+      }
+
+      if (activeHandle === "trimEnd") {
+        const clamped = Math.min(
+          Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, nextMs),
+          Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs || nextMs),
+        );
+        onEndChange(clamped);
+        if (safeFadeInEndMs > clamped) onFadeInEndChange(clamped);
+        if (safeFadeStartMs > clamped) onFadeOutStartChange(clamped);
+        if (safeFadeEndMs > clamped) onFadeOutEndChange(clamped);
+        return;
+      }
+
+      if (activeHandle === "fadeInEnd") {
+        onFadeInEndChange(Math.min(safeTrimEndMs, Math.max(safeTrimStartMs, nextMs)));
+        return;
+      }
+
+      if (activeHandle === "fadeOutStart") {
+        const clamped = Math.min(safeFadeEndMs, Math.max(safeTrimStartMs, nextMs));
+        onFadeOutStartChange(clamped);
+        if (safeFadeEndMs < clamped) onFadeOutEndChange(clamped);
+        return;
+      }
+
+      if (activeHandle === "fadeOutEnd") {
+        onFadeOutEndChange(
+          Math.min(
+            Math.max(safeFadeStartMs, nextMs),
+            Math.max(safeFadeStartMs, totalDurationMs || nextMs),
+          ),
+        );
+      }
+    };
+
+    const handlePointerUp = () => {
+      dragHandleRef.current = null;
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+    };
+  }, [
+    editorDurationMs,
+    maxTrimStartMs,
+    onEndChange,
+    onFadeInEndChange,
+    onFadeOutEndChange,
+    onFadeOutStartChange,
+    onStartChange,
+    safeFadeEndMs,
+    safeFadeInEndMs,
+    safeFadeStartMs,
+    safeTrimEndMs,
+    safeTrimStartMs,
+    totalDurationMs,
+  ]);
+
+  const getHandlePosition = (valueMs) =>
+    `${Math.max(0, Math.min(100, (valueMs / Math.max(1, editorDurationMs)) * 100))}%`;
+
+  const waveformPath = waveformPeaks.length
+    ? waveformPeaks
+        .map((peak, index) => {
+          const x = (index / Math.max(1, waveformPeaks.length - 1)) * 100;
+          const halfHeight = peak * 44;
+          return `${x},${50 - halfHeight} ${x},${50 + halfHeight}`;
+        })
+        .join(" ")
+    : "";
+
+  const startHandleDrag = (handle) => (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    dragHandleRef.current = handle;
+  };
+
+  return (
+    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur">
+      <div className="glass-panel w-full max-w-3xl rounded-[2rem] border border-white/10 p-5 shadow-2xl shadow-sky-950/30">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+              Walk-Up Trim
+            </div>
+            <h3 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
+              Visual Song Editor
+            </h3>
+            <p className="mt-2 text-sm text-slate-300">
+              Drag the trim and fade markers on the waveform to set the playback window.
+            </p>
+          </div>
+          <button type="button" onClick={onClose} className="secondary-button">
+            Close
+          </button>
+        </div>
+
+        <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
+          <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
+          <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
+            {clip?.fileName} - original {formatDuration(totalDurationMs / 1000)} - playing {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
+          </div>
+
+          <div className="mt-4">
+            <div className="mb-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
+              <span className="rounded-full border border-rose-300/30 bg-rose-400/10 px-2.5 py-1 text-rose-100">Trim</span>
+              <span className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-cyan-100">Fade In</span>
+              <span className="rounded-full border border-sky-300/30 bg-sky-400/10 px-2.5 py-1 text-sky-100">Fade Out</span>
+            </div>
+
+            <div
+              ref={editorRef}
+              className="relative h-64 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]"
+            >
+              <div
+                className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"
+                style={{ backgroundSize: "5% 100%" }}
+              />
+              {waveformPeaks.length ? (
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+                  <polyline
+                    fill="none"
+                    stroke="rgba(96,165,250,0.9)"
+                    strokeWidth="0.32"
+                    points={waveformPath}
+                  />
+                </svg>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+                  Loading waveform...
+                </div>
+              )}
+
+              <div
+                className="absolute inset-y-0 bg-slate-950/65"
+                style={{ left: 0, width: getHandlePosition(safeTrimStartMs) }}
+              />
+              <div
+                className="absolute inset-y-0 bg-lime-300/20"
+                style={{
+                  left: getHandlePosition(safeTrimStartMs),
+                  width: `calc(${getHandlePosition(safeTrimEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
+                }}
+              />
+              <div
+                className="absolute inset-y-0 bg-slate-950/65"
+                style={{ left: getHandlePosition(safeTrimEndMs), right: 0 }}
+              />
+              <div
+                className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(34,211,238,0.78),rgba(34,211,238,0.06))]"
+                style={{
+                  left: getHandlePosition(safeTrimStartMs),
+                  width: `calc(${getHandlePosition(safeFadeInEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
+                }}
+              />
+              <div
+                className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(56,189,248,0.06),rgba(56,189,248,0.8))]"
+                style={{
+                  left: getHandlePosition(safeFadeStartMs),
+                  width: `calc(${getHandlePosition(safeFadeEndMs)} - ${getHandlePosition(safeFadeStartMs)})`,
+                }}
+              />
+
+              {[
+                { key: "trimStart", value: safeTrimStartMs, color: "bg-rose-500", badge: "TS" },
+                { key: "fadeInEnd", value: safeFadeInEndMs, color: "bg-cyan-400", badge: "FI" },
+                { key: "fadeOutStart", value: safeFadeStartMs, color: "bg-sky-400", badge: "FO In" },
+                { key: "fadeOutEnd", value: safeFadeEndMs, color: "bg-sky-500", badge: "FO Out" },
+                { key: "trimEnd", value: safeTrimEndMs, color: "bg-rose-500", badge: "TE" },
+              ].map((handle) => (
+                <button
+                  key={handle.key}
+                  type="button"
+                  onPointerDown={startHandleDrag(handle.key)}
+                  className="absolute top-0 z-20 h-full w-5 -translate-x-1/2 bg-transparent"
+                  style={{ left: getHandlePosition(handle.value) }}
+                  title={`${handle.badge} ${formatMsTimestamp(handle.value)}`}
+                >
+                  <div className={`absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full ${handle.color} shadow-[0_0_16px_rgba(255,255,255,0.2)]`} />
+                  <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-white/15 bg-slate-950/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
+                    {handle.badge}
+                  </div>
+                </button>
+              ))}
+
+              <div className="absolute inset-x-0 bottom-0 flex justify-between px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                <span>{formatMsTimestamp(0)}</span>
+                <span>{formatMsTimestamp(editorDurationMs)}</span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Trim Start</div>
+                <div className="mt-1 font-semibold">{formatMsTimestamp(safeTrimStartMs)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade In End</div>
+                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeInEndMs)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade Out Start</div>
+                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeStartMs)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade Out End</div>
+                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeEndMs)}</div>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Trim End</div>
+                <div className="mt-1 font-semibold">{formatMsTimestamp(safeTrimEndMs)}</div>
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
+              <span>Window {formatDuration((safeTrimEndMs - safeTrimStartMs) / 1000)}</span>
+              <span>Fade In {formatDuration((safeFadeInEndMs - safeTrimStartMs) / 1000)}</span>
+              <span>Fade Out {formatDuration((safeFadeEndMs - safeFadeStartMs) / 1000)}</span>
+            </div>
+          </div>
+
+          {!canTrim ? (
+            <div className="mt-3 rounded-2xl border border-white/8 bg-slate-900/80 px-4 py-3 text-sm text-slate-400">
+              This clip is very short, so the available trim window is limited by the original file length.
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex gap-2">
+          <button type="button" onClick={onPreview} className="secondary-button">
+            <Play className="h-4 w-4" />
+            Preview Window
+          </button>
+          <button type="button" onClick={onSave} className="primary-button">
+            Save Trim
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function SelectField({ label, value, options, onChange }) {
   return (
     <div>
@@ -2415,32 +2682,6 @@ function SequenceSelect({ value, optionGroups, onChange, className = "" }) {
         </optgroup>
       ))}
     </select>
-  );
-}
-
-function TimelinePlayhead({ left, onPointerDown, isPlaying }) {
-  return (
-    <button
-      type="button"
-      data-playhead="true"
-      onPointerDown={onPointerDown}
-      className={`absolute z-30 h-[244px] w-6 -translate-x-1/2 bg-transparent transition-[left] ${
-        isPlaying ? "duration-100 ease-linear" : "duration-75"
-      }`}
-      style={{ left: `${left}px`, top: "0px" }}
-      title="Drag playhead"
-    >
-      <div
-        className={`absolute left-1/2 top-0 h-5 w-5 -translate-x-1/2 rounded-full border border-cyan-200/70 bg-cyan-300 shadow-[0_0_24px_rgba(34,211,238,0.35)] ${
-          isPlaying ? "scale-110" : ""
-        }`}
-      />
-      <div
-        className={`absolute left-1/2 top-5 h-[219px] w-[3px] -translate-x-1/2 rounded-full bg-cyan-300 shadow-[0_0_18px_rgba(34,211,238,0.45)] ${
-          isPlaying ? "opacity-100" : "opacity-85"
-        }`}
-      />
-    </button>
   );
 }
 

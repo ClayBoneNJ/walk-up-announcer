@@ -171,6 +171,11 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
       Number(clip.trimEndMs) || defaultTrimEndMs,
     );
     const clampedTrimEndMs = totalDurationMs > 0 ? Math.min(trimEndMs, totalDurationMs) : trimEndMs;
+    const defaultFadeInEndMs = Math.min(clampedTrimEndMs, trimStartMs + 800);
+    const fadeInEndMs = Math.min(
+      clampedTrimEndMs,
+      Math.max(trimStartMs, Number(clip.fadeInEndMs) || defaultFadeInEndMs),
+    );
     const defaultFadeOutStartMs = Math.max(trimStartMs, clampedTrimEndMs - 1200);
     const fadeOutStartMs = Math.min(
       clampedTrimEndMs,
@@ -185,6 +190,7 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
       ...clip,
       trimStartMs,
       trimEndMs: clampedTrimEndMs,
+      fadeInEndMs,
       fadeOutStartMs,
       fadeOutEndMs,
     };
@@ -323,6 +329,7 @@ export function createClipRecord({ file, duration, group, nickname }) {
     duration,
     trimStartMs: group === "songs" ? 0 : undefined,
     trimEndMs,
+    fadeInEndMs: group === "songs" ? Math.min(trimEndMs ?? WALKUP_TRIM_MS, 800) : undefined,
     fadeOutStartMs: group === "songs" ? Math.max(0, (trimEndMs ?? WALKUP_TRIM_MS) - 1200) : undefined,
     fadeOutEndMs: group === "songs" ? trimEndMs : undefined,
     createdAt: Date.now(),

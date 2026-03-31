@@ -104,6 +104,8 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false;
+    const isHostedPages =
+      typeof window !== "undefined" && window.location.hostname.endsWith("github.io");
 
     fetch(`${import.meta.env.BASE_URL}published-team-data.json`, { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
@@ -113,6 +115,10 @@ export default function App() {
         }
 
         setAppState((current) => {
+          if (isHostedPages) {
+            return applyPublishedTeamSnapshot(current, snapshot);
+          }
+
           if (
             current.publishedRevision &&
             String(current.publishedRevision) >= String(snapshot.publishedRevision)
@@ -486,7 +492,7 @@ export default function App() {
               onQueueClip={() => {}}
               onPlayPlayer={playPlayer}
               onPreviewClip={playClip}
-              onPreviewSequence={async ({ items, playerName = "", startOffsetMs = 0 }) => {
+              onPreviewSequence={async ({ items, playerName = "" }) => {
                 await playSequence({
                   items,
                   descriptor: {
@@ -494,13 +500,8 @@ export default function App() {
                     playerId: "draft-player",
                     playerName: playerName || "Draft Sequence",
                   },
-                  startOffsetMs,
                 });
               }}
-              activePlayback={activePlayback}
-              playbackProgress={playbackProgress}
-              playbackTimeMs={playbackTimeMs}
-              playbackTotalMs={playbackTotalMs}
               onDownloadTeamSnapshot={downloadTeamSnapshot}
               editingPlayerId={editingPlayerId}
               onEditingPlayerHandled={() => setEditingPlayerId("")}
@@ -515,6 +516,16 @@ export default function App() {
           ) : null}
         </main>
       </div>
+
+      <button
+        type="button"
+        onClick={stopAll}
+        className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
+        aria-label="Stop all audio"
+        title="Stop all audio"
+      >
+        <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+      </button>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">
