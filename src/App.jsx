@@ -844,7 +844,7 @@ function FreestylePage({ groups, onPlayClip }) {
                 className={`rounded-[1.2rem] border px-3 py-3 text-left transition ${FREESTYLE_GROUP_STYLES[group.id].button}`}
               >
                 <div className="line-clamp-2 text-sm font-black uppercase tracking-[0.04em] text-white">
-                  {clip.playerName || clip.nickname}
+                  {group.id === "songs" ? clip.nickname : clip.playerName || clip.nickname}
                 </div>
                 {clip.playerName && clip.playerName !== clip.nickname ? (
                   <div
