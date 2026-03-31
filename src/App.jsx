@@ -730,47 +730,47 @@ function WalkupsView({
       </div>
     </section>
     {players.length && currentBatter && nextBatter ? (
-      <div className="fixed inset-x-3 bottom-[4.65rem] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
-        <div className="grid grid-cols-2 gap-2 rounded-[1.3rem] border border-white/8 bg-slate-950/80 p-2 shadow-[0_18px_44px_rgba(2,6,23,0.45)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
-        <div className="flex items-center gap-2 rounded-[1.1rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2.5 py-2 shadow-[0_18px_40px_rgba(34,197,94,0.12)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] bg-emerald-300/16 text-sm font-black text-emerald-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
+      <div className="fixed inset-x-2 bottom-[4.4rem] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
+        <div className="grid grid-cols-2 gap-1.5 rounded-[1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="flex items-center gap-2 rounded-[0.95rem] border border-emerald-300/18 bg-[linear-gradient(135deg,rgba(34,197,94,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2 py-1.5 shadow-[0_14px_32px_rgba(34,197,94,0.1)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.85rem] bg-emerald-300/16 text-xs font-black text-emerald-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
             {currentBatter.jerseyNumber || "--"}
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-300 sm:text-[11px] sm:tracking-[0.22em]">
-              Current Batter
+            <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-emerald-300 sm:text-[11px] sm:tracking-[0.22em]">
+              Current
             </div>
-            <div className="truncate text-sm font-black text-white sm:text-base">{currentBatter.name}</div>
-            <div className="text-[11px] text-emerald-100/70 sm:text-xs">{currentBatter.positionLabel || "Utility"}</div>
+            <div className="truncate text-[13px] font-black text-white sm:text-base">{currentBatter.name}</div>
+            <div className="hidden text-[11px] text-emerald-100/70 sm:block sm:text-xs">{currentBatter.positionLabel || "Utility"}</div>
           </div>
           <button
             type="button"
             onClick={() => onPlayCurrentBatter(currentBatter, players)}
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-emerald-400 px-2.5 py-1.5 text-slate-950 shadow-lg shadow-emerald-500/20 sm:gap-2 sm:px-3 sm:py-2"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
           >
             <CirclePlay className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]">Play</span>
+            <span className="sr-only sm:not-sr-only sm:text-xs sm:font-black sm:uppercase sm:tracking-[0.14em]">Play</span>
           </button>
         </div>
 
-        <div className="flex items-center gap-2 rounded-[1.1rem] border border-orange-300/18 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2.5 py-2 shadow-[0_18px_40px_rgba(251,146,60,0.12)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[0.95rem] bg-orange-300/16 text-sm font-black text-orange-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
+        <div className="flex items-center gap-2 rounded-[0.95rem] border border-orange-300/18 bg-[linear-gradient(135deg,rgba(251,146,60,0.16),rgba(15,23,42,0.96)_40%,rgba(2,6,23,0.98))] px-2 py-1.5 shadow-[0_14px_32px_rgba(251,146,60,0.1)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[0.85rem] bg-orange-300/16 text-xs font-black text-orange-100 sm:h-12 sm:w-12 sm:rounded-[1.1rem] sm:text-lg">
             {nextBatter.jerseyNumber || "--"}
           </div>
           <div className="min-w-0 flex-1 text-left">
-            <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-orange-300 sm:text-[11px] sm:tracking-[0.22em]">
-              Next Batter
+            <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-orange-300 sm:text-[11px] sm:tracking-[0.22em]">
+              Next
             </div>
-            <div className="truncate text-sm font-black text-white sm:text-base">{nextBatter.name}</div>
-            <div className="text-[11px] text-orange-100/70 sm:text-xs">Up next</div>
+            <div className="truncate text-[13px] font-black text-white sm:text-base">{nextBatter.name}</div>
+            <div className="hidden text-[11px] text-orange-100/70 sm:block sm:text-xs">Up next</div>
           </div>
           <button
             type="button"
             onClick={() => onPlayNextBatter(players)}
-            className="flex shrink-0 items-center gap-1.5 rounded-full bg-orange-400 px-2.5 py-1.5 text-slate-950 shadow-lg shadow-orange-500/20 sm:gap-2 sm:px-3 sm:py-2"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-400 text-slate-950 shadow-lg shadow-orange-500/20 sm:h-auto sm:w-auto sm:gap-2 sm:px-3 sm:py-2"
           >
             <CirclePlay className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            <span className="text-[11px] font-black uppercase tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]">Next</span>
+            <span className="sr-only sm:not-sr-only sm:text-xs sm:font-black sm:uppercase sm:tracking-[0.14em]">Next</span>
           </button>
         </div>
         </div>

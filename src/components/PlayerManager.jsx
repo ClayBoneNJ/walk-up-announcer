@@ -1475,9 +1475,9 @@ function RosterModal({
   };
 
   return (
-    <div className="fixed inset-0 z-30 flex items-end justify-center bg-slate-950/70 p-2 backdrop-blur sm:p-4 sm:items-center">
-      <div className="glass-panel max-h-[92vh] w-full max-w-4xl overflow-x-hidden overflow-y-auto rounded-[1.4rem] border border-white/10 p-3 shadow-2xl shadow-sky-950/30 sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5">
-        <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-30 overflow-y-auto bg-slate-950/70 p-2 backdrop-blur sm:flex sm:items-center sm:justify-center sm:p-4">
+      <div className="glass-panel flex max-h-[calc(100dvh-1rem)] w-full max-w-4xl flex-col overflow-hidden rounded-[1.4rem] border border-white/10 p-3 shadow-2xl shadow-sky-950/30 sm:my-6 sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5">
+        <div className="sticky top-0 z-10 -mx-3 -mt-3 flex items-start justify-between gap-3 border-b border-white/8 bg-slate-950/95 px-3 pb-3 pt-3 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5 sm:pb-4 sm:pt-5">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
               {mode === "edit" ? "Edit Player" : "New Player"}
@@ -1491,7 +1491,7 @@ function RosterModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-4 space-y-3 sm:mt-5">
+        <form onSubmit={onSubmit} className="mt-4 flex min-h-0 flex-1 flex-col space-y-3 overflow-y-auto sm:mt-5">
           <div className="grid gap-3 xl:grid-cols-[1.1fr,1fr] xl:gap-4">
             <div className="min-w-0 space-y-3 sm:space-y-4">
               <div className="panel-muted rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
@@ -1745,10 +1745,12 @@ function RosterModal({
             </div>
           </div>
 
-          <button type="submit" className="primary-button w-full justify-center">
-            <Plus className="h-4 w-4" />
-            {mode === "edit" ? "Save Player" : "Add Player"}
-          </button>
+          <div className="sticky bottom-0 -mx-3 -mb-3 mt-4 border-t border-white/8 bg-slate-950/95 px-3 py-3 backdrop-blur sm:-mx-5 sm:-mb-5 sm:px-5 sm:py-4">
+            <button type="submit" className="primary-button w-full justify-center">
+              <Plus className="h-4 w-4" />
+              {mode === "edit" ? "Save Player" : "Add Player"}
+            </button>
+          </div>
         </form>
       </div>
 
@@ -2317,9 +2319,9 @@ function LegacySongTrimModal({
   const canTrim = totalDurationMs > MIN_WALKUP_TRIM_MS;
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur">
-      <div className="glass-panel w-full max-w-xl rounded-[2rem] border border-white/10 p-5 shadow-2xl shadow-sky-950/30">
-        <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-slate-950/70 p-2 backdrop-blur sm:flex sm:items-center sm:justify-center sm:p-4">
+      <div className="glass-panel flex max-h-[calc(100dvh-1rem)] w-full max-w-xl flex-col overflow-hidden rounded-[1.5rem] border border-white/10 p-4 shadow-2xl shadow-sky-950/30 sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5">
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-start justify-between gap-3 border-b border-white/8 bg-slate-950/95 px-4 pb-3 pt-4 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5 sm:pb-4 sm:pt-5">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
               Walk-Up Trim
@@ -2336,7 +2338,8 @@ function LegacySongTrimModal({
           </button>
         </div>
 
-        <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
+        <div className="mt-4 flex-1 overflow-y-auto">
+        <div className="rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
             {clip?.fileName} • original {formatDuration(totalDurationMs / 1000)} • playing {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
@@ -2428,8 +2431,9 @@ function LegacySongTrimModal({
             </div>
           ) : null}
         </div>
+        </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex gap-2 border-t border-white/8 bg-slate-950/95 px-4 py-3 backdrop-blur sm:-mx-5 sm:-mb-5 sm:px-5 sm:py-4">
           <button type="button" onClick={onPreview} className="secondary-button">
             <Play className="h-4 w-4" />
             Preview Window
@@ -2649,9 +2653,9 @@ function SongTrimModal({
   };
 
   return (
-    <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/70 p-4 backdrop-blur">
-      <div className="glass-panel w-full max-w-3xl rounded-[2rem] border border-white/10 p-5 shadow-2xl shadow-sky-950/30">
-        <div className="flex items-start justify-between gap-3">
+    <div className="fixed inset-0 z-40 overflow-y-auto bg-slate-950/70 p-2 backdrop-blur sm:flex sm:items-center sm:justify-center sm:p-4">
+      <div className="glass-panel flex max-h-[calc(100dvh-1rem)] w-full max-w-3xl flex-col overflow-hidden rounded-[1.5rem] border border-white/10 p-4 shadow-2xl shadow-sky-950/30 sm:max-h-[90vh] sm:rounded-[2rem] sm:p-5">
+        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex items-start justify-between gap-3 border-b border-white/8 bg-slate-950/95 px-4 pb-3 pt-4 backdrop-blur sm:-mx-5 sm:-mt-5 sm:px-5 sm:pb-4 sm:pt-5">
           <div>
             <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
               Walk-Up Trim
@@ -2668,7 +2672,8 @@ function SongTrimModal({
           </button>
         </div>
 
-        <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
+        <div className="mt-4 flex-1 overflow-y-auto">
+        <div className="rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
             {clip?.fileName} - original {formatDuration(totalDurationMs / 1000)} - window {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
@@ -2980,8 +2985,9 @@ function SongTrimModal({
             </div>
           ) : null}
         </div>
+        </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="sticky bottom-0 -mx-4 -mb-4 mt-4 flex flex-wrap gap-2 border-t border-white/8 bg-slate-950/95 px-4 py-3 backdrop-blur sm:-mx-5 sm:-mb-5 sm:px-5 sm:py-4">
           <button type="button" onClick={onPreview} className="secondary-button">
             <Play className="h-4 w-4" />
             Preview Window
