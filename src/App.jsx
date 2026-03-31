@@ -115,6 +115,13 @@ export default function App() {
         }
 
         setAppState((current) => {
+          if (
+            current.publishedRevision &&
+            String(current.publishedRevision) >= String(snapshot.publishedRevision)
+          ) {
+            return current;
+          }
+
           return applyPublishedTeamSnapshot(current, snapshot);
         });
       })
