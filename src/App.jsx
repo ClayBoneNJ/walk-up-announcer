@@ -110,22 +110,11 @@ export default function App() {
     fetch(`${import.meta.env.BASE_URL}published-team-data.json`, { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((snapshot) => {
-        if (cancelled || !snapshot?.publishedRevision) {
+        if (cancelled || !snapshot?.publishedRevision || !isHostedPages) {
           return;
         }
 
         setAppState((current) => {
-          if (isHostedPages) {
-            return applyPublishedTeamSnapshot(current, snapshot);
-          }
-
-          if (
-            current.publishedRevision &&
-            String(current.publishedRevision) >= String(snapshot.publishedRevision)
-          ) {
-            return current;
-          }
-
           return applyPublishedTeamSnapshot(current, snapshot);
         });
       })
@@ -502,6 +491,10 @@ export default function App() {
                   },
                 });
               }}
+              activePlayback={activePlayback}
+              isPlaybackPaused={isPaused}
+              playbackTimeMs={playbackTimeMs}
+              onTogglePause={togglePause}
               onDownloadTeamSnapshot={downloadTeamSnapshot}
               editingPlayerId={editingPlayerId}
               onEditingPlayerHandled={() => setEditingPlayerId("")}

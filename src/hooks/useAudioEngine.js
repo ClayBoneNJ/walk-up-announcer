@@ -28,7 +28,7 @@ function wait(ms, signal) {
   });
 }
 
-const WALKUP_SONG_FADE_OUT_MS = 1200;
+const WALKUP_SONG_FADE_OUT_MS = 1800;
 const STOP_FADE_MS = 140;
 
 function createAudioElement(volume) {
@@ -44,19 +44,34 @@ async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
     return;
   }
 
-  const startVolume = audio.volume;
-  const steps = 5;
+  const startVolume = Math.max(0, audio.volume);
+  const fadeStart = performance.now();
+  const fadeDuration = Math.max(40, durationMs);
 
-  for (let index = steps - 1; index >= 0; index -= 1) {
-    if (signal?.aborted) {
-      break;
-    }
+  await new Promise((resolve) => {
+    const tick = (now) => {
+      if (signal?.aborted) {
+        resolve();
+        return;
+      }
 
-    audio.volume = startVolume * (index / steps);
-    await wait(durationMs / steps, signal).catch(() => {});
-  }
+      const progress = Math.min(1, (now - fadeStart) / fadeDuration);
+      audio.volume = startVolume * (1 - progress);
 
+      if (progress >= 1) {
+        resolve();
+        return;
+      }
+
+      window.requestAnimationFrame(tick);
+    };
+
+    window.requestAnimationFrame(tick);
+  });
+
+  audio.volume = 0;
   audio.pause();
+  await wait(30, signal).catch(() => {});
   audio.currentTime = 0;
   audio.removeAttribute("src");
   audio.load();

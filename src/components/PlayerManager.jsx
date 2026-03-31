@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Play, Plus, Trash2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Minus, Pause, Play, Plus, Trash2, Upload } from "lucide-react";
 import { getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
+import { BUILT_IN_PLAYER_CLIPS } from "../lib/builtInAudio";
 import {
   CLIP_GROUP_OPTIONS,
   createClipRecord,
@@ -28,6 +29,7 @@ const TIMELINE_PIXELS_PER_MS = 0.06;
 const TIMELINE_MIN_DURATION_MS = 6000;
 const TIMELINE_SIDE_PADDING_MS = 1500;
 const TIMELINE_MOBILE_MIN_WIDTH = 280;
+const SONG_EDITOR_SNAP_MS = 500;
 
 const TRACK_CONFIG = [
   { id: 0, label: "Track 1" },
@@ -77,6 +79,15 @@ function createTimelineItem(slot, startMs = 0, track = 0, clipId = "") {
   };
 }
 
+function getBuiltInNameClip(playerName = "") {
+  const key = String(playerName || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+
+  return BUILT_IN_PLAYER_CLIPS[key] ?? null;
+}
+
 function createPlayerDraft(overrides = {}) {
   const incomingTimeline = Array.isArray(overrides.timeline) ? overrides.timeline : [];
   const normalizedTimeline =
@@ -96,12 +107,13 @@ function createPlayerDraft(overrides = {}) {
     announcementClipId: "",
     numberClipId: "",
     positionClipId: "",
-    nameClip: null,
+    nameClip: getBuiltInNameClip(overrides.name),
     nicknameClip: null,
     songClip: null,
     timeline: normalizedTimeline,
     sequence: deriveSequenceFromTimeline(normalizedTimeline),
     ...overrides,
+    nameClip: overrides.nameClip ?? getBuiltInNameClip(overrides.name),
   };
 }
 
@@ -122,6 +134,32 @@ function formatMsTimestamp(valueMs = 0) {
   const mins = Math.floor(totalSeconds / 60);
   const secs = (totalSeconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
+}
+
+function parseMsTimestampInput(value) {
+  const normalized = String(value || "").trim();
+  if (!normalized) {
+    return null;
+  }
+
+  if (normalized.includes(":")) {
+    const [minsPart, secsPart] = normalized.split(":");
+    const mins = Number(minsPart);
+    const secs = Number(secsPart);
+
+    if (!Number.isFinite(mins) || !Number.isFinite(secs)) {
+      return null;
+    }
+
+    return Math.round((Math.max(0, mins) * 60 + Math.max(0, secs)) * 1000);
+  }
+
+  const seconds = Number(normalized);
+  if (!Number.isFinite(seconds)) {
+    return null;
+  }
+
+  return Math.round(Math.max(0, seconds) * 1000);
 }
 
 function getTimelineItemValue(item, draft) {
@@ -250,6 +288,49 @@ function compactTimelineSequence(timeline, draft, libraries, durationLookup = {}
   });
 }
 
+function retimeTimelineAfterDurationChange(
+  timeline,
+  previousDraft,
+  nextDraft,
+  libraries,
+  durationLookup = {},
+  matcher,
+) {
+  const sortedTimeline = [...timeline].sort((left, right) => left.startMs - right.startMs);
+  const changedIndex = sortedTimeline.findIndex(matcher);
+
+  if (changedIndex === -1) {
+    return timeline;
+  }
+
+  const changedItem = sortedTimeline[changedIndex];
+  const previousDurationMs = getTimelineItemDurationMs(
+    changedItem,
+    previousDraft,
+    libraries,
+    durationLookup,
+  );
+  const nextDurationMs = getTimelineItemDurationMs(
+    changedItem,
+    nextDraft,
+    libraries,
+    durationLookup,
+  );
+  const deltaMs = nextDurationMs - previousDurationMs;
+
+  if (!deltaMs) {
+    return timeline;
+  }
+
+  const shiftedIds = new Set(sortedTimeline.slice(changedIndex + 1).map((item) => item.id));
+
+  return timeline.map((item) =>
+    shiftedIds.has(item.id)
+      ? { ...item, startMs: Math.max(0, item.startMs + deltaMs) }
+      : item,
+  );
+}
+
 export function PlayerManager({
   players,
   libraries,
@@ -266,6 +347,10 @@ export function PlayerManager({
   onPlayPlayer,
   onPreviewClip,
   onPreviewSequence,
+  activePlayback,
+  isPlaybackPaused,
+  playbackTimeMs,
+  onTogglePause,
   onDownloadTeamSnapshot,
   editingPlayerId,
   onEditingPlayerHandled,
@@ -319,13 +404,20 @@ export function PlayerManager({
     event.preventDefault();
     if (!playerDraft.name.trim()) return;
 
+    const trimmedName = playerDraft.name.trim();
+    const restoredNameClip = playerDraft.nameClip ?? getBuiltInNameClip(trimmedName);
+    const nextPlayerDraft = {
+      ...playerDraft,
+      name: trimmedName,
+      jerseyNumber: playerDraft.jerseyNumber.trim(),
+      positionLabel: playerDraft.positionLabel.trim(),
+      nameClip: restoredNameClip,
+    };
+
     if (rosterModal?.mode === "edit" && rosterModal.playerId) {
       onUpdatePlayer(rosterModal.playerId, (current) => ({
         ...current,
-        ...playerDraft,
-        name: playerDraft.name.trim(),
-        jerseyNumber: playerDraft.jerseyNumber.trim(),
-        positionLabel: playerDraft.positionLabel.trim(),
+        ...nextPlayerDraft,
       }));
       closeRosterModal();
       return;
@@ -333,10 +425,7 @@ export function PlayerManager({
 
     onAddPlayer({
       id: crypto.randomUUID(),
-      ...playerDraft,
-      name: playerDraft.name.trim(),
-      jerseyNumber: playerDraft.jerseyNumber.trim(),
-      positionLabel: playerDraft.positionLabel.trim(),
+      ...nextPlayerDraft,
     });
 
     closeRosterModal();
@@ -565,6 +654,10 @@ export function PlayerManager({
           libraries={libraries}
           onPreviewClip={onPreviewClip}
           onPreviewSequence={onPreviewSequence}
+          activePlayback={activePlayback}
+          isPlaybackPaused={isPlaybackPaused}
+          playbackTimeMs={playbackTimeMs}
+          onTogglePause={onTogglePause}
           onClose={closeRosterModal}
           onSubmit={handlePlayerSubmit}
         />
@@ -611,6 +704,10 @@ function RosterModal({
   libraries,
   onPreviewClip,
   onPreviewSequence,
+  activePlayback,
+  isPlaybackPaused,
+  playbackTimeMs,
+  onTogglePause,
   onClose,
   onSubmit,
 }) {
@@ -649,11 +746,25 @@ function RosterModal({
       (clip) => clip.id === `number-${jerseyNumber}`,
     );
 
-    setDraft((current) => ({
-      ...current,
-      jerseyNumber,
-      numberClipId: matchingNumberClip ? matchingNumberClip.id : "",
-    }));
+    setDraft((current) => {
+      const nextDraft = {
+        ...current,
+        jerseyNumber,
+        numberClipId: matchingNumberClip ? matchingNumberClip.id : "",
+      };
+
+      return {
+        ...nextDraft,
+        timeline: retimeTimelineAfterDurationChange(
+          current.timeline ?? [],
+          current,
+          nextDraft,
+          libraries,
+          clipDurationLookup,
+          (item) => item.slot === "number",
+        ),
+      };
+    });
   };
 
   const handlePositionChange = (positionLabel) => {
@@ -661,11 +772,25 @@ function RosterModal({
       (clip) => clip.nickname === positionLabel,
     );
 
-    setDraft((current) => ({
-      ...current,
-      positionLabel,
-      positionClipId: matchingPositionClip ? matchingPositionClip.id : "",
-    }));
+    setDraft((current) => {
+      const nextDraft = {
+        ...current,
+        positionLabel,
+        positionClipId: matchingPositionClip ? matchingPositionClip.id : "",
+      };
+
+      return {
+        ...nextDraft,
+        timeline: retimeTimelineAfterDurationChange(
+          current.timeline ?? [],
+          current,
+          nextDraft,
+          libraries,
+          clipDurationLookup,
+          (item) => item.slot === "position",
+        ),
+      };
+    });
   };
 
   const draftSequenceOptions = useMemo(() => {
@@ -886,9 +1011,8 @@ function RosterModal({
       nickname: fallbackNickname,
     });
     clip.dataUrl = await fileToDataUrl(file);
-    setDraft((current) => ({
-      ...current,
-      [key]:
+    setDraft((current) => {
+      const nextOwnedClip =
         group === "songs"
           ? {
               ...clip,
@@ -910,31 +1034,70 @@ function RosterModal({
                   ? Math.min(Math.round(duration * 1000), WALKUP_TRIM_MS)
                   : WALKUP_TRIM_MS,
             }
-          : clip,
-    }));
+          : clip;
+      const nextDraft = {
+        ...current,
+        [key]: nextOwnedClip,
+      };
+      const slot =
+        key === "songClip" ? "song" : key === "nicknameClip" ? "nickname" : key === "nameClip" ? "name" : "";
+
+      return {
+        ...nextDraft,
+        timeline: slot
+          ? retimeTimelineAfterDurationChange(
+              current.timeline ?? [],
+              current,
+              nextDraft,
+              libraries,
+              clipDurationLookup,
+              (item) => item.slot === slot,
+            )
+          : current.timeline ?? [],
+      };
+    });
   };
 
   const handleBuiltInSongChange = (clipId) => {
     const nextSongClip = libraries.songs.find((clip) => clip.id === clipId) ?? null;
 
-    setDraft((current) => ({
-      ...current,
-      songClip: nextSongClip,
-    }));
+    setDraft((current) => {
+      const nextDraft = {
+        ...current,
+        songClip: nextSongClip,
+      };
+
+      return {
+        ...nextDraft,
+        timeline: retimeTimelineAfterDurationChange(
+          current.timeline ?? [],
+          current,
+          nextDraft,
+          libraries,
+          clipDurationLookup,
+          (item) => item.slot === "song",
+        ),
+      };
+    });
   };
+
+  const presentTimelineSlots = useMemo(
+    () => new Set(measuredTimeline.map((item) => item.slot)),
+    [measuredTimeline],
+  );
 
   const sequenceAddOptions = useMemo(() => {
     const uniqueSlots = ["number", "name", "nickname", "position", "song"];
     const options = [{ id: "announcement", label: slotLabel("announcement") }];
 
     uniqueSlots.forEach((slot) => {
-      if (!(draft.timeline ?? []).some((item) => item.slot === slot)) {
+      if (!presentTimelineSlots.has(slot)) {
         options.push({ id: slot, label: slotLabel(slot) });
       }
     });
 
     return options;
-  }, [draft.timeline]);
+  }, [presentTimelineSlots]);
 
   const addSequenceItem = (nextSlot = sequenceAddValue) => {
     if (!nextSlot) {
@@ -946,7 +1109,7 @@ function RosterModal({
       if (
         nextSlot !== "announcement" &&
         ["number", "name", "nickname", "position", "song"].includes(nextSlot) &&
-        currentTimeline.some((item) => item.slot === nextSlot)
+        presentTimelineSlots.has(nextSlot)
       ) {
         return currentTimeline;
       }
@@ -1014,11 +1177,35 @@ function RosterModal({
 
   const updateAnnouncementSelection = (timelineItemId, clipId) => {
     setTimelineTouched(true);
-    updateDraftTimeline((currentTimeline) =>
-      currentTimeline.map((item) =>
+    setDraft((current) => {
+      const nextTimeline = current.timeline.map((item) =>
         item.id === timelineItemId ? { ...item, clipId } : item,
-      ),
-    );
+      );
+      const nextDraft = {
+        ...current,
+        timeline: nextTimeline,
+      };
+
+      const retimedTimeline = normalizeTimelineLayout(
+        retimeTimelineAfterDurationChange(
+          nextTimeline,
+          current,
+          nextDraft,
+          libraries,
+          clipDurationLookup,
+          (item) => item.id === timelineItemId,
+        ),
+        nextDraft,
+        libraries,
+        clipDurationLookup,
+      );
+
+      return {
+        ...nextDraft,
+        timeline: retimedTimeline,
+        sequence: deriveSequenceFromTimeline(retimedTimeline),
+      };
+    });
   };
 
   useEffect(() => {
@@ -1137,10 +1324,13 @@ function RosterModal({
         playerId: draft.id ?? "draft-player",
         playerName: draft.name || draft.songClip.nickname,
       },
-      playerId: draft.id ?? "draft-player",
+      playerId: "draft-song-trim",
       playerName: draft.name || draft.songClip.nickname,
     });
   };
+
+  const isSongTrimPreviewActive = activePlayback?.playerId === "draft-song-trim";
+  const songTrimPreviewTimeMs = isSongTrimPreviewActive ? Math.max(0, playbackTimeMs) : 0;
 
   const removeSequenceItem = (timelineItemId) => {
     setTimelineTouched(true);
@@ -1336,44 +1526,24 @@ function RosterModal({
 
               <div className="panel-muted rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
                 <div className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                  Player-Owned Uploads
+                  Walk-Up Song
                 </div>
-                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                   <SelectField
                     label="Built-In Walk-Up Song"
                     value={draftBuiltInSongId}
                     options={libraries.songs}
                     onChange={handleBuiltInSongChange}
                   />
-                  <Uploader
-                    buttonLabel="Upload Nickname"
-                    onFile={(file) =>
-                      uploadDraftClip({
-                        file,
-                        group: "nicknames",
-                        fallbackNickname: `${draft.name || "Player"} nickname`,
-                        key: "nicknameClip",
-                      })
-                    }
-                  />
-                  <Uploader
-                    buttonLabel="Upload Song"
-                    onFile={(file) =>
-                      uploadDraftClip({
-                        file,
-                        group: "songs",
-                        fallbackNickname: `${draft.name || "Player"} walk-up`,
-                        key: "songClip",
-                      })
-                    }
-                  />
-                </div>
-                <div className="mt-3 grid gap-3 md:grid-cols-3">
-                  {draft.nameClip ? <ClipMetaCard clip={draft.nameClip} label="Name" /> : null}
-                  {draft.nicknameClip ? (
-                    <ClipMetaCard clip={draft.nicknameClip} label="Nickname" />
+                  {draft.songClip ? (
+                    <button
+                      type="button"
+                      onClick={openSongTrimModal}
+                      className="secondary-button justify-center md:min-w-[11rem]"
+                    >
+                      Trim Song
+                    </button>
                   ) : null}
-                  {draft.songClip ? <ClipMetaCard clip={draft.songClip} label="Song" /> : null}
                 </div>
               </div>
             </div>
@@ -1447,36 +1617,25 @@ function RosterModal({
                   </button>
 
                   {showSequenceAddPicker ? (
-                    <div className="absolute right-0 top-14 z-10 w-52 rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-sky-950/30 backdrop-blur">
-                      <select
-                        value={sequenceAddValue}
-                        onChange={(event) => {
-                          setSequenceAddValue(event.target.value);
-                        }}
-                        className="w-full rounded-2xl border border-white/10 bg-slate-900/80 px-3 py-3 text-sm text-white outline-none"
-                        autoFocus
-                      >
+                    <div className="absolute right-0 top-14 z-10 w-[15rem] rounded-2xl border border-white/10 bg-slate-950/95 p-2 shadow-2xl shadow-sky-950/30 backdrop-blur">
+                      <div className="flex flex-wrap gap-2">
                         {sequenceAddOptions.map((option) => (
-                          <option key={option.id} value={option.id}>
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              addSequenceItem(option.id);
+                              setShowSequenceAddPicker(false);
+                            }}
+                            className="rounded-full border border-cyan-300/20 bg-slate-900/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/10 hover:text-cyan-50"
+                          >
                             {option.label}
-                          </option>
+                          </button>
                         ))}
-                      </select>
-                      <div className="mt-2 flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            addSequenceItem(sequenceAddValue);
-                            setShowSequenceAddPicker(false);
-                          }}
-                          className="secondary-button flex-1 justify-center"
-                        >
-                          Add
-                        </button>
                         <button
                           type="button"
                           onClick={() => setShowSequenceAddPicker(false)}
-                          className="secondary-button flex-1 justify-center"
+                          className="rounded-full border border-white/10 bg-slate-900/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 transition hover:border-white/20 hover:text-white"
                         >
                           Cancel
                         </button>
@@ -1490,65 +1649,64 @@ function RosterModal({
               <div className="mt-4 space-y-4">
                 {selectedTimelineItem ? (
                   <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/45 p-2.5 sm:rounded-[1.35rem] sm:p-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0">
                         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-sky-300">
                           Selected Pill
                         </div>
-                        <div className="mt-1 text-sm font-semibold text-white">
-                          {slotLabel(selectedTimelineItem.slot)}
-                        </div>
-                        <div className="mt-1 text-xs text-slate-400">
-                          {getTimelineItemValue(selectedTimelineItem, draft)} • {formatMsTimestamp(selectedTimelineItem.startMs)}
+                        <div className="mt-1 truncate text-sm font-semibold text-white">
+                          {slotLabel(selectedTimelineItem.slot)}:{" "}
+                          <span className="text-slate-300">
+                            {getTimelineItemValue(selectedTimelineItem, draft)}
+                          </span>
                         </div>
                       </div>
-                      {selectedTimelineItem.slot === "song" ? (
+                      <div className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-wrap sm:justify-end sm:gap-2">
                         <button
                           type="button"
-                          onClick={openSongTrimModal}
-                          className="secondary-button"
+                          onClick={() => moveSelectedTimelineItem(-100)}
+                          className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
                         >
-                          Trim Song
+                          -0.1s
                         </button>
-                      ) : null}
-                    </div>
-
-                    <div className="mt-3 grid grid-cols-2 gap-1.5 sm:grid-cols-5 sm:gap-2">
-                      <button
-                        type="button"
-                        onClick={() => moveSelectedTimelineItem(-100)}
-                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
-                      >
-                        -0.1s
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveSelectedTimelineItem(100)}
-                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
-                      >
-                        +0.1s
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveSelectedTimelineTrack(-1)}
-                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
-                      >
-                        Track Up
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveSelectedTimelineTrack(1)}
-                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
-                      >
-                        Track Down
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => previewSequenceItem(selectedTimelineItem.timelineItemId)}
-                        className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
-                      >
-                        Preview Pill
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => moveSelectedTimelineItem(100)}
+                          className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
+                        >
+                          +0.1s
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveSelectedTimelineTrack(-1)}
+                          className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
+                        >
+                          Up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveSelectedTimelineTrack(1)}
+                          className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
+                        >
+                          Down
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => previewSequenceItem(selectedTimelineItem.timelineItemId)}
+                          className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
+                        >
+                          Preview
+                        </button>
+                        {selectedTimelineItem.slot === "song" ? (
+                          <button
+                            type="button"
+                            onClick={openSongTrimModal}
+                            className="secondary-button min-w-0 justify-center px-2 text-[11px] tracking-[0.12em] sm:text-xs sm:tracking-[0.14em]"
+                          >
+                            Trim
+                          </button>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 ) : null}
@@ -1583,31 +1741,6 @@ function RosterModal({
                   </div>
                 </div>
 
-                <div className="grid gap-2 sm:grid-cols-2">
-                  {measuredTimeline
-                    .slice()
-                    .sort((left, right) => left.startMs - right.startMs)
-                    .map((item) => (
-                      <button
-                        type="button"
-                        key={`legend-${item.timelineItemId}`}
-                        onClick={() => setSelectedTimelineId(item.timelineItemId)}
-                        className={`rounded-2xl border px-3 py-2 text-left text-sm transition ${
-                          selectedTimelineId === item.timelineItemId
-                            ? "border-cyan-200/70 bg-cyan-300/10 text-cyan-50"
-                            : "border-white/8 bg-slate-950/45 text-slate-300"
-                        }`}
-                      >
-                        <span className="font-semibold text-white">{slotLabel(item.slot)}</span>
-                        <span className="ml-2 text-slate-400">
-                          {getTimelineItemValue(item, draft)}
-                        </span>
-                        <span className="ml-2 text-xs uppercase tracking-[0.18em] text-slate-500">
-                          {item.startMs / 1000}s
-                        </span>
-                      </button>
-                    ))}
-                </div>
               </div>
             </div>
           </div>
@@ -1637,6 +1770,10 @@ function RosterModal({
           onClose={() => setShowSongTrimModal(false)}
           onSave={saveSongTrim}
           onPreview={previewSongTrim}
+          isPreviewActive={isSongTrimPreviewActive}
+          isPreviewPaused={Boolean(isPlaybackPaused && isSongTrimPreviewActive)}
+          previewTimeMs={songTrimPreviewTimeMs}
+          onTogglePause={onTogglePause}
         />
       ) : null}
     </div>
@@ -2323,10 +2460,20 @@ function SongTrimModal({
   onClose,
   onSave,
   onPreview,
+  isPreviewActive,
+  isPreviewPaused,
+  previewTimeMs,
+  onTogglePause,
 }) {
   const editorRef = useRef(null);
   const dragHandleRef = useRef(null);
   const [waveformPeaks, setWaveformPeaks] = useState([]);
+  const [trimStartInput, setTrimStartInput] = useState("0:00");
+  const [fadeInEndInput, setFadeInEndInput] = useState("0:00");
+  const [fadeOutStartInput, setFadeOutStartInput] = useState("0:00");
+  const [fadeOutEndInput, setFadeOutEndInput] = useState("0:00");
+  const [trimEndInput, setTrimEndInput] = useState("0:00");
+  const [waveformZoom, setWaveformZoom] = useState(1);
   const totalDurationMs = Math.max(0, clipDurationMs || Math.round((clip?.duration || 0) * 1000));
   const safeTrimStartMs = Math.max(0, Number(trimStartMs) || 0);
   const safeTrimEndMs = Math.min(
@@ -2347,6 +2494,16 @@ function SongTrimModal({
   );
   const canTrim = totalDurationMs > MIN_WALKUP_TRIM_MS;
   const editorDurationMs = Math.max(totalDurationMs || 0, safeTrimEndMs, WALKUP_TRIM_MS);
+  const liveSongTimeMs = Math.min(safeTrimEndMs, safeTrimStartMs + Math.max(0, previewTimeMs || 0));
+  const liveWindowTimeMs = Math.max(0, previewTimeMs || 0);
+
+  useEffect(() => {
+    setTrimStartInput(formatMsTimestamp(safeTrimStartMs));
+    setFadeInEndInput(formatMsTimestamp(safeFadeInEndMs));
+    setFadeOutStartInput(formatMsTimestamp(safeFadeStartMs));
+    setFadeOutEndInput(formatMsTimestamp(safeFadeEndMs));
+    setTrimEndInput(formatMsTimestamp(safeTrimEndMs));
+  }, [safeTrimStartMs, safeFadeInEndMs, safeFadeStartMs, safeFadeEndMs, safeTrimEndMs]);
 
   useEffect(() => {
     let cancelled = false;
@@ -2386,7 +2543,7 @@ function SongTrimModal({
       const rect = editorRef.current.getBoundingClientRect();
       const relativeX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
       const nextMs =
-        Math.round(((relativeX / Math.max(1, rect.width)) * editorDurationMs) / 100) * 100;
+        Math.round(((relativeX / Math.max(1, rect.width)) * editorDurationMs) / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
 
       if (activeHandle === "trimStart") {
         const clamped = Math.min(maxTrimStartMs, Math.max(0, nextMs));
@@ -2460,6 +2617,7 @@ function SongTrimModal({
 
   const getHandlePosition = (valueMs) =>
     `${Math.max(0, Math.min(100, (valueMs / Math.max(1, editorDurationMs)) * 100))}%`;
+  const livePlayheadPosition = getHandlePosition(liveSongTimeMs);
 
   const waveformPath = waveformPeaks.length
     ? waveformPeaks
@@ -2475,6 +2633,19 @@ function SongTrimModal({
     event.preventDefault();
     event.stopPropagation();
     dragHandleRef.current = handle;
+  };
+
+  const commitTimestampInput = (rawValue, fallbackMs, minMs, maxMs, onCommit, setValue) => {
+    const parsedMs = parseMsTimestampInput(rawValue);
+    if (!Number.isFinite(parsedMs)) {
+      setValue(formatMsTimestamp(fallbackMs));
+      return;
+    }
+
+    const clampedMs = Math.min(maxMs, Math.max(minMs, parsedMs));
+    const snappedMs = Math.round(clampedMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
+    onCommit(snappedMs);
+    setValue(formatMsTimestamp(snappedMs));
   };
 
   return (
@@ -2500,124 +2671,306 @@ function SongTrimModal({
         <div className="mt-5 rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-            {clip?.fileName} - original {formatDuration(totalDurationMs / 1000)} - playing {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
+            {clip?.fileName} - original {formatDuration(totalDurationMs / 1000)} - window {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.18em] text-slate-400">
+            <span>
+              Track Time <span className="text-white">{formatMsTimestamp(liveSongTimeMs)}</span>
+            </span>
+            <span>
+              Window Time <span className="text-white">{formatMsTimestamp(liveWindowTimeMs)}</span>
+            </span>
+            <span className={isPreviewActive ? "text-emerald-300" : "text-slate-500"}>
+              {isPreviewActive ? (isPreviewPaused ? "Paused" : "Playing") : "Ready"}
+            </span>
           </div>
 
           <div className="mt-4">
-            <div className="mb-3 flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
-              <span className="rounded-full border border-rose-300/30 bg-rose-400/10 px-2.5 py-1 text-rose-100">Trim</span>
-              <span className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-cyan-100">Fade In</span>
-              <span className="rounded-full border border-sky-300/30 bg-sky-400/10 px-2.5 py-1 text-sky-100">Fade Out</span>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2 text-[11px] uppercase tracking-[0.18em] text-slate-400">
+                <span className="rounded-full border border-rose-300/30 bg-rose-400/10 px-2.5 py-1 text-rose-100">Trim</span>
+                <span className="rounded-full border border-cyan-300/30 bg-cyan-400/10 px-2.5 py-1 text-cyan-100">Fade In</span>
+                <span className="rounded-full border border-sky-300/30 bg-sky-400/10 px-2.5 py-1 text-sky-100">Fade Out</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWaveformZoom((current) => Math.max(1, Number((current - 0.5).toFixed(1))))}
+                  className="secondary-button h-10 w-10 justify-center rounded-full p-0"
+                  title="Zoom out waveform"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <div className="min-w-[4.25rem] text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  {waveformZoom.toFixed(1)}x
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setWaveformZoom((current) => Math.min(4, Number((current + 0.5).toFixed(1))))}
+                  className="secondary-button h-10 w-10 justify-center rounded-full p-0"
+                  title="Zoom in waveform"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
 
-            <div
-              ref={editorRef}
-              className="relative h-64 overflow-hidden rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]"
-            >
+            <div className="overflow-x-auto rounded-[1.2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))]">
               <div
-                className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"
-                style={{ backgroundSize: "5% 100%" }}
-              />
-              {waveformPeaks.length ? (
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
-                  <polyline
-                    fill="none"
-                    stroke="rgba(96,165,250,0.9)"
-                    strokeWidth="0.32"
-                    points={waveformPath}
-                  />
-                </svg>
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
-                  Loading waveform...
-                </div>
-              )}
-
-              <div
-                className="absolute inset-y-0 bg-slate-950/65"
-                style={{ left: 0, width: getHandlePosition(safeTrimStartMs) }}
-              />
-              <div
-                className="absolute inset-y-0 bg-lime-300/20"
-                style={{
-                  left: getHandlePosition(safeTrimStartMs),
-                  width: `calc(${getHandlePosition(safeTrimEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
-                }}
-              />
-              <div
-                className="absolute inset-y-0 bg-slate-950/65"
-                style={{ left: getHandlePosition(safeTrimEndMs), right: 0 }}
-              />
-              <div
-                className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(34,211,238,0.78),rgba(34,211,238,0.06))]"
-                style={{
-                  left: getHandlePosition(safeTrimStartMs),
-                  width: `calc(${getHandlePosition(safeFadeInEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
-                }}
-              />
-              <div
-                className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(56,189,248,0.06),rgba(56,189,248,0.8))]"
-                style={{
-                  left: getHandlePosition(safeFadeStartMs),
-                  width: `calc(${getHandlePosition(safeFadeEndMs)} - ${getHandlePosition(safeFadeStartMs)})`,
-                }}
-              />
-
-              {[
-                { key: "trimStart", value: safeTrimStartMs, color: "bg-rose-500", badge: "TS" },
-                { key: "fadeInEnd", value: safeFadeInEndMs, color: "bg-cyan-400", badge: "FI" },
-                { key: "fadeOutStart", value: safeFadeStartMs, color: "bg-sky-400", badge: "FO In" },
-                { key: "fadeOutEnd", value: safeFadeEndMs, color: "bg-sky-500", badge: "FO Out" },
-                { key: "trimEnd", value: safeTrimEndMs, color: "bg-rose-500", badge: "TE" },
-              ].map((handle) => (
-                <button
-                  key={handle.key}
-                  type="button"
-                  onPointerDown={startHandleDrag(handle.key)}
-                  className="absolute top-0 z-20 h-full w-5 -translate-x-1/2 bg-transparent"
-                  style={{ left: getHandlePosition(handle.value) }}
-                  title={`${handle.badge} ${formatMsTimestamp(handle.value)}`}
-                >
-                  <div className={`absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 rounded-full ${handle.color} shadow-[0_0_16px_rgba(255,255,255,0.2)]`} />
-                  <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-white/15 bg-slate-950/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white">
-                    {handle.badge}
+                ref={editorRef}
+                className="relative h-44 min-w-full overflow-hidden sm:h-56 lg:h-64"
+                style={{ width: `${waveformZoom * 100}%` }}
+              >
+                <div
+                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)]"
+                  style={{ backgroundSize: "5% 100%" }}
+                />
+                {waveformPeaks.length ? (
+                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 h-full w-full">
+                    <polyline
+                      fill="none"
+                      stroke="rgba(96,165,250,0.9)"
+                      strokeWidth="0.32"
+                      points={waveformPath}
+                    />
+                  </svg>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+                    Loading waveform...
                   </div>
-                </button>
-              ))}
+                )}
 
-              <div className="absolute inset-x-0 bottom-0 flex justify-between px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                <span>{formatMsTimestamp(0)}</span>
-                <span>{formatMsTimestamp(editorDurationMs)}</span>
+                <div
+                  className="absolute inset-y-0 bg-slate-950/65"
+                  style={{ left: 0, width: getHandlePosition(safeTrimStartMs) }}
+                />
+                <div
+                  className="absolute inset-y-0 bg-lime-300/20"
+                  style={{
+                    left: getHandlePosition(safeTrimStartMs),
+                    width: `calc(${getHandlePosition(safeTrimEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
+                  }}
+                />
+                <div
+                  className="absolute inset-y-0 bg-slate-950/65"
+                  style={{ left: getHandlePosition(safeTrimEndMs), right: 0 }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(34,211,238,0.78),rgba(34,211,238,0.06))]"
+                  style={{
+                    left: getHandlePosition(safeTrimStartMs),
+                    width: `calc(${getHandlePosition(safeFadeInEndMs)} - ${getHandlePosition(safeTrimStartMs)})`,
+                  }}
+                />
+                <div
+                  className="pointer-events-none absolute inset-y-0 bg-[linear-gradient(90deg,rgba(56,189,248,0.06),rgba(56,189,248,0.8))]"
+                  style={{
+                    left: getHandlePosition(safeFadeStartMs),
+                    width: `calc(${getHandlePosition(safeFadeEndMs)} - ${getHandlePosition(safeFadeStartMs)})`,
+                  }}
+                />
+                {isPreviewActive ? (
+                  <div
+                    className="pointer-events-none absolute inset-y-0 z-10 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_14px_rgba(255,255,255,0.75)]"
+                    style={{ left: livePlayheadPosition }}
+                  >
+                    <div className="absolute left-1/2 top-2 h-3 w-3 -translate-x-1/2 rounded-full border border-slate-950/40 bg-white shadow-[0_0_12px_rgba(255,255,255,0.8)]" />
+                  </div>
+                ) : null}
+
+                {[
+                  { key: "trimStart", value: safeTrimStartMs, color: "bg-rose-500", badge: "TS" },
+                  { key: "fadeInEnd", value: safeFadeInEndMs, color: "bg-cyan-400", badge: "FI" },
+                  { key: "fadeOutStart", value: safeFadeStartMs, color: "bg-sky-400", badge: "FO In" },
+                  { key: "fadeOutEnd", value: safeFadeEndMs, color: "bg-sky-500", badge: "FO Out" },
+                  { key: "trimEnd", value: safeTrimEndMs, color: "bg-rose-500", badge: "TE" },
+                ].map((handle) => (
+                  <button
+                    key={handle.key}
+                    type="button"
+                    onPointerDown={startHandleDrag(handle.key)}
+                    className="absolute top-0 z-20 h-full w-8 -translate-x-1/2 bg-transparent sm:w-6"
+                    style={{ left: getHandlePosition(handle.value) }}
+                    title={`${handle.badge} ${formatMsTimestamp(handle.value)}`}
+                  >
+                    <div className={`absolute inset-y-0 left-1/2 w-2 -translate-x-1/2 rounded-full ${handle.color} shadow-[0_0_16px_rgba(255,255,255,0.2)] sm:w-1.5`} />
+                    <div className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full border border-white/15 bg-slate-950/90 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-white sm:text-[10px]">
+                      {handle.badge}
+                    </div>
+                  </button>
+                ))}
+
+                <div className="absolute inset-x-0 bottom-0 flex justify-between px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                  <span>{formatMsTimestamp(0)}</span>
+                  <span>{formatMsTimestamp(editorDurationMs)}</span>
+                </div>
               </div>
             </div>
 
             <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Trim Start</div>
-                <div className="mt-1 font-semibold">{formatMsTimestamp(safeTrimStartMs)}</div>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade In End</div>
-                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeInEndMs)}</div>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade Out Start</div>
-                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeStartMs)}</div>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Fade Out End</div>
-                <div className="mt-1 font-semibold">{formatMsTimestamp(safeFadeEndMs)}</div>
-              </div>
-              <div className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200">
-                <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">Trim End</div>
-                <div className="mt-1 font-semibold">{formatMsTimestamp(safeTrimEndMs)}</div>
-              </div>
+              {[
+                {
+                  label: "Trim Start",
+                  value: trimStartInput,
+                  setValue: setTrimStartInput,
+                  fallbackMs: safeTrimStartMs,
+                  minMs: 0,
+                  maxMs: Math.max(0, totalDurationMs - MIN_WALKUP_TRIM_MS),
+                  onCommit: onStartChange,
+                },
+                {
+                  label: "Fade In End",
+                  value: fadeInEndInput,
+                  setValue: setFadeInEndInput,
+                  fallbackMs: safeFadeInEndMs,
+                  minMs: safeTrimStartMs,
+                  maxMs: safeTrimEndMs,
+                  onCommit: onFadeInEndChange,
+                },
+                {
+                  label: "Fade Out Start",
+                  value: fadeOutStartInput,
+                  setValue: setFadeOutStartInput,
+                  fallbackMs: safeFadeStartMs,
+                  minMs: safeTrimStartMs,
+                  maxMs: safeFadeEndMs,
+                  onCommit: onFadeOutStartChange,
+                },
+                {
+                  label: "Fade Out End",
+                  value: fadeOutEndInput,
+                  setValue: setFadeOutEndInput,
+                  fallbackMs: safeFadeEndMs,
+                  minMs: safeFadeStartMs,
+                  maxMs: Math.max(safeFadeStartMs, totalDurationMs),
+                  onCommit: onFadeOutEndChange,
+                },
+                {
+                  label: "Trim End",
+                  value: trimEndInput,
+                  setValue: setTrimEndInput,
+                  fallbackMs: safeTrimEndMs,
+                  minMs: safeTrimStartMs + MIN_WALKUP_TRIM_MS,
+                  maxMs: Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs),
+                  onCommit: onEndChange,
+                },
+              ].map((field) => (
+                <label
+                  key={field.label}
+                  className="rounded-2xl border border-white/8 bg-slate-900/70 px-3 py-2 text-sm text-slate-200"
+                >
+                  <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
+                    {field.label}
+                  </div>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={field.value}
+                    onChange={(event) => field.setValue(event.target.value)}
+                    onBlur={() =>
+                      commitTimestampInput(
+                        field.value,
+                        field.fallbackMs,
+                        field.minMs,
+                        field.maxMs,
+                        field.onCommit,
+                        field.setValue,
+                      )
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.currentTarget.blur();
+                      }
+                    }}
+                    onFocus={(event) => event.currentTarget.select()}
+                    className="mt-1 w-full bg-transparent font-semibold text-white outline-none"
+                  />
+                </label>
+              ))}
             </div>
 
             <div className="mt-3 flex items-center justify-between text-xs uppercase tracking-[0.18em] text-slate-500">
               <span>Window {formatDuration((safeTrimEndMs - safeTrimStartMs) / 1000)}</span>
               <span>Fade In {formatDuration((safeFadeInEndMs - safeTrimStartMs) / 1000)}</span>
               <span>Fade Out {formatDuration((safeFadeEndMs - safeFadeStartMs) / 1000)}</span>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:hidden">
+              <label className="block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Trim Start
+                </span>
+                <input
+                  type="range"
+                  min="0"
+                  max={Math.max(0, totalDurationMs - MIN_WALKUP_TRIM_MS)}
+                  step={SONG_EDITOR_SNAP_MS}
+                  value={Math.min(safeTrimStartMs, Math.max(0, totalDurationMs - MIN_WALKUP_TRIM_MS))}
+                  onChange={(event) => onStartChange(Number(event.target.value))}
+                  disabled={!canTrim}
+                  className="w-full accent-rose-400"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Fade In End
+                </span>
+                <input
+                  type="range"
+                  min={safeTrimStartMs}
+                  max={safeTrimEndMs}
+                  step={SONG_EDITOR_SNAP_MS}
+                  value={safeFadeInEndMs}
+                  onChange={(event) => onFadeInEndChange(Number(event.target.value))}
+                  disabled={!canTrim}
+                  className="w-full accent-cyan-300"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Fade Out Start
+                </span>
+                <input
+                  type="range"
+                  min={safeTrimStartMs}
+                  max={safeFadeEndMs}
+                  step={SONG_EDITOR_SNAP_MS}
+                  value={safeFadeStartMs}
+                  onChange={(event) => onFadeOutStartChange(Number(event.target.value))}
+                  disabled={!canTrim}
+                  className="w-full accent-sky-300"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Fade Out End
+                </span>
+                <input
+                  type="range"
+                  min={safeFadeStartMs}
+                  max={Math.max(safeFadeStartMs, totalDurationMs)}
+                  step={SONG_EDITOR_SNAP_MS}
+                  value={safeFadeEndMs}
+                  onChange={(event) => onFadeOutEndChange(Number(event.target.value))}
+                  disabled={!canTrim}
+                  className="w-full accent-sky-400"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Trim End
+                </span>
+                <input
+                  type="range"
+                  min={safeTrimStartMs + MIN_WALKUP_TRIM_MS}
+                  max={Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs)}
+                  step={SONG_EDITOR_SNAP_MS}
+                  value={safeTrimEndMs}
+                  onChange={(event) => onEndChange(Number(event.target.value))}
+                  disabled={!canTrim}
+                  className="w-full accent-rose-500"
+                />
+              </label>
             </div>
           </div>
 
@@ -2632,6 +2985,17 @@ function SongTrimModal({
           <button type="button" onClick={onPreview} className="secondary-button">
             <Play className="h-4 w-4" />
             Preview Window
+          </button>
+          <button
+            type="button"
+            onClick={onTogglePause}
+            disabled={!isPreviewActive}
+            className={`secondary-button ${
+              isPreviewActive ? "" : "cursor-not-allowed opacity-50"
+            }`}
+          >
+            {isPreviewPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+            {isPreviewPaused ? "Resume" : "Pause"}
           </button>
           <button type="button" onClick={onSave} className="primary-button">
             Save Trim
