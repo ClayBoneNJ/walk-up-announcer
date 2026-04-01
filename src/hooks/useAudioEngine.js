@@ -352,7 +352,11 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     const audio = createAudioElement(volume);
     audio.src = item.dataUrl ?? item.src;
-    await attachAudioGainNode(audio, fadeMs > 0 ? 0 : volume);
+    if (item.slot === "song") {
+      await attachAudioGainNode(audio, fadeMs > 0 ? 0 : volume);
+    } else {
+      setPlaybackLevel(audio, fadeMs > 0 ? 0 : volume);
+    }
 
     const entry = {
       item,
