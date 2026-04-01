@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioLines,
   CirclePause,
@@ -615,11 +615,29 @@ function WalkupsView({
   onEditPlayer,
 }) {
   const [draggedPlayerId, setDraggedPlayerId] = useState("");
+  const touchDragStateRef = useRef({
+    active: false,
+    playerId: "",
+    pointerId: null,
+    started: false,
+    startX: 0,
+    startY: 0,
+    lastTargetId: "",
+  });
+  const touchHoldTimerRef = useRef(null);
   const currentBatter =
     players.find((player) => player.id === lineupCursorId) ?? players[0] ?? null;
   const currentIndex = currentBatter
     ? players.findIndex((player) => player.id === currentBatter.id)
     : -1;
+
+  const clearTouchHoldTimer = () => {
+    if (touchHoldTimerRef.current) {
+      window.clearTimeout(touchHoldTimerRef.current);
+      touchHoldTimerRef.current = null;
+    }
+  };
+
   const handleDragStart = (event, player) => {
     setDraggedPlayerId(player.id);
     event.dataTransfer.effectAllowed = "move";
@@ -652,6 +670,106 @@ function WalkupsView({
     });
   };
 
+  useEffect(() => {
+    const handlePointerMove = (event) => {
+      const state = touchDragStateRef.current;
+      if (!state.active || state.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const movedFar =
+        Math.abs(event.clientX - state.startX) > 8 || Math.abs(event.clientY - state.startY) > 8;
+
+      if (!state.started && movedFar) {
+        clearTouchHoldTimer();
+      }
+
+      if (!state.started) {
+        return;
+      }
+
+      event.preventDefault();
+
+      const targetRow = document
+        .elementFromPoint(event.clientX, event.clientY)
+        ?.closest?.("[data-lineup-row='true']");
+      const targetPlayerId = targetRow?.getAttribute("data-player-id") || "";
+
+      if (!targetPlayerId || targetPlayerId === state.playerId || targetPlayerId === state.lastTargetId) {
+        return;
+      }
+
+      onReorderPlayers(state.playerId, targetPlayerId, players);
+      touchDragStateRef.current = {
+        ...state,
+        playerId: targetPlayerId,
+        lastTargetId: targetPlayerId,
+      };
+      setDraggedPlayerId(targetPlayerId);
+    };
+
+    const finishTouchDrag = (event) => {
+      const state = touchDragStateRef.current;
+      if (!state.active || (state.pointerId !== null && state.pointerId !== event.pointerId)) {
+        return;
+      }
+
+      clearTouchHoldTimer();
+      touchDragStateRef.current = {
+        active: false,
+        playerId: "",
+        pointerId: null,
+        started: false,
+        startX: 0,
+        startY: 0,
+        lastTargetId: "",
+      };
+      setDraggedPlayerId("");
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: false });
+    window.addEventListener("pointerup", finishTouchDrag);
+    window.addEventListener("pointercancel", finishTouchDrag);
+
+    return () => {
+      clearTouchHoldTimer();
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", finishTouchDrag);
+      window.removeEventListener("pointercancel", finishTouchDrag);
+    };
+  }, [onReorderPlayers, players]);
+
+  const handleTouchDragStart = (event, player) => {
+    if (event.pointerType === "mouse") {
+      return;
+    }
+
+    clearTouchHoldTimer();
+
+    touchDragStateRef.current = {
+      active: true,
+      playerId: player.id,
+      pointerId: event.pointerId,
+      started: false,
+      startX: event.clientX,
+      startY: event.clientY,
+      lastTargetId: "",
+    };
+
+    touchHoldTimerRef.current = window.setTimeout(() => {
+      const state = touchDragStateRef.current;
+      if (!state.active || state.playerId !== player.id || state.pointerId !== event.pointerId) {
+        return;
+      }
+
+      touchDragStateRef.current = {
+        ...state,
+        started: true,
+      };
+      setDraggedPlayerId(player.id);
+    }, 180);
+  };
+
   return (
     <div className="space-y-4">
     <section className="glass-panel rounded-[1.6rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
@@ -677,6 +795,7 @@ function WalkupsView({
             <div
               key={player.id}
               data-lineup-row="true"
+              data-player-id={player.id}
               draggable
               onDragStart={(event) => handleDragStart(event, player)}
               onDragOver={(event) => {
@@ -762,9 +881,10 @@ function WalkupsView({
                   event.stopPropagation();
                   handleDragStart(event, player);
                 }}
-                className="icon-button relative z-10 hidden cursor-grab active:cursor-grabbing sm:flex"
+                onPointerDown={(event) => handleTouchDragStart(event, player)}
+                className="icon-button relative z-10 flex cursor-grab touch-none active:cursor-grabbing"
                 aria-label={`Drag ${player.name}`}
-                title="Drag to reorder lineup"
+                title="Hold and drag to reorder lineup"
               >
                 <GripVertical className="h-4 w-4" />
               </button>
