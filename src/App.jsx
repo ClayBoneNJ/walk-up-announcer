@@ -397,7 +397,7 @@ export default function App() {
               </h1>
             </div>
 
-            {activeTab !== "setup" && activeTab !== "freestyle" ? (
+            {activeTab === "walkups" ? (
               <div
                 className={`grid gap-3 ${
                   activeTab === "walkups"
@@ -423,49 +423,6 @@ export default function App() {
                   />
                 </label>
 
-                {activeTab !== "walkups" ? (
-                  <label className="panel-muted rounded-2xl px-4 py-3">
-                    <span className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-slate-400">
-                      <Waves className="h-3.5 w-3.5" />
-                      Fade
-                    </span>
-                    <select
-                      value={settings.fadeMs}
-                      onChange={(event) =>
-                        updateState((current) => ({
-                          ...current,
-                          settings: { ...current.settings, fadeMs: Number(event.target.value) },
-                        }))
-                      }
-                      className="w-full rounded-xl border border-white/8 bg-slate-950/60 px-3 py-2 text-sm text-white outline-none"
-                    >
-                      <option value={0}>Off</option>
-                      <option value={250}>Quick</option>
-                      <option value={400}>Smooth</option>
-                      <option value={700}>Long</option>
-                    </select>
-                  </label>
-                ) : null}
-
-                {activeTab !== "walkups" ? (
-                  <div className="panel-muted rounded-2xl px-4 py-3">
-                    <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Now Playing</div>
-                    <div className="mt-1 truncate text-sm font-semibold text-white">
-                      {activePlayback ? activePlayback.playerName : "Ready"}
-                    </div>
-                  </div>
-                ) : null}
-
-                {activeTab !== "walkups" ? (
-                  <div className="flex items-center gap-2">
-                    <button type="button" onClick={togglePause} className="icon-button">
-                      {isPaused ? <CirclePlay className="h-5 w-5" /> : <CirclePause className="h-5 w-5" />}
-                    </button>
-                    <button type="button" onClick={stopAll} className="icon-button danger">
-                      <Square className="h-4.5 w-4.5" />
-                    </button>
-                  </div>
-                ) : null}
               </div>
             ) : null}
           </div>
@@ -568,15 +525,17 @@ export default function App() {
         </main>
       </div>
 
-      <button
-        type="button"
-        onClick={stopAll}
-        className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
-        aria-label="Stop all audio"
-        title="Stop all audio"
-      >
-        <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-      </button>
+      {activeTab !== "soundboard" ? (
+        <button
+          type="button"
+          onClick={stopAll}
+          className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
+          aria-label="Stop all audio"
+          title="Stop all audio"
+        >
+          <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+        </button>
+      ) : null}
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">

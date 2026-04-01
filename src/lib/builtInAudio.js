@@ -18,6 +18,10 @@ function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}`;
 }
 
+function assetRootSrc(fileName) {
+  return `${import.meta.env.BASE_URL}assets/audio/${encodeURIComponent(fileName)}`;
+}
+
 function titleCaseFromFileName(fileName) {
   return fileName
     .replace(/\.mp3$/i, "")
@@ -205,7 +209,36 @@ export const BUILT_IN_LIBRARIES = {
       duration: BUILT_IN_SONG_DURATIONS[fileName] ?? null,
     });
   }),
-  effects: [],
+  effects: [
+    builtInClip({
+      id: "effect-he-gone",
+      group: "effects",
+      nickname: "He Gone",
+      fileName: "he gone.mp3",
+      src: assetRootSrc("he gone.mp3"),
+    }),
+    builtInClip({
+      id: "effect-hes-outta-there",
+      group: "effects",
+      nickname: "He's Outta There",
+      fileName: "hes outta there.mp3",
+      src: assetRootSrc("hes outta there.mp3"),
+    }),
+    builtInClip({
+      id: "effect-strike-3-hes-out",
+      group: "effects",
+      nickname: "Strike 3 He's Out",
+      fileName: "strike 3 hes out.mp3",
+      src: assetRootSrc("strike 3 hes out.mp3"),
+    }),
+    builtInClip({
+      id: "effect-when-i-say",
+      group: "effects",
+      nickname: "When I Say",
+      fileName: "when i say.mp3",
+      src: assetRootSrc("when i say.mp3"),
+    }),
+  ],
 };
 
 export const BUILT_IN_PLAYER_CLIPS = Object.fromEntries(
