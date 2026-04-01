@@ -772,21 +772,21 @@ function SoundboardPage({ clips, onPlayClip }) {
   const crowdHypeClips = clips.filter((clip) => clip.id === "effect-when-i-say");
 
   return (
-    <div className="space-y-4">
-      <section className="glass-panel rounded-[1.5rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
-        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
+    <div className="space-y-3">
+      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-300">
           Strike 3
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {strikeThreeClips.map((clip) => (
             <button
               key={clip.id}
               type="button"
               onClick={() => onPlayClip({ clip })}
-              className="aspect-square rounded-[0.3rem] border border-amber-200/65 bg-[linear-gradient(145deg,rgba(251,191,36,0.48),rgba(217,119,6,0.36)_42%,rgba(15,23,42,0.99))] px-2 py-2 text-center shadow-[0_12px_24px_rgba(245,158,11,0.24)] transition duration-150 hover:border-amber-100/85 active:translate-y-[2px] active:scale-[0.97]"
+              className="aspect-square rounded-[0.22rem] border border-amber-200/65 bg-[linear-gradient(145deg,rgba(251,191,36,0.48),rgba(217,119,6,0.36)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(245,158,11,0.2)] transition duration-150 hover:border-amber-100/85 active:translate-y-[2px] active:scale-[0.97]"
             >
               <div className="flex h-full flex-col items-center justify-center">
-                <div className="line-clamp-3 text-[13px] font-extrabold uppercase leading-[0.95] tracking-[0.01em] text-white sm:text-[15px]">
+                <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
                   {clip.nickname}
                 </div>
               </div>
@@ -801,20 +801,20 @@ function SoundboardPage({ clips, onPlayClip }) {
         </div>
       </section>
 
-      <section className="glass-panel rounded-[1.5rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
-        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300">
           Crowd Hype
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {crowdHypeClips.map((clip) => (
             <button
               key={clip.id}
               type="button"
               onClick={() => onPlayClip({ clip })}
-              className="aspect-square rounded-[0.3rem] border border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] px-2 py-2 text-center shadow-[0_12px_24px_rgba(8,145,178,0.24)] transition duration-150 hover:border-cyan-100/85 active:translate-y-[2px] active:scale-[0.97]"
+              className="aspect-square rounded-[0.22rem] border border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(8,145,178,0.2)] transition duration-150 hover:border-cyan-100/85 active:translate-y-[2px] active:scale-[0.97]"
             >
               <div className="flex h-full flex-col items-center justify-center">
-                <div className="line-clamp-3 text-[13px] font-extrabold uppercase leading-[0.95] tracking-[0.01em] text-white sm:text-[15px]">
+                <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
                   {clip.nickname}
                 </div>
               </div>
