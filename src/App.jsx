@@ -398,8 +398,8 @@ export default function App() {
             {activeTab !== "setup" && activeTab !== "freestyle" ? (
               <div
                 className={`grid gap-3 ${
-                  activeTab === "freestyle"
-                    ? "sm:grid-cols-[1.1fr,180px,auto]"
+                  activeTab === "walkups"
+                    ? "sm:grid-cols-[minmax(260px,1.1fr)]"
                     : "sm:grid-cols-[1.1fr,180px,180px,auto]"
                 }`}
               >
@@ -421,29 +421,31 @@ export default function App() {
                   />
                 </label>
 
-                <label className="panel-muted rounded-2xl px-4 py-3">
-                  <span className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-slate-400">
-                    <Waves className="h-3.5 w-3.5" />
-                    Fade
-                  </span>
-                  <select
-                    value={settings.fadeMs}
-                    onChange={(event) =>
-                      updateState((current) => ({
-                        ...current,
-                        settings: { ...current.settings, fadeMs: Number(event.target.value) },
-                      }))
-                    }
-                    className="w-full rounded-xl border border-white/8 bg-slate-950/60 px-3 py-2 text-sm text-white outline-none"
-                  >
-                    <option value={0}>Off</option>
-                    <option value={250}>Quick</option>
-                    <option value={400}>Smooth</option>
-                    <option value={700}>Long</option>
-                  </select>
-                </label>
+                {activeTab !== "walkups" ? (
+                  <label className="panel-muted rounded-2xl px-4 py-3">
+                    <span className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.24em] text-slate-400">
+                      <Waves className="h-3.5 w-3.5" />
+                      Fade
+                    </span>
+                    <select
+                      value={settings.fadeMs}
+                      onChange={(event) =>
+                        updateState((current) => ({
+                          ...current,
+                          settings: { ...current.settings, fadeMs: Number(event.target.value) },
+                        }))
+                      }
+                      className="w-full rounded-xl border border-white/8 bg-slate-950/60 px-3 py-2 text-sm text-white outline-none"
+                    >
+                      <option value={0}>Off</option>
+                      <option value={250}>Quick</option>
+                      <option value={400}>Smooth</option>
+                      <option value={700}>Long</option>
+                    </select>
+                  </label>
+                ) : null}
 
-                {activeTab !== "freestyle" ? (
+                {activeTab !== "walkups" ? (
                   <div className="panel-muted rounded-2xl px-4 py-3">
                     <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Now Playing</div>
                     <div className="mt-1 truncate text-sm font-semibold text-white">
@@ -452,14 +454,16 @@ export default function App() {
                   </div>
                 ) : null}
 
-                <div className="flex items-center gap-2">
-                  <button type="button" onClick={togglePause} className="icon-button">
-                    {isPaused ? <CirclePlay className="h-5 w-5" /> : <CirclePause className="h-5 w-5" />}
-                  </button>
-                  <button type="button" onClick={stopAll} className="icon-button danger">
-                    <Square className="h-4.5 w-4.5" />
-                  </button>
-                </div>
+                {activeTab !== "walkups" ? (
+                  <div className="flex items-center gap-2">
+                    <button type="button" onClick={togglePause} className="icon-button">
+                      {isPaused ? <CirclePlay className="h-5 w-5" /> : <CirclePause className="h-5 w-5" />}
+                    </button>
+                    <button type="button" onClick={stopAll} className="icon-button danger">
+                      <Square className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
+                ) : null}
               </div>
             ) : null}
           </div>
