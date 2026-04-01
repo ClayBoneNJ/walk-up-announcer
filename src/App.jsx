@@ -615,6 +615,7 @@ function WalkupsView({
   onEditPlayer,
 }) {
   const [draggedPlayerId, setDraggedPlayerId] = useState("");
+  const [touchGhost, setTouchGhost] = useState(null);
   const touchDragStateRef = useRef({
     active: false,
     playerId: "",
@@ -623,6 +624,8 @@ function WalkupsView({
     startX: 0,
     startY: 0,
     lastTargetId: "",
+    offsetX: 0,
+    offsetY: 0,
   });
   const touchHoldTimerRef = useRef(null);
   const currentBatter =
@@ -689,6 +692,15 @@ function WalkupsView({
       }
 
       event.preventDefault();
+      setTouchGhost((current) =>
+        current
+          ? {
+              ...current,
+              x: event.clientX - state.offsetX,
+              y: event.clientY - state.offsetY,
+            }
+          : current,
+      );
 
       const targetRow = document
         .elementFromPoint(event.clientX, event.clientY)
@@ -723,8 +735,11 @@ function WalkupsView({
         startX: 0,
         startY: 0,
         lastTargetId: "",
+        offsetX: 0,
+        offsetY: 0,
       };
       setDraggedPlayerId("");
+      setTouchGhost(null);
     };
 
     window.addEventListener("pointermove", handlePointerMove, { passive: false });
@@ -754,6 +769,8 @@ function WalkupsView({
       startX: event.clientX,
       startY: event.clientY,
       lastTargetId: "",
+      offsetX: 0,
+      offsetY: 0,
     };
 
     touchHoldTimerRef.current = window.setTimeout(() => {
@@ -762,11 +779,28 @@ function WalkupsView({
         return;
       }
 
+      const sourceRow = event.currentTarget.closest("[data-lineup-row='true']");
+      const rowRect = sourceRow?.getBoundingClientRect();
+      const offsetX = rowRect ? event.clientX - rowRect.left : 18;
+      const offsetY = rowRect ? event.clientY - rowRect.top : 18;
+
       touchDragStateRef.current = {
         ...state,
         started: true,
+        offsetX,
+        offsetY,
       };
       setDraggedPlayerId(player.id);
+      setTouchGhost(
+        rowRect
+          ? {
+              playerId: player.id,
+              x: rowRect.left,
+              y: rowRect.top,
+              width: rowRect.width,
+            }
+          : null,
+      );
     }, 180);
   };
 
@@ -899,6 +933,45 @@ function WalkupsView({
         ) : null}
       </div>
     </section>
+    {touchGhost ? (
+      <div
+        className="pointer-events-none fixed z-40"
+        style={{
+          left: `${touchGhost.x}px`,
+          top: `${touchGhost.y}px`,
+          width: `${touchGhost.width}px`,
+        }}
+      >
+        {(() => {
+          const ghostPlayer = players.find((player) => player.id === touchGhost.playerId);
+          if (!ghostPlayer) {
+            return null;
+          }
+
+          return (
+            <div className="relative flex w-full items-center gap-2.5 overflow-hidden rounded-[1.35rem] border border-cyan-200/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.28),rgba(14,165,233,0.16)_45%,rgba(8,47,73,0.82))] px-2.5 py-2.5 text-left opacity-95 shadow-[0_24px_60px_rgba(14,165,233,0.34)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(125,211,252,0.24),transparent_34%),linear-gradient(90deg,rgba(255,255,255,0.05),transparent_24%)]" />
+              <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3 text-left">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border border-cyan-100/70 bg-cyan-100 text-sm font-black uppercase tracking-[0.03em] text-slate-950 sm:h-12 sm:w-12 sm:rounded-[1.15rem] sm:text-base">
+                  {ghostPlayer.jerseyNumber || "--"}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-base font-black tracking-[0.01em] text-white sm:text-xl">
+                    {ghostPlayer.name}
+                  </div>
+                  <div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-cyan-100/80 sm:text-[11px] sm:tracking-[0.18em]">
+                    {ghostPlayer.positionLabel || "Utility"}
+                  </div>
+                </div>
+                <div className="rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950">
+                  Moving
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
+    ) : null}
     {players.length && currentBatter ? (
       <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
         <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
