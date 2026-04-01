@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   AudioLines,
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
   CirclePause,
   CirclePlay,
-  GripVertical,
   Settings2,
   Square,
   Users,
@@ -614,204 +616,30 @@ function WalkupsView({
   onReorderPlayers,
   onEditPlayer,
 }) {
-  const [draggedPlayerId, setDraggedPlayerId] = useState("");
-  const [touchGhost, setTouchGhost] = useState(null);
-  const touchDragStateRef = useRef({
-    active: false,
-    playerId: "",
-    pointerId: null,
-    started: false,
-    startX: 0,
-    startY: 0,
-    currentX: 0,
-    currentY: 0,
-    lastTargetId: "",
-    offsetX: 0,
-    offsetY: 0,
-  });
-  const touchHoldTimerRef = useRef(null);
+  const [isReorderMode, setIsReorderMode] = useState(false);
   const currentBatter =
     players.find((player) => player.id === lineupCursorId) ?? players[0] ?? null;
   const currentIndex = currentBatter
     ? players.findIndex((player) => player.id === currentBatter.id)
     : -1;
 
-  const clearTouchHoldTimer = () => {
-    if (touchHoldTimerRef.current) {
-      window.clearTimeout(touchHoldTimerRef.current);
-      touchHoldTimerRef.current = null;
-    }
-  };
-
-  const handleDragStart = (event, player) => {
-    setDraggedPlayerId(player.id);
-    event.dataTransfer.effectAllowed = "move";
-
-    const sourceRow = event.currentTarget.closest("[data-lineup-row='true']");
-    if (!sourceRow) {
+  const movePlayerByStep = (playerId, direction) => {
+    const currentPlayerIndex = players.findIndex((player) => player.id === playerId);
+    if (currentPlayerIndex === -1) {
       return;
     }
 
-    const rowRect = sourceRow.getBoundingClientRect();
-    const ghost = sourceRow.cloneNode(true);
-    ghost.style.width = `${rowRect.width}px`;
-    ghost.style.maxWidth = `${rowRect.width}px`;
-    ghost.style.position = "fixed";
-    ghost.style.top = "-9999px";
-    ghost.style.left = "-9999px";
-    ghost.style.pointerEvents = "none";
-    ghost.style.zIndex = "9999";
-    ghost.style.opacity = "0.95";
-    ghost.style.boxShadow = "0 24px 60px rgba(8, 47, 73, 0.45)";
-    ghost.classList.add("border-sky-300/40", "bg-sky-400/10");
-
-    document.body.appendChild(ghost);
-    event.dataTransfer.setDragImage(ghost, rowRect.width - 36, rowRect.height / 2);
-
-    requestAnimationFrame(() => {
-      if (ghost.parentNode) {
-        ghost.parentNode.removeChild(ghost);
-      }
-    });
-  };
-
-  useEffect(() => {
-    const handlePointerMove = (event) => {
-      const state = touchDragStateRef.current;
-      if (!state.active || state.pointerId !== event.pointerId) {
-        return;
-      }
-
-      touchDragStateRef.current = {
-        ...state,
-        currentX: event.clientX,
-        currentY: event.clientY,
-      };
-
-      if (!state.started) {
-        return;
-      }
-
-      event.preventDefault();
-      setTouchGhost((current) =>
-        current
-          ? {
-              ...current,
-              x: event.clientX - state.offsetX,
-              y: event.clientY - state.offsetY,
-            }
-          : current,
-      );
-
-      const targetRow = document
-        .elementFromPoint(event.clientX, event.clientY)
-        ?.closest?.("[data-lineup-row='true']");
-      const targetPlayerId = targetRow?.getAttribute("data-player-id") || "";
-
-      if (!targetPlayerId || targetPlayerId === state.playerId || targetPlayerId === state.lastTargetId) {
-        return;
-      }
-
-      onReorderPlayers(state.playerId, targetPlayerId, players);
-      touchDragStateRef.current = {
-        ...state,
-        playerId: targetPlayerId,
-        lastTargetId: targetPlayerId,
-      };
-      setDraggedPlayerId(targetPlayerId);
-    };
-
-    const finishTouchDrag = (event) => {
-      const state = touchDragStateRef.current;
-      if (!state.active || (state.pointerId !== null && state.pointerId !== event.pointerId)) {
-        return;
-      }
-
-      clearTouchHoldTimer();
-      touchDragStateRef.current = {
-        active: false,
-        playerId: "",
-        pointerId: null,
-        started: false,
-        startX: 0,
-        startY: 0,
-        currentX: 0,
-        currentY: 0,
-        lastTargetId: "",
-        offsetX: 0,
-        offsetY: 0,
-      };
-      setDraggedPlayerId("");
-      setTouchGhost(null);
-    };
-
-    window.addEventListener("pointermove", handlePointerMove, { passive: false });
-    window.addEventListener("pointerup", finishTouchDrag);
-    window.addEventListener("pointercancel", finishTouchDrag);
-
-    return () => {
-      clearTouchHoldTimer();
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", finishTouchDrag);
-      window.removeEventListener("pointercancel", finishTouchDrag);
-    };
-  }, [onReorderPlayers, players]);
-
-  const handleTouchDragStart = (event, player) => {
-    if (event.pointerType === "mouse") {
+    const targetIndex = currentPlayerIndex + direction;
+    if (targetIndex < 0 || targetIndex >= players.length) {
       return;
     }
 
-    event.preventDefault();
-    event.stopPropagation();
-    event.currentTarget.setPointerCapture?.(event.pointerId);
-    clearTouchHoldTimer();
+    const targetPlayer = players[targetIndex];
+    if (!targetPlayer) {
+      return;
+    }
 
-    touchDragStateRef.current = {
-      active: true,
-      playerId: player.id,
-      pointerId: event.pointerId,
-      started: false,
-      startX: event.clientX,
-      startY: event.clientY,
-      currentX: event.clientX,
-      currentY: event.clientY,
-      lastTargetId: "",
-      offsetX: 0,
-      offsetY: 0,
-    };
-
-    touchHoldTimerRef.current = window.setTimeout(() => {
-      const state = touchDragStateRef.current;
-      if (!state.active || state.playerId !== player.id || state.pointerId !== event.pointerId) {
-        return;
-      }
-
-      const sourceRow = event.currentTarget.closest("[data-lineup-row='true']");
-      const rowRect = sourceRow?.getBoundingClientRect();
-      const holdX = state.currentX || event.clientX;
-      const holdY = state.currentY || event.clientY;
-      const offsetX = rowRect ? holdX - rowRect.left : 18;
-      const offsetY = rowRect ? holdY - rowRect.top : 18;
-
-      touchDragStateRef.current = {
-        ...state,
-        started: true,
-        offsetX,
-        offsetY,
-      };
-      setDraggedPlayerId(player.id);
-      setTouchGhost(
-        rowRect
-          ? {
-              playerId: player.id,
-              x: holdX - offsetX,
-              y: holdY - offsetY,
-              width: rowRect.width,
-            }
-          : null,
-      );
-    }, 180);
+    onReorderPlayers(playerId, targetPlayer.id, players);
   };
 
   return (
@@ -826,49 +654,45 @@ function WalkupsView({
             Tap a player to run their walk-up sequence.
           </div>
         </div>
-        <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs sm:tracking-[0.22em]">
-          {players.length} Players
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsReorderMode((current) => !current)}
+            className={`icon-button h-9 w-9 p-0 sm:h-10 sm:w-10 ${
+              isReorderMode
+                ? "border-cyan-200/60 bg-cyan-100 text-slate-950"
+                : "border-cyan-300/18 bg-slate-950/55 text-cyan-50"
+            }`}
+            aria-label={isReorderMode ? "Done reordering batting order" : "Edit batting order"}
+            title={isReorderMode ? "Done reordering" : "Edit batting order"}
+          >
+            <ArrowUpDown className="h-4 w-4" />
+          </button>
+          <div className="text-[10px] uppercase tracking-[0.18em] text-slate-500 sm:text-xs sm:tracking-[0.22em]">
+            {players.length} Players
+          </div>
         </div>
       </div>
       <div className="space-y-3">
         {players.map((player) => {
           const active = activePlayback?.playerId === player.id;
           const isCurrentBatter = lineupCursorId === player.id;
+          const playerIndex = players.findIndex((entry) => entry.id === player.id);
+          const canMoveUp = playerIndex > 0;
+          const canMoveDown = playerIndex < players.length - 1;
 
           return (
             <div
               key={player.id}
               data-lineup-row="true"
               data-player-id={player.id}
-              draggable
-              onDragStart={(event) => handleDragStart(event, player)}
-              onDragOver={(event) => {
-                event.preventDefault();
-                event.dataTransfer.dropEffect = "move";
-              }}
-              onDragEnter={(event) => {
-                event.preventDefault();
-                if (!draggedPlayerId || draggedPlayerId === player.id) {
-                  return;
-                }
-
-                onReorderPlayers(draggedPlayerId, player.id, players);
-                setDraggedPlayerId(player.id);
-              }}
-              onDrop={(event) => {
-                event.preventDefault();
-                setDraggedPlayerId("");
-              }}
-              onDragEnd={() => setDraggedPlayerId("")}
               className={`relative flex w-full items-center gap-2.5 overflow-hidden rounded-[1.35rem] border px-2.5 py-2.5 text-left transition sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3 ${
                 active
                   ? "border-cyan-300/70 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(14,165,233,0.14)_45%,rgba(8,47,73,0.65))] shadow-[0_22px_50px_rgba(14,165,233,0.2)]"
                   : isCurrentBatter
                     ? "border-emerald-300/45 bg-[linear-gradient(135deg,rgba(34,197,94,0.18),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))] shadow-[0_18px_40px_rgba(34,197,94,0.12)]"
-                    : draggedPlayerId === player.id && touchGhost?.playerId !== player.id
-                      ? "border-cyan-300/50 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))]"
                   : "border-sky-400/15 bg-[linear-gradient(135deg,rgba(8,47,73,0.9),rgba(15,23,42,0.94)_40%,rgba(2,6,23,0.98))] shadow-[0_14px_36px_rgba(2,6,23,0.45)] hover:border-cyan-300/30 hover:shadow-[0_18px_42px_rgba(14,165,233,0.14)]"
-              } ${touchGhost?.playerId === player.id ? "opacity-35 scale-[0.985]" : ""}`}
+              }`}
             >
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(34,211,238,0.16),transparent_34%),linear-gradient(90deg,rgba(255,255,255,0.04),transparent_24%)]" />
               {active ? (
@@ -915,24 +739,34 @@ function WalkupsView({
                 type="button"
                 onClick={() => onEditPlayer(player.id)}
                 className="secondary-button relative z-10 h-9 rounded-full border-cyan-300/20 bg-slate-950/55 px-2.5 text-[11px] uppercase tracking-[0.12em] text-cyan-50 hover:bg-cyan-300/10 sm:h-10 sm:px-3 sm:text-xs sm:tracking-[0.14em]"
+                style={isReorderMode ? { display: "none" } : undefined}
               >
                 Edit
               </button>
-              <button
-                type="button"
-                draggable
-                onDragStart={(event) => {
-                  event.stopPropagation();
-                  handleDragStart(event, player);
-                }}
-                onContextMenu={(event) => event.preventDefault()}
-                onPointerDown={(event) => handleTouchDragStart(event, player)}
-                className="icon-button relative z-10 flex cursor-grab touch-none active:cursor-grabbing"
-                aria-label={`Drag ${player.name}`}
-                title="Hold and drag to reorder lineup"
-              >
-                <GripVertical className="h-4 w-4" />
-              </button>
+              {isReorderMode ? (
+                <div className="relative z-10 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => movePlayerByStep(player.id, -1)}
+                    disabled={!canMoveUp}
+                    className="icon-button h-9 w-9 p-0 disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
+                    aria-label={`Move ${player.name} up`}
+                    title="Move up"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => movePlayerByStep(player.id, 1)}
+                    disabled={!canMoveDown}
+                    className="icon-button h-9 w-9 p-0 disabled:cursor-not-allowed disabled:opacity-35 sm:h-10 sm:w-10"
+                    aria-label={`Move ${player.name} down`}
+                    title="Move down"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </button>
+                </div>
+              ) : null}
             </div>
           );
         })}
@@ -944,45 +778,6 @@ function WalkupsView({
         ) : null}
       </div>
     </section>
-    {touchGhost ? (
-      <div
-        className="pointer-events-none fixed z-40"
-        style={{
-          left: `${touchGhost.x}px`,
-          top: `${touchGhost.y}px`,
-          width: `${touchGhost.width}px`,
-        }}
-      >
-        {(() => {
-          const ghostPlayer = players.find((player) => player.id === touchGhost.playerId);
-          if (!ghostPlayer) {
-            return null;
-          }
-
-          return (
-            <div className="relative flex w-full scale-[1.02] items-center gap-2.5 overflow-hidden rounded-[1.35rem] border border-cyan-200/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.28),rgba(14,165,233,0.16)_45%,rgba(8,47,73,0.82))] px-2.5 py-2.5 text-left opacity-95 shadow-[0_24px_60px_rgba(14,165,233,0.34)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(125,211,252,0.24),transparent_34%),linear-gradient(90deg,rgba(255,255,255,0.05),transparent_24%)]" />
-              <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3 text-left">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border border-cyan-100/70 bg-cyan-100 text-sm font-black uppercase tracking-[0.03em] text-slate-950 sm:h-12 sm:w-12 sm:rounded-[1.15rem] sm:text-base">
-                  {ghostPlayer.jerseyNumber || "--"}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-base font-black tracking-[0.01em] text-white sm:text-xl">
-                    {ghostPlayer.name}
-                  </div>
-                  <div className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-cyan-100/80 sm:text-[11px] sm:tracking-[0.18em]">
-                    {ghostPlayer.positionLabel || "Utility"}
-                  </div>
-                </div>
-                <div className="rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-950">
-                  Moving
-                </div>
-              </div>
-            </div>
-          );
-        })()}
-      </div>
-    ) : null}
     {players.length && currentBatter ? (
       <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
         <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
