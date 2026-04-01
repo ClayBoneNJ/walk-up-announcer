@@ -768,33 +768,67 @@ function WalkupsView({
 }
 
 function SoundboardPage({ clips, onPlayClip }) {
-  return (
-    <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
-      <div className="mb-4 text-sm text-slate-400">
-        One-tap effects for home runs, strikeouts, hype, and game moments.
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {clips.map((clip) => (
-          <button
-            key={clip.id}
-            type="button"
-            onClick={() => onPlayClip({ clip })}
-            className="rounded-[1.8rem] border border-white/8 bg-slate-950/55 px-5 py-5 text-left transition hover:border-sky-300/20 hover:bg-slate-900/70"
-          >
-            <div className="text-xs uppercase tracking-[0.22em] text-slate-400">Effect</div>
-            <div className="mt-3 text-2xl font-black uppercase tracking-[0.05em] text-white">
-              {clip.nickname}
-            </div>
-          </button>
-        ))}
+  const strikeThreeClips = clips.filter((clip) => clip.id !== "effect-when-i-say");
+  const crowdHypeClips = clips.filter((clip) => clip.id === "effect-when-i-say");
 
-        {clips.length === 0 ? (
-          <div className="rounded-[1.8rem] border border-dashed border-white/10 px-5 py-10 text-sm text-slate-500">
-            Add effect clips in Setup.
-          </div>
-        ) : null}
-      </div>
-    </section>
+  return (
+    <div className="space-y-4">
+      <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
+        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
+          Strike 3
+        </div>
+        <div className="grid auto-rows-[4.5rem] grid-cols-6 grid-flow-dense gap-2 md:grid-cols-8 xl:grid-cols-12">
+          {strikeThreeClips.map((clip) => (
+            <button
+              key={clip.id}
+              type="button"
+              onClick={() => onPlayClip({ clip })}
+              className="col-span-3 rounded-[0.7rem] border border-amber-200/55 bg-[linear-gradient(145deg,rgba(251,191,36,0.4),rgba(217,119,6,0.28)_42%,rgba(15,23,42,0.96))] px-2 py-1 text-center shadow-[0_10px_22px_rgba(245,158,11,0.22)] transition duration-150 hover:border-amber-100/80 active:scale-[0.97] md:col-span-4 xl:col-span-4"
+            >
+              <div className="flex h-full flex-col items-center justify-center">
+                <div className="line-clamp-2 text-[14px] font-extrabold uppercase leading-[0.9] tracking-[0] text-white sm:text-[16px]">
+                  {clip.nickname}
+                </div>
+              </div>
+            </button>
+          ))}
+
+          {strikeThreeClips.length === 0 ? (
+            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
+              No strike 3 clips loaded yet.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
+        <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
+          Crowd Hype
+        </div>
+        <div className="grid auto-rows-[4.5rem] grid-cols-6 grid-flow-dense gap-2 md:grid-cols-8 xl:grid-cols-12">
+          {crowdHypeClips.map((clip) => (
+            <button
+              key={clip.id}
+              type="button"
+              onClick={() => onPlayClip({ clip })}
+              className="col-span-3 rounded-[0.7rem] border border-cyan-200/55 bg-[linear-gradient(145deg,rgba(34,211,238,0.4),rgba(8,145,178,0.28)_42%,rgba(15,23,42,0.96))] px-2 py-1 text-center shadow-[0_10px_22px_rgba(8,145,178,0.22)] transition duration-150 hover:border-cyan-100/80 active:scale-[0.97] md:col-span-4 xl:col-span-4"
+            >
+              <div className="flex h-full flex-col items-center justify-center">
+                <div className="line-clamp-2 text-[14px] font-extrabold uppercase leading-[0.9] tracking-[0] text-white sm:text-[16px]">
+                  {clip.nickname}
+                </div>
+              </div>
+            </button>
+          ))}
+
+          {crowdHypeClips.length === 0 ? (
+            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
+              No crowd hype clips loaded yet.
+            </div>
+          ) : null}
+        </div>
+      </section>
+    </div>
   );
 }
 
