@@ -58,6 +58,19 @@ const BUILT_IN_SONG_FILES = [
   "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3",
 ];
 
+const BUILT_IN_SONG_TITLES = {
+  "Brain Stew.mp3": "brain stew",
+  "Can't Stop Won't Stop - Stop Drop Roll.mp3": "cant stop",
+  "Digital Underground - The Humpty Dance.mp3": "humpty dance",
+  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3": "all i do is win",
+  "EoO - BAD BUNNY.mp3": "EoO",
+  "Foo Fighters - Everlong.mp3": "Everlong",
+  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3": "Fireball",
+  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3": "Savior",
+  "System Of A Down - Toxicity (Official HD Video).mp3": "toxicity",
+  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3": "headstrong",
+};
+
 const DEFAULT_ROSTER_ASSIGNMENTS = [
   { jerseyNumber: "9", positionLabel: "P" },
   { jerseyNumber: "48", positionLabel: "C" },
@@ -163,7 +176,7 @@ export const BUILT_IN_LIBRARIES = {
     return builtInClip({
       id: `song-${songId}`,
       group: "songs",
-      nickname: baseName,
+      nickname: BUILT_IN_SONG_TITLES[fileName] ?? baseName,
       fileName,
       src: assetSrc("songs", fileName),
     });

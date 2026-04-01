@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, Minus, Pause, Play, Plus, Trash2, Upload } from "lu
 import { getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
 import { BUILT_IN_PLAYER_CLIPS } from "../lib/builtInAudio";
 import {
+  buildTimelineFromSequence,
   CLIP_GROUP_OPTIONS,
   createClipRecord,
   deriveSequenceFromTimeline,
@@ -100,7 +101,7 @@ function createPlayerDraft(overrides = {}) {
           createTimelineItem("name", 3600, 1),
         ];
 
-  return {
+  const nextDraft = {
     name: "",
     jerseyNumber: "",
     positionLabel: "",
@@ -114,6 +115,12 @@ function createPlayerDraft(overrides = {}) {
     sequence: deriveSequenceFromTimeline(normalizedTimeline),
     ...overrides,
     nameClip: overrides.nameClip ?? getBuiltInNameClip(overrides.name),
+  };
+
+  return {
+    ...nextDraft,
+    timeline: normalizedTimeline,
+    sequence: deriveSequenceFromTimeline(normalizedTimeline),
   };
 }
 
@@ -189,6 +196,10 @@ function getTimelineItemDurationMs(item, draft, libraries, durationLookup = {}) 
   const clip = getDraftClipForItem(item, draft, libraries);
   const clipKey = clip?.dataUrl ?? clip?.src ?? clip?.id ?? "";
   const measuredDurationMs = clipKey ? durationLookup[clipKey] : null;
+
+  if (item.slot === "song") {
+    return getClipEffectiveDurationMs(item.slot, clip);
+  }
 
   if (Number.isFinite(measuredDurationMs) && measuredDurationMs > 0) {
     return measuredDurationMs;
@@ -400,18 +411,19 @@ export function PlayerManager({
     onEditingPlayerHandled?.();
   }, [editingPlayerId, players]);
 
-  const handlePlayerSubmit = (event) => {
+  const handlePlayerSubmit = (event, submittedDraft = playerDraft) => {
     event.preventDefault();
-    if (!playerDraft.name.trim()) return;
+    if (!submittedDraft.name.trim()) return;
 
-    const trimmedName = playerDraft.name.trim();
-    const restoredNameClip = playerDraft.nameClip ?? getBuiltInNameClip(trimmedName);
+    const trimmedName = submittedDraft.name.trim();
+    const restoredNameClip = submittedDraft.nameClip ?? getBuiltInNameClip(trimmedName);
     const nextPlayerDraft = {
-      ...playerDraft,
+      ...submittedDraft,
       name: trimmedName,
-      jerseyNumber: playerDraft.jerseyNumber.trim(),
-      positionLabel: playerDraft.positionLabel.trim(),
+      jerseyNumber: submittedDraft.jerseyNumber.trim(),
+      positionLabel: submittedDraft.positionLabel.trim(),
       nameClip: restoredNameClip,
+      sequence: deriveSequenceFromTimeline(submittedDraft.timeline ?? []),
     };
 
     if (rosterModal?.mode === "edit" && rosterModal.playerId) {
@@ -725,7 +737,7 @@ function RosterModal({
   const [songFadeOutStartMs, setSongFadeOutStartMs] = useState(Math.max(0, WALKUP_TRIM_MS - 1200));
   const [songFadeOutEndMs, setSongFadeOutEndMs] = useState(WALKUP_TRIM_MS);
   const [showSongTrimModal, setShowSongTrimModal] = useState(false);
-  const [timelineTouched, setTimelineTouched] = useState(false);
+  const [timelineTouched, setTimelineTouched] = useState(mode === "edit");
   const [timelineViewportWidth, setTimelineViewportWidth] = useState(0);
   const jerseyOptions = useMemo(
     () =>
@@ -763,6 +775,16 @@ function RosterModal({
           clipDurationLookup,
           (item) => item.slot === "number",
         ),
+        sequence: deriveSequenceFromTimeline(
+          retimeTimelineAfterDurationChange(
+            current.timeline ?? [],
+            current,
+            nextDraft,
+            libraries,
+            clipDurationLookup,
+            (item) => item.slot === "number",
+          ),
+        ),
       };
     });
   };
@@ -789,6 +811,16 @@ function RosterModal({
           clipDurationLookup,
           (item) => item.slot === "position",
         ),
+        sequence: deriveSequenceFromTimeline(
+          retimeTimelineAfterDurationChange(
+            current.timeline ?? [],
+            current,
+            nextDraft,
+            libraries,
+            clipDurationLookup,
+            (item) => item.slot === "position",
+          ),
+        ),
       };
     });
   };
@@ -806,18 +838,41 @@ function RosterModal({
     ];
   }, [libraries.announcements]);
 
-  const resolvedTimeline = useMemo(
+  const previewTimeline = useMemo(
     () => resolvePlayerSequence(draft, libraries),
     [draft, libraries],
   );
 
   const measuredTimeline = useMemo(
     () =>
-      resolvedTimeline.map((item) => {
+      (draft.timeline ?? []).map((item) => {
+        const clip = getDraftClipForItem(item, draft, libraries);
+        const clipKey = clip?.dataUrl ?? clip?.src ?? clip?.id ?? "";
+        const measuredDurationMs = clipDurationLookup[clipKey];
+        const durationMs =
+          item.slot !== "song" && Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
+            ? measuredDurationMs
+            : getClipEffectiveDurationMs(item.slot, clip);
+
+        return {
+          ...(clip ?? {}),
+          ...item,
+          timelineItemId: item.id,
+          timelineClipId: item.clipId ?? "",
+          durationMs,
+          endMs: item.startMs + durationMs,
+        };
+      }),
+    [draft, libraries, clipDurationLookup],
+  );
+
+  const measuredPreviewTimeline = useMemo(
+    () =>
+      previewTimeline.map((item) => {
         const clipKey = item.dataUrl ?? item.src ?? item.id;
         const measuredDurationMs = clipDurationLookup[clipKey];
         const durationMs =
-          Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
+          item.slot !== "song" && Number.isFinite(measuredDurationMs) && measuredDurationMs > 0
             ? measuredDurationMs
             : item.durationMs;
 
@@ -827,7 +882,7 @@ function RosterModal({
           endMs: item.startMs + durationMs,
         };
       }),
-    [resolvedTimeline, clipDurationLookup],
+    [previewTimeline, clipDurationLookup],
   );
 
   useEffect(() => {
@@ -1054,6 +1109,18 @@ function RosterModal({
               (item) => item.slot === slot,
             )
           : current.timeline ?? [],
+        sequence: deriveSequenceFromTimeline(
+          slot
+            ? retimeTimelineAfterDurationChange(
+                current.timeline ?? [],
+                current,
+                nextDraft,
+                libraries,
+                clipDurationLookup,
+                (item) => item.slot === slot,
+              )
+            : current.timeline ?? [],
+        ),
       };
     });
   };
@@ -1076,6 +1143,16 @@ function RosterModal({
           libraries,
           clipDurationLookup,
           (item) => item.slot === "song",
+        ),
+        sequence: deriveSequenceFromTimeline(
+          retimeTimelineAfterDurationChange(
+            current.timeline ?? [],
+            current,
+            nextDraft,
+            libraries,
+            clipDurationLookup,
+            (item) => item.slot === "song",
+          ),
         ),
       };
     });
@@ -1158,6 +1235,10 @@ function RosterModal({
   const previewSequenceItem = (timelineItemId) => {
     const item = measuredTimeline.find((entry) => entry.timelineItemId === timelineItemId);
     if (!item) {
+      return;
+    }
+
+    if (!item.dataUrl && !item.src) {
       return;
     }
 
@@ -1380,12 +1461,12 @@ function RosterModal({
   };
 
   const previewDraftSequence = () => {
-    if (!measuredTimeline.length) {
+    if (!measuredPreviewTimeline.length) {
       return;
     }
 
     onPreviewSequence?.({
-      items: measuredTimeline,
+      items: measuredPreviewTimeline,
       playerName: draft.name || "Draft Sequence",
     });
   };
@@ -1491,7 +1572,7 @@ function RosterModal({
           </button>
         </div>
 
-        <form onSubmit={onSubmit} className="mt-4 flex min-h-0 flex-1 flex-col space-y-3 overflow-y-auto sm:mt-5">
+        <form onSubmit={(event) => onSubmit(event, draft)} className="mt-4 flex min-h-0 flex-1 flex-col space-y-3 overflow-y-auto sm:mt-5">
           <div className="grid gap-3 xl:grid-cols-[1.1fr,1fr] xl:gap-4">
             <div className="min-w-0 space-y-3 sm:space-y-4">
               <div className="panel-muted rounded-[1.25rem] p-3 sm:rounded-[1.5rem] sm:p-4">
@@ -1793,6 +1874,16 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
   );
   const builtInSongId = player.songClip?.builtIn ? player.songClip.id : "";
 
+  const syncPlayerSequence = (current, nextSequence) => ({
+    ...current,
+    sequence: nextSequence,
+    timeline: buildTimelineFromSequence({
+      ...current,
+      sequence: nextSequence,
+      announcementClipId: current.announcementClipId,
+    }),
+  });
+
   const uploadNameClip = async (file) => {
     const duration = await getAudioDuration(file);
     const clip = createClipRecord({
@@ -1845,12 +1936,12 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
   };
 
   const updateSequenceItem = (index, nextValue) => {
-    onUpdatePlayer(player.id, (current) => ({
-      ...current,
-      sequence: current.sequence.map((slot, slotIndex) =>
+    onUpdatePlayer(player.id, (current) => syncPlayerSequence(
+      current,
+      current.sequence.map((slot, slotIndex) =>
         slotIndex === index ? nextValue : slot,
       ),
-    }));
+    ));
   };
 
   const moveSequenceItem = (index, direction) => {
@@ -1859,22 +1950,22 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
       const target = direction === "up" ? index - 1 : index + 1;
       if (target < 0 || target >= next.length) return current;
       [next[index], next[target]] = [next[target], next[index]];
-      return { ...current, sequence: next };
+      return syncPlayerSequence(current, next);
     });
   };
 
   const removeSequenceItem = (index) => {
-    onUpdatePlayer(player.id, (current) => ({
-      ...current,
-      sequence: current.sequence.filter((_, slotIndex) => slotIndex !== index),
-    }));
+    onUpdatePlayer(player.id, (current) => syncPlayerSequence(
+      current,
+      current.sequence.filter((_, slotIndex) => slotIndex !== index),
+    ));
   };
 
   const addSequenceItem = () => {
-    onUpdatePlayer(player.id, (current) => ({
-      ...current,
-      sequence: [...current.sequence, "announcement"],
-    }));
+    onUpdatePlayer(player.id, (current) => syncPlayerSequence(
+      current,
+      [...current.sequence, "announcement"],
+    ));
   };
 
   return (
@@ -1923,7 +2014,13 @@ function PlayerCard({ player, libraries, onUpdatePlayer, onRemovePlayer, onQueue
               value={player.announcementClipId}
               options={libraries.announcements}
               onChange={(value) =>
-                onUpdatePlayer(player.id, (current) => ({ ...current, announcementClipId: value }))
+                onUpdatePlayer(player.id, (current) => ({
+                  ...current,
+                  announcementClipId: value,
+                  timeline: (current.timeline ?? []).map((item) =>
+                    item.slot === "announcement" ? { ...item, clipId: value } : item,
+                  ),
+                }))
               }
             />
             <SelectField

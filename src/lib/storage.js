@@ -91,7 +91,7 @@ export function getClipEffectiveDurationMs(slot, clip = null) {
   return DEFAULT_SLOT_DURATION_MS[slot] ?? 1200;
 }
 
-function buildTimelineFromSequence(playerLike = {}) {
+export function buildTimelineFromSequence(playerLike = {}) {
   let cursorMs = 0;
 
   return (playerLike.sequence ?? DEFAULT_SEQUENCE).map((slot, index) => {
@@ -204,6 +204,38 @@ function mergeLibraryClips(builtIns, saved = []) {
   return [...builtIns, ...savedCustom];
 }
 
+function dedupeClipsByIdentity(clips = []) {
+  const byIdentity = new Map();
+
+  clips.forEach((clip) => {
+    const identity = [
+      clip?.id || "",
+      clip?.src || "",
+      clip?.dataUrl || "",
+      clip?.fileName || "",
+      clip?.nickname || "",
+    ].join("::");
+
+    if (!byIdentity.has(identity)) {
+      byIdentity.set(identity, clip);
+      return;
+    }
+
+    const existing = byIdentity.get(identity);
+
+    // Preserve assignment context when a player-owned duplicate matches a library clip.
+    if (!existing?.playerName && clip?.playerName) {
+      byIdentity.set(identity, {
+        ...existing,
+        playerId: clip.playerId,
+        playerName: clip.playerName,
+      });
+    }
+  });
+
+  return [...byIdentity.values()];
+}
+
 export function createEmptyState() {
   return {
     libraries: BUILT_IN_LIBRARIES,
@@ -223,7 +255,7 @@ export function createEmptyState() {
   };
 }
 
-function normalizePlayer(player) {
+export function normalizePlayer(player) {
   const normalizedName = player.name ?? "";
   const builtInNameClip = getBuiltInPlayerClip(normalizedName);
   const normalizedSequence =
@@ -304,7 +336,19 @@ export function loadState() {
 
 export function saveState(state) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const empty = createEmptyState();
+    const normalizedState = {
+      ...empty,
+      ...state,
+      libraries: normalizeLibraries(state.libraries ?? {}),
+      players: (state.players ?? empty.players).map(normalizePlayer),
+      publishedRevision: state.publishedRevision ?? "",
+      settings: {
+        ...empty.settings,
+        ...(state.settings ?? {}),
+      },
+    };
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedState));
     return true;
   } catch {
     return false;
@@ -456,7 +500,7 @@ export function getFreestyleGroups(players, libraries) {
         playerId: player.id,
         playerName: player.name,
       })),
-    songs: [
+    songs: dedupeClipsByIdentity([
       ...libraries.songs,
       ...players
         .filter((player) => player.songClip?.dataUrl || player.songClip?.src)
@@ -465,7 +509,7 @@ export function getFreestyleGroups(players, libraries) {
           playerId: player.id,
           playerName: player.name,
         })),
-    ],
+    ]),
     effects: libraries.effects,
   };
 }

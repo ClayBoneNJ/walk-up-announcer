@@ -19,6 +19,7 @@ import {
   createEmptyState,
   getFreestyleGroups,
   loadState,
+  normalizePlayer,
   resolvePlayerSequence,
   saveState,
 } from "./lib/storage";
@@ -89,6 +90,10 @@ const FREESTYLE_GROUP_STYLES = {
     meta: "text-cyan-100/70",
   },
 };
+
+function getFirstName(name = "") {
+  return String(name || "").trim().split(/\s+/)[0] || "";
+}
 
 export default function App() {
   const [appState, setAppState] = useState(() => loadState());
@@ -183,7 +188,7 @@ export default function App() {
   const addPlayer = (player) => {
     updateState((current) => ({
       ...current,
-      players: [player, ...current.players],
+      players: [normalizePlayer(player), ...current.players],
     }));
   };
 
@@ -191,7 +196,7 @@ export default function App() {
     updateState((current) => ({
       ...current,
       players: current.players.map((player) =>
-        player.id === playerId ? updater(player) : player,
+        player.id === playerId ? normalizePlayer(updater(player)) : player,
       ),
     }));
   };
@@ -360,7 +365,13 @@ export default function App() {
             </div>
 
             {activeTab !== "setup" ? (
-              <div className="grid gap-3 sm:grid-cols-[1.1fr,180px,180px,auto]">
+              <div
+                className={`grid gap-3 ${
+                  activeTab === "freestyle"
+                    ? "sm:grid-cols-[1.1fr,180px,auto]"
+                    : "sm:grid-cols-[1.1fr,180px,180px,auto]"
+                }`}
+              >
                 <label className="panel-muted flex items-center gap-3 rounded-2xl px-4 py-3">
                   <Volume2 className="h-4 w-4 text-slate-400" />
                   <input
@@ -401,12 +412,14 @@ export default function App() {
                   </select>
                 </label>
 
-                <div className="panel-muted rounded-2xl px-4 py-3">
-                  <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Now Playing</div>
-                  <div className="mt-1 truncate text-sm font-semibold text-white">
-                    {activePlayback ? activePlayback.playerName : "Ready"}
+                {activeTab !== "freestyle" ? (
+                  <div className="panel-muted rounded-2xl px-4 py-3">
+                    <div className="text-xs uppercase tracking-[0.24em] text-slate-400">Now Playing</div>
+                    <div className="mt-1 truncate text-sm font-semibold text-white">
+                      {activePlayback ? activePlayback.playerName : "Ready"}
+                    </div>
                   </div>
-                </div>
+                ) : null}
 
                 <div className="flex items-center gap-2">
                   <button type="button" onClick={togglePause} className="icon-button">
@@ -459,6 +472,8 @@ export default function App() {
             <FreestylePage
               groups={freestyleGroups}
               onPlayClip={playClip}
+              activePlayback={activePlayback}
+              playbackProgress={playbackProgress}
             />
           ) : null}
 
@@ -818,43 +833,55 @@ function SoundboardPage({ clips, onPlayClip }) {
   );
 }
 
-function FreestylePage({ groups, onPlayClip }) {
+function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress }) {
   return (
     <div className="space-y-3">
       {FREESTYLE_GROUPS.map((group) => (
         <section
           key={group.id}
-          className={`glass-panel rounded-[1.7rem] border p-3 sm:p-4 ${FREESTYLE_GROUP_STYLES[group.id].panel}`}
+          className={`glass-panel rounded-[1rem] border p-2 ${FREESTYLE_GROUP_STYLES[group.id].panel}`}
         >
-          <div className={`mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] ${FREESTYLE_GROUP_STYLES[group.id].header}`}>
+          <div className={`mb-1.5 text-[9px] font-semibold uppercase tracking-[0.2em] ${FREESTYLE_GROUP_STYLES[group.id].header}`}>
             {group.label}
           </div>
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-4">
-            {(groups[group.id] ?? []).map((clip) => (
-              <button
-                key={`${group.id}-${clip.playerId ?? "global"}-${clip.id}`}
-                type="button"
-                onClick={() =>
-                  onPlayClip({
-                    clip,
-                    playerId: clip.playerId ?? "",
-                    playerName: clip.playerName ?? "",
-                  })
-                }
-                className={`rounded-[1.2rem] border px-3 py-3 text-left transition ${FREESTYLE_GROUP_STYLES[group.id].button}`}
-              >
-                <div className="line-clamp-2 text-sm font-black uppercase tracking-[0.04em] text-white">
-                  {group.id === "songs" ? clip.nickname : clip.playerName || clip.nickname}
-                </div>
-                {clip.playerName && clip.playerName !== clip.nickname ? (
-                  <div
-                    className={`mt-2 inline-flex max-w-full rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] ${FREESTYLE_GROUP_STYLES[group.id].chip}`}
-                  >
-                    <span className="truncate">{clip.playerName}</span>
+          <div className="grid grid-cols-5 gap-1 md:grid-cols-7 xl:grid-cols-10">
+            {(groups[group.id] ?? []).map((clip) => {
+              const isActive = activePlayback?.assetId === clip.id;
+
+              return (
+                <button
+                  key={`${group.id}-${clip.playerId ?? "global"}-${clip.id}`}
+                  type="button"
+                  onClick={() =>
+                    onPlayClip({
+                      clip,
+                      playerId: clip.playerId ?? "",
+                      playerName: clip.playerName ?? "",
+                    })
+                  }
+                  className={`group relative aspect-square overflow-hidden rounded-[0.6rem] border px-1.5 py-1 text-center transition duration-150 active:scale-[0.94] active:translate-y-[2px] ${
+                    FREESTYLE_GROUP_STYLES[group.id].button
+                  } ${
+                    isActive
+                      ? "border-white/70 bg-white/18 shadow-[0_0_0_1px_rgba(255,255,255,0.32),0_8px_16px_rgba(255,255,255,0.14),0_0_14px_rgba(255,255,255,0.12)] ring-2 ring-white/45"
+                      : ""
+                  }`}
+                >
+                  <div className="relative z-10 flex h-full flex-col items-center justify-center">
+                    <div className="line-clamp-2 text-[15px] font-extrabold uppercase leading-[0.88] tracking-[0] text-white sm:text-[17px]">
+                      {group.id === "songs" ? clip.nickname : clip.playerName || clip.nickname}
+                    </div>
+                    {clip.playerName && clip.playerName !== clip.nickname ? (
+                      <div
+                        className={`mt-1 inline-flex max-w-full self-center rounded-[0.4rem] border px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.06em] ${FREESTYLE_GROUP_STYLES[group.id].chip}`}
+                      >
+                        <span className="truncate">{getFirstName(clip.playerName)}</span>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </button>
-            ))}
+                </button>
+              );
+            })}
 
             {(groups[group.id] ?? []).length === 0 ? (
               <div className="rounded-[1.2rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
