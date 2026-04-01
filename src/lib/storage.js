@@ -4,6 +4,7 @@ import {
   BUILT_IN_ROSTER,
   BUILT_IN_SONGS,
 } from "./builtInAudio";
+import defaultTeamData from "./defaultTeamData.json";
 
 const STORAGE_KEY = "walk-up-announcer-state-v10";
 export const WALKUP_TRIM_MS = 15000;
@@ -149,45 +150,56 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
     return fallbackBuiltInClip;
   }
 
+  let resolvedClip = clip;
+
   if (clip.builtIn) {
     if (fallbackBuiltInClip && clip.group === fallbackBuiltInClip.group) {
-      return fallbackBuiltInClip;
-    }
-
-    if (clip.group === "songs") {
-      return BUILT_IN_LIBRARIES.songs.find((builtInClip) => builtInClip.id === clip.id) ?? clip;
+      resolvedClip = fallbackBuiltInClip;
+    } else if (clip.group === "songs") {
+      resolvedClip = BUILT_IN_LIBRARIES.songs.find((builtInClip) => builtInClip.id === clip.id) ?? clip;
     }
   }
 
-  if (clip.group === "songs") {
-    const totalDurationMs = Number.isFinite(clip.duration) && clip.duration > 0
-      ? Math.round(clip.duration * 1000)
+  if (resolvedClip.group === "songs") {
+    const savedOverrides = {
+      trimStartMs: clip.trimStartMs,
+      trimEndMs: clip.trimEndMs,
+      fadeInEndMs: clip.fadeInEndMs,
+      fadeOutStartMs: clip.fadeOutStartMs,
+      fadeOutEndMs: clip.fadeOutEndMs,
+    };
+    const songClip = {
+      ...resolvedClip,
+      ...savedOverrides,
+    };
+    const totalDurationMs = Number.isFinite(resolvedClip.duration) && resolvedClip.duration > 0
+      ? Math.round(resolvedClip.duration * 1000)
       : 0;
-    const trimStartMs = Math.max(0, Number(clip.trimStartMs) || 0);
+    const trimStartMs = Math.max(0, Number(songClip.trimStartMs) || 0);
     const defaultTrimEndMs =
       totalDurationMs > 0 ? Math.min(totalDurationMs, trimStartMs + WALKUP_TRIM_MS) : trimStartMs + WALKUP_TRIM_MS;
     const trimEndMs = Math.max(
       trimStartMs + MIN_WALKUP_TRIM_MS,
-      Number(clip.trimEndMs) || defaultTrimEndMs,
+      Number(songClip.trimEndMs) || defaultTrimEndMs,
     );
     const clampedTrimEndMs = totalDurationMs > 0 ? Math.min(trimEndMs, totalDurationMs) : trimEndMs;
     const defaultFadeInEndMs = Math.min(clampedTrimEndMs, trimStartMs + 800);
     const fadeInEndMs = Math.min(
       clampedTrimEndMs,
-      Math.max(trimStartMs, Number(clip.fadeInEndMs) || defaultFadeInEndMs),
+      Math.max(trimStartMs, Number(songClip.fadeInEndMs) || defaultFadeInEndMs),
     );
     const defaultFadeOutStartMs = Math.max(trimStartMs, clampedTrimEndMs - 1200);
     const fadeOutStartMs = Math.min(
       clampedTrimEndMs,
-      Math.max(trimStartMs, Number(clip.fadeOutStartMs) || defaultFadeOutStartMs),
+      Math.max(trimStartMs, Number(songClip.fadeOutStartMs) || defaultFadeOutStartMs),
     );
     const fadeOutEndMs = Math.min(
       clampedTrimEndMs,
-      Math.max(fadeOutStartMs, Number(clip.fadeOutEndMs) || clampedTrimEndMs),
+      Math.max(fadeOutStartMs, Number(songClip.fadeOutEndMs) || clampedTrimEndMs),
     );
 
     return {
-      ...clip,
+      ...songClip,
       trimStartMs,
       trimEndMs: clampedTrimEndMs,
       fadeInEndMs,
@@ -196,7 +208,7 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
     };
   }
 
-  return clip;
+  return resolvedClip;
 }
 
 function mergeLibraryClips(builtIns, saved = []) {
@@ -222,13 +234,22 @@ function dedupeClipsByIdentity(clips = []) {
     }
 
     const existing = byIdentity.get(identity);
+    const clipHasSongOverrides = clip?.group === "songs" && (
+      Number.isFinite(Number(clip?.trimStartMs)) ||
+      Number.isFinite(Number(clip?.trimEndMs)) ||
+      Number.isFinite(Number(clip?.fadeInEndMs)) ||
+      Number.isFinite(Number(clip?.fadeOutStartMs)) ||
+      Number.isFinite(Number(clip?.fadeOutEndMs))
+    );
 
-    // Preserve assignment context when a player-owned duplicate matches a library clip.
-    if (!existing?.playerName && clip?.playerName) {
+    // Preserve assignment context and player-specific trim/fade overrides when a player-owned
+    // duplicate matches a library clip.
+    if ((!existing?.playerName && clip?.playerName) || clipHasSongOverrides) {
       byIdentity.set(identity, {
         ...existing,
-        playerId: clip.playerId,
-        playerName: clip.playerName,
+        ...clip,
+        playerId: clip.playerId ?? existing?.playerId,
+        playerName: clip.playerName ?? existing?.playerName,
       });
     }
   });
@@ -237,13 +258,18 @@ function dedupeClipsByIdentity(clips = []) {
 }
 
 export function createEmptyState() {
+  const defaultPlayers = Array.isArray(defaultTeamData?.players) && defaultTeamData.players.length > 0
+    ? defaultTeamData.players
+    : BUILT_IN_ROSTER;
+  const defaultLibraries = defaultTeamData?.libraries ?? BUILT_IN_LIBRARIES;
+
   return {
-    libraries: BUILT_IN_LIBRARIES,
-    players: BUILT_IN_ROSTER.map((player) => ({
+    libraries: normalizeLibraries(defaultLibraries),
+    players: defaultPlayers.map((player) => normalizePlayer({
       ...createPlayer(player.name, player.jerseyNumber, player.positionLabel),
       ...player,
     })),
-    publishedRevision: "",
+    publishedRevision: defaultTeamData?.publishedRevision ?? "",
     queue: [],
     settings: {
       volume: 0.82,

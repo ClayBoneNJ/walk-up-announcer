@@ -25,6 +25,14 @@ export async function getAudioDuration(file) {
 
 const waveformCache = new Map();
 
+export function createFallbackWaveformPeaks(sampleCount = 240) {
+  return Array.from({ length: sampleCount }, (_, index) => {
+    const progress = index / Math.max(1, sampleCount - 1);
+    const envelope = 0.35 + (Math.sin(progress * Math.PI * 3) + 1) * 0.18;
+    return Math.max(0.18, Math.min(0.82, envelope));
+  });
+}
+
 export async function getAudioWaveformPeaks(source, sampleCount = 240) {
   if (!source) {
     return [];
@@ -35,12 +43,28 @@ export async function getAudioWaveformPeaks(source, sampleCount = 240) {
     return waveformCache.get(cacheKey);
   }
 
-  const response = await fetch(source);
-  const buffer = await response.arrayBuffer();
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  let audioContext = null;
 
   try {
-    const audioBuffer = await audioContext.decodeAudioData(buffer.slice(0));
+    const controller = new AbortController();
+    const fetchTimeoutId = window.setTimeout(() => controller.abort(), 8000);
+
+    const response = await fetch(source, { signal: controller.signal });
+    window.clearTimeout(fetchTimeoutId);
+
+    if (!response.ok) {
+      throw new Error(`Unable to fetch audio source: ${response.status}`);
+    }
+
+    const buffer = await response.arrayBuffer();
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    const audioBuffer = await Promise.race([
+      audioContext.decodeAudioData(buffer.slice(0)),
+      new Promise((_, reject) =>
+        window.setTimeout(() => reject(new Error("Waveform decode timed out.")), 8000),
+      ),
+    ]);
     const channelData = audioBuffer.getChannelData(0);
     const blockSize = Math.max(1, Math.floor(channelData.length / sampleCount));
     const peaks = Array.from({ length: sampleCount }, (_, index) => {
@@ -59,7 +83,11 @@ export async function getAudioWaveformPeaks(source, sampleCount = 240) {
     const normalizedPeaks = peaks.map((value) => value / maxPeak);
     waveformCache.set(cacheKey, normalizedPeaks);
     return normalizedPeaks;
+  } catch {
+    const fallbackPeaks = createFallbackWaveformPeaks(sampleCount);
+    waveformCache.set(cacheKey, fallbackPeaks);
+    return fallbackPeaks;
   } finally {
-    await audioContext.close().catch(() => {});
+    await audioContext?.close().catch(() => {});
   }
 }

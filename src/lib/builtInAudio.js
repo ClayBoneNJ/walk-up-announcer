@@ -1,4 +1,4 @@
-function builtInClip({ id, group, nickname, fileName, src }) {
+function builtInClip({ id, group, nickname, fileName, src, duration = null }) {
   return {
     id,
     group,
@@ -6,7 +6,7 @@ function builtInClip({ id, group, nickname, fileName, src }) {
     fileName,
     mimeType: "audio/mpeg",
     size: 0,
-    duration: null,
+    duration,
     createdAt: 0,
     dataUrl: null,
     src,
@@ -55,6 +55,7 @@ const BUILT_IN_SONG_FILES = [
   "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3",
   "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3",
   "System Of A Down - Toxicity (Official HD Video).mp3",
+  "The White Stripes - Seven Nation Army (Official Music Video).mp3",
   "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3",
 ];
 
@@ -68,7 +69,29 @@ const BUILT_IN_SONG_TITLES = {
   "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3": "Fireball",
   "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3": "Savior",
   "System Of A Down - Toxicity (Official HD Video).mp3": "toxicity",
+  "The White Stripes - Seven Nation Army (Official Music Video).mp3": "Seven Nation Army",
   "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3": "headstrong",
+};
+
+const BUILT_IN_SONG_SOURCE_FILES = {
+  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3":
+    "DJ Khaled-All I do is Win (Lyrics).mp3",
+  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3":
+    "Skillet - Savior (Lyrics).mp3",
+};
+
+const BUILT_IN_SONG_DURATIONS = {
+  "Brain Stew.mp3": 193,
+  "Can't Stop Won't Stop - Stop Drop Roll.mp3": 211,
+  "Digital Underground - The Humpty Dance.mp3": 392,
+  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3": 226,
+  "EoO - BAD BUNNY.mp3": 204,
+  "Foo Fighters - Everlong.mp3": 250,
+  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3": 235,
+  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3": 271,
+  "System Of A Down - Toxicity (Official HD Video).mp3": 224,
+  "The White Stripes - Seven Nation Army (Official Music Video).mp3": 238,
+  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3": 217,
 };
 
 const DEFAULT_ROSTER_ASSIGNMENTS = [
@@ -178,7 +201,8 @@ export const BUILT_IN_LIBRARIES = {
       group: "songs",
       nickname: BUILT_IN_SONG_TITLES[fileName] ?? baseName,
       fileName,
-      src: assetSrc("songs", fileName),
+      src: assetSrc("songs", BUILT_IN_SONG_SOURCE_FILES[fileName] ?? fileName),
+      duration: BUILT_IN_SONG_DURATIONS[fileName] ?? null,
     });
   }),
   effects: [],

@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Minus, Pause, Play, Plus, Trash2, Upload } from "lucide-react";
-import { getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
+import { ArrowDown, ArrowUp, Minus, Pause, Play, Plus, Trash2 } from "lucide-react";
+import { createFallbackWaveformPeaks, getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
 import { BUILT_IN_PLAYER_CLIPS } from "../lib/builtInAudio";
 import {
   buildTimelineFromSequence,
-  CLIP_GROUP_OPTIONS,
   createClipRecord,
   deriveSequenceFromTimeline,
   fileToDataUrl,
@@ -19,18 +18,13 @@ import {
   WALKUP_TRIM_MS,
 } from "../lib/storage";
 
-const SETUP_TABS = [
-  { id: "roster", label: "Roster" },
-  { id: "events", label: "Events" },
-  { id: "upload", label: "Upload Audio" },
-];
-
 const ROSTER_SEQUENCE_SLOTS = ["announcement", "number", "name", "nickname", "position", "song"];
 const TIMELINE_PIXELS_PER_MS = 0.06;
 const TIMELINE_MIN_DURATION_MS = 6000;
 const TIMELINE_SIDE_PADDING_MS = 1500;
 const TIMELINE_MOBILE_MIN_WIDTH = 280;
-const SONG_EDITOR_SNAP_MS = 500;
+const SONG_EDITOR_SNAP_MS = 250;
+const SONG_FADE_IN_EDITOR_SNAP_MS = 100;
 
 const TRACK_CONFIG = [
   { id: 0, label: "Track 1" },
@@ -371,11 +365,6 @@ export function PlayerManager({
   const [setupTab, setSetupTab] = useState("roster");
   const [rosterModal, setRosterModal] = useState(null);
   const [playerDraft, setPlayerDraft] = useState(() => createPlayerDraft());
-  const [libraryForm, setLibraryForm] = useState({
-    nickname: "",
-  });
-
-  const activeLibrary = libraries[libraryGroup] ?? [];
 
   const openAddPlayerModal = () => {
     setPlayerDraft(createPlayerDraft());
@@ -443,40 +432,8 @@ export function PlayerManager({
     closeRosterModal();
   };
 
-  const handleLibraryUpload = async (file) => {
-    const duration = await getAudioDuration(file);
-    const clip = createClipRecord({
-      file,
-      duration,
-      group: libraryGroup,
-      nickname: libraryForm.nickname,
-    });
-    clip.dataUrl = await fileToDataUrl(file);
-    onAddLibraryClip(libraryGroup, clip);
-    setLibraryForm({ nickname: "" });
-  };
-
   return (
     <div className="space-y-4">
-      <section className="glass-panel rounded-[2rem] border border-white/8 p-3">
-        <div className="grid grid-cols-3 gap-2">
-          {SETUP_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setSetupTab(tab.id)}
-              className={`rounded-[1.4rem] px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] transition ${
-                setupTab === tab.id
-                  ? "bg-sky-400 text-slate-950"
-                  : "bg-slate-950/50 text-slate-300 hover:bg-white/5"
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
       <section className="glass-panel rounded-[1.6rem] border border-white/8 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -493,170 +450,52 @@ export function PlayerManager({
         </div>
       </section>
 
-      {setupTab === "roster" ? (
-        <div className="space-y-4">
-          <section className="glass-panel rounded-[2rem] border border-white/8 p-5">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
-                  Team
-                </div>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
-                  Roster
-                </h2>
+      <div className="space-y-4">
+        <section className="glass-panel rounded-[2rem] border border-white/8 p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
+                Team
               </div>
-              <input
-                value={searchValue}
-                onChange={(event) => onSearchChange(event.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 sm:max-w-xs"
-                placeholder="Filter players"
-              />
+              <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
+                Roster
+              </h2>
             </div>
-
-            <button
-              type="button"
-              onClick={openAddPlayerModal}
-              className="primary-button mt-5 w-full justify-center rounded-[1.8rem] py-5 text-base"
-            >
-              <Plus className="h-5 w-5" />
-              Add Player
-            </button>
-          </section>
-
-          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {players.map((player) => (
-              <RosterRow
-                key={player.id}
-                player={player}
-                onOpen={() => openEditPlayerModal(player)}
-                onRemovePlayer={onRemovePlayer}
-              />
-            ))}
-
-            {players.length === 0 ? (
-              <div className="glass-panel rounded-[2rem] border border-dashed border-white/10 p-10 text-center text-slate-400">
-                No players match the current filter.
-              </div>
-            ) : null}
-          </section>
-        </div>
-      ) : null}
-
-      {setupTab === "events" ? (
-        <section className="space-y-4">
-          <div className="glass-panel rounded-[2rem] border border-white/8 p-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
-                  Player Assignments
-                </div>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
-                  Events And Sequences
-                </h2>
-              </div>
-              <input
-                value={searchValue}
-                onChange={(event) => onSearchChange(event.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 sm:max-w-xs"
-                placeholder="Filter players"
-              />
-            </div>
+            <input
+              value={searchValue}
+              onChange={(event) => onSearchChange(event.target.value)}
+              className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none placeholder:text-slate-500 sm:max-w-xs"
+              placeholder="Filter players"
+            />
           </div>
 
-          <div className="grid gap-4">
-            {players.map((player) => (
-              <PlayerCard
-                key={player.id}
-                player={player}
-                libraries={libraries}
-                onUpdatePlayer={onUpdatePlayer}
-                onRemovePlayer={onRemovePlayer}
-                onQueueClip={onQueueClip}
-                onPlayPlayer={onPlayPlayer}
-              />
-            ))}
-
-            {players.length === 0 ? (
-              <div className="glass-panel rounded-[2rem] border border-dashed border-white/10 p-10 text-center text-slate-400">
-                No players match the current filter.
-              </div>
-            ) : null}
-          </div>
+          <button
+            type="button"
+            onClick={openAddPlayerModal}
+            className="primary-button mt-5 w-full justify-center rounded-[1.8rem] py-5 text-base"
+          >
+            <Plus className="h-5 w-5" />
+            Add Player
+          </button>
         </section>
-      ) : null}
 
-      {setupTab === "upload" ? (
-        <div className="grid gap-4 xl:grid-cols-[380px,1fr]">
-          <section className="glass-panel rounded-[2rem] border border-white/8 p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
-                  Libraries
-                </div>
-                <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
-                  Upload Audio
-                </h2>
-              </div>
-              <select
-                value={libraryGroup}
-                onChange={(event) => onLibraryGroupChange(event.target.value)}
-                className="rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none"
-              >
-                {CLIP_GROUP_OPTIONS.map((group) => (
-                  <option key={group.id} value={group.id}>
-                    {group.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {players.map((player) => (
+            <RosterRow
+              key={player.id}
+              player={player}
+              onOpen={() => openEditPlayerModal(player)}
+              onRemovePlayer={onRemovePlayer}
+            />
+          ))}
 
-            <div className="mt-4">
-              <label className="mb-2 block text-xs uppercase tracking-[0.22em] text-slate-400">
-                Nickname
-              </label>
-              <input
-                value={libraryForm.nickname}
-                onChange={(event) => setLibraryForm({ nickname: event.target.value })}
-                className="w-full rounded-2xl border border-white/10 bg-slate-950/60 px-4 py-3 text-sm text-white outline-none"
-                placeholder="Now batting"
-              />
+          {players.length === 0 ? (
+            <div className="glass-panel rounded-[2rem] border border-dashed border-white/10 p-10 text-center text-slate-400">
+              No players match the current filter.
             </div>
-
-            <div className="mt-3">
-              <Uploader buttonLabel={`Upload ${libraryGroup}`} onFile={handleLibraryUpload} />
-            </div>
-            <div className="mt-3 rounded-2xl border border-white/8 bg-slate-950/45 px-4 py-3 text-sm text-slate-400">
-              Built-in clips are preloaded from the project assets folder. Custom uploads are added after those and remain selectable.
-            </div>
-          </section>
-
-          <section className="glass-panel rounded-[2rem] border border-white/8 p-5">
-            <div className="text-xs font-semibold uppercase tracking-[0.3em] text-sky-300">
-              Current Clips
-            </div>
-            <h2 className="mt-2 text-2xl font-black uppercase tracking-[0.06em] text-white">
-              {CLIP_GROUP_OPTIONS.find((group) => group.id === libraryGroup)?.label}
-            </h2>
-
-            <div className="mt-4 space-y-3">
-              {activeLibrary.map((clip) => (
-                <LibraryRow
-                  key={clip.id}
-                  clip={clip}
-                  onRemove={() => onRemoveLibraryClip(libraryGroup, clip.id)}
-                  onQueue={() => onQueueClip({ group: libraryGroup, clip })}
-                />
-              ))}
-
-              {activeLibrary.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-white/10 px-4 py-5 text-sm text-slate-500">
-                  No clips loaded in this library yet.
-                </div>
-              ) : null}
-            </div>
-          </section>
-        </div>
-      ) : null}
+          ) : null}
+        </section>
+      </div>
 
       {rosterModal ? (
         <RosterModal
@@ -2569,13 +2408,18 @@ function SongTrimModal({
   const editorRef = useRef(null);
   const dragHandleRef = useRef(null);
   const [waveformPeaks, setWaveformPeaks] = useState([]);
+  const [isWaveformLoading, setIsWaveformLoading] = useState(false);
+  const [measuredClipDurationMs, setMeasuredClipDurationMs] = useState(0);
   const [trimStartInput, setTrimStartInput] = useState("0:00");
   const [fadeInEndInput, setFadeInEndInput] = useState("0:00");
   const [fadeOutStartInput, setFadeOutStartInput] = useState("0:00");
   const [fadeOutEndInput, setFadeOutEndInput] = useState("0:00");
   const [trimEndInput, setTrimEndInput] = useState("0:00");
   const [waveformZoom, setWaveformZoom] = useState(1);
-  const totalDurationMs = Math.max(0, clipDurationMs || Math.round((clip?.duration || 0) * 1000));
+  const totalDurationMs = Math.max(
+    0,
+    measuredClipDurationMs || clipDurationMs || Math.round((clip?.duration || 0) * 1000),
+  );
   const safeTrimStartMs = Math.max(0, Number(trimStartMs) || 0);
   const safeTrimEndMs = Math.min(
     Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, Number(trimEndMs) || (safeTrimStartMs + WALKUP_TRIM_MS)),
@@ -2611,26 +2455,68 @@ function SongTrimModal({
     const clipSource = clip?.dataUrl ?? clip?.src;
 
     if (!clipSource) {
+      setMeasuredClipDurationMs(0);
       setWaveformPeaks([]);
+      setIsWaveformLoading(false);
       return () => {
         cancelled = true;
       };
     }
 
+    setIsWaveformLoading(true);
+
+    const audio = new Audio();
+    const cleanup = () => {
+      audio.onloadedmetadata = null;
+      audio.onerror = null;
+      audio.removeAttribute("src");
+      audio.load();
+    };
+
+    audio.onloadedmetadata = () => {
+      if (!cancelled) {
+        setMeasuredClipDurationMs(
+          Number.isFinite(audio.duration) && audio.duration > 0 ? Math.round(audio.duration * 1000) : 0,
+        );
+      }
+      cleanup();
+    };
+
+    audio.onerror = () => {
+      if (!cancelled) {
+        setMeasuredClipDurationMs(0);
+      }
+      cleanup();
+    };
+
+    audio.preload = "metadata";
+    audio.src = clipSource;
+
+    const fallbackTimerId = window.setTimeout(() => {
+      if (!cancelled) {
+        setWaveformPeaks((current) => (current.length ? current : createFallbackWaveformPeaks(240)));
+        setIsWaveformLoading(false);
+      }
+    }, 5000);
+
     getAudioWaveformPeaks(clipSource, 240)
       .then((peaks) => {
         if (!cancelled) {
           setWaveformPeaks(peaks);
+          setIsWaveformLoading(false);
         }
       })
       .catch(() => {
         if (!cancelled) {
-          setWaveformPeaks([]);
+          setWaveformPeaks(createFallbackWaveformPeaks(240));
+          setIsWaveformLoading(false);
         }
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(fallbackTimerId);
+      cleanup();
     };
   }, [clip]);
 
@@ -2643,10 +2529,10 @@ function SongTrimModal({
 
       const rect = editorRef.current.getBoundingClientRect();
       const relativeX = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
-      const nextMs =
-        Math.round(((relativeX / Math.max(1, rect.width)) * editorDurationMs) / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
+      const rawMs = (relativeX / Math.max(1, rect.width)) * editorDurationMs;
 
       if (activeHandle === "trimStart") {
+        const nextMs = Math.round(rawMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
         const clamped = Math.min(maxTrimStartMs, Math.max(0, nextMs));
         onStartChange(clamped);
         if (safeFadeInEndMs < clamped) onFadeInEndChange(clamped);
@@ -2656,6 +2542,7 @@ function SongTrimModal({
       }
 
       if (activeHandle === "trimEnd") {
+        const nextMs = Math.round(rawMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
         const clamped = Math.min(
           Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, nextMs),
           Math.max(safeTrimStartMs + MIN_WALKUP_TRIM_MS, totalDurationMs || nextMs),
@@ -2668,11 +2555,14 @@ function SongTrimModal({
       }
 
       if (activeHandle === "fadeInEnd") {
+        const nextMs =
+          Math.round(rawMs / SONG_FADE_IN_EDITOR_SNAP_MS) * SONG_FADE_IN_EDITOR_SNAP_MS;
         onFadeInEndChange(Math.min(safeTrimEndMs, Math.max(safeTrimStartMs, nextMs)));
         return;
       }
 
       if (activeHandle === "fadeOutStart") {
+        const nextMs = Math.round(rawMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
         const clamped = Math.min(safeFadeEndMs, Math.max(safeTrimStartMs, nextMs));
         onFadeOutStartChange(clamped);
         if (safeFadeEndMs < clamped) onFadeOutEndChange(clamped);
@@ -2680,6 +2570,7 @@ function SongTrimModal({
       }
 
       if (activeHandle === "fadeOutEnd") {
+        const nextMs = Math.round(rawMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
         onFadeOutEndChange(
           Math.min(
             Math.max(safeFadeStartMs, nextMs),
@@ -2736,7 +2627,7 @@ function SongTrimModal({
     dragHandleRef.current = handle;
   };
 
-  const commitTimestampInput = (rawValue, fallbackMs, minMs, maxMs, onCommit, setValue) => {
+  const commitTimestampInput = (rawValue, fallbackMs, minMs, maxMs, onCommit, setValue, snapMs = SONG_EDITOR_SNAP_MS) => {
     const parsedMs = parseMsTimestampInput(rawValue);
     if (!Number.isFinite(parsedMs)) {
       setValue(formatMsTimestamp(fallbackMs));
@@ -2744,7 +2635,7 @@ function SongTrimModal({
     }
 
     const clampedMs = Math.min(maxMs, Math.max(minMs, parsedMs));
-    const snappedMs = Math.round(clampedMs / SONG_EDITOR_SNAP_MS) * SONG_EDITOR_SNAP_MS;
+    const snappedMs = Math.round(clampedMs / snapMs) * snapMs;
     onCommit(snappedMs);
     setValue(formatMsTimestamp(snappedMs));
   };
@@ -2836,9 +2727,13 @@ function SongTrimModal({
                       points={waveformPath}
                     />
                   </svg>
-                ) : (
+                ) : isWaveformLoading ? (
                   <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
                     Loading waveform...
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-sm text-slate-500">
+                    Waveform unavailable
                   </div>
                 )}
 
@@ -2928,6 +2823,7 @@ function SongTrimModal({
                   minMs: safeTrimStartMs,
                   maxMs: safeTrimEndMs,
                   onCommit: onFadeInEndChange,
+                  snapMs: SONG_FADE_IN_EDITOR_SNAP_MS,
                 },
                 {
                   label: "Fade Out Start",
@@ -2977,6 +2873,7 @@ function SongTrimModal({
                         field.maxMs,
                         field.onCommit,
                         field.setValue,
+                        field.snapMs,
                       )
                     }
                     onKeyDown={(event) => {
@@ -3021,7 +2918,7 @@ function SongTrimModal({
                   type="range"
                   min={safeTrimStartMs}
                   max={safeTrimEndMs}
-                  step={SONG_EDITOR_SNAP_MS}
+                  step={SONG_FADE_IN_EDITOR_SNAP_MS}
                   value={safeFadeInEndMs}
                   onChange={(event) => onFadeInEndChange(Number(event.target.value))}
                   disabled={!canTrim}
