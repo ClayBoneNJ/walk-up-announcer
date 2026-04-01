@@ -259,13 +259,6 @@ export const BUILT_IN_LIBRARIES = {
       fileName: "we will rock you.mp3",
       src: assetRootSrc("we will rock you.mp3"),
     }),
-    builtInClip({
-      id: "effect-queen-we-will-rock-you-lyrics",
-      group: "effects",
-      nickname: "We Will Rock You Lyrics",
-      fileName: "Queen - We Will Rock You [Lyrics].mp3",
-      src: assetRootSrc("Queen - We Will Rock You [Lyrics].mp3"),
-    }),
   ],
 };
 
