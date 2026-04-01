@@ -22,6 +22,10 @@ function assetRootSrc(fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${encodeURIComponent(fileName)}`;
 }
 
+function eventAssetSrc(category, fileName) {
+  return `${import.meta.env.BASE_URL}assets/audio/events/${category}/${encodeURIComponent(fileName)}`;
+}
+
 function titleCaseFromFileName(fileName) {
   return fileName
     .replace(/\.mp3$/i, "")
@@ -215,49 +219,63 @@ export const BUILT_IN_LIBRARIES = {
       group: "effects",
       nickname: "He Gone",
       fileName: "he gone.mp3",
-      src: assetRootSrc("he gone.mp3"),
+      src: eventAssetSrc("strikeout", "he gone.mp3"),
     }),
     builtInClip({
       id: "effect-hes-outta-there",
       group: "effects",
       nickname: "He's Outta There",
       fileName: "hes outta there.mp3",
-      src: assetRootSrc("hes outta there.mp3"),
+      src: eventAssetSrc("strikeout", "hes outta there.mp3"),
     }),
     builtInClip({
       id: "effect-strike-3-hes-out",
       group: "effects",
       nickname: "Strike 3 He's Out",
       fileName: "strike 3 hes out.mp3",
-      src: assetRootSrc("strike 3 hes out.mp3"),
+      src: eventAssetSrc("strikeout", "strike 3 hes out.mp3"),
     }),
     builtInClip({
       id: "effect-when-i-say",
       group: "effects",
       nickname: "When I Say",
       fileName: "when i say.mp3",
-      src: assetRootSrc("when i say.mp3"),
+      src: eventAssetSrc("crowd-hype", "when i say.mp3"),
     }),
     builtInClip({
       id: "effect-here-we-go",
       group: "effects",
       nickname: "Here We Go",
       fileName: "Here We Go.mp3",
-      src: assetRootSrc("Here We Go.mp3"),
+      src: eventAssetSrc("crowd-hype", "Here We Go.mp3"),
     }),
     builtInClip({
       id: "effect-organ-scale-chant",
       group: "effects",
       nickname: "Organ Scale Chant",
       fileName: "Organ Scale Chant.mp3",
-      src: assetRootSrc("Organ Scale Chant.mp3"),
+      src: eventAssetSrc("crowd-hype", "Organ Scale Chant.mp3"),
     }),
     builtInClip({
       id: "effect-we-will-rock-you",
       group: "effects",
       nickname: "We Will Rock You",
       fileName: "we will rock you.mp3",
-      src: assetRootSrc("we will rock you.mp3"),
+      src: eventAssetSrc("crowd-hype", "we will rock you.mp3"),
+    }),
+    builtInClip({
+      id: "effect-bullfighter",
+      group: "effects",
+      nickname: "Bullfighter",
+      fileName: "Bullfighter.mp3",
+      src: eventAssetSrc("crowd-hype", "Bullfighter.mp3"),
+    }),
+    builtInClip({
+      id: "effect-defence",
+      group: "effects",
+      nickname: "Defence",
+      fileName: "defence.mp3",
+      src: eventAssetSrc("crowd-hype", "defence.mp3"),
     }),
   ],
 };
