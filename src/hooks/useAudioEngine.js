@@ -39,12 +39,81 @@ function createAudioElement(volume) {
   return audio;
 }
 
+function getPlaybackLevel(audio) {
+  if (audio?._gainNode) {
+    return audio._gainNode.gain.value;
+  }
+
+  return Math.max(0, Number(audio?.volume) || 0);
+}
+
+function setPlaybackLevel(audio, value) {
+  const nextValue = Math.max(0, Number(value) || 0);
+
+  if (audio?._gainNode) {
+    audio._gainNode.gain.value = nextValue;
+  }
+
+  if (audio) {
+    audio.volume = nextValue;
+  }
+}
+
+async function attachAudioGainNode(audio, initialVolume) {
+  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioContextCtor || !audio) {
+    setPlaybackLevel(audio, initialVolume);
+    return;
+  }
+
+  try {
+    const context = new AudioContextCtor();
+    const sourceNode = context.createMediaElementSource(audio);
+    const gainNode = context.createGain();
+    gainNode.gain.value = Math.max(0, Number(initialVolume) || 0);
+    sourceNode.connect(gainNode);
+    gainNode.connect(context.destination);
+    audio._audioContext = context;
+    audio._sourceNode = sourceNode;
+    audio._gainNode = gainNode;
+    if (context.state === "suspended") {
+      await context.resume().catch(() => {});
+    }
+    setPlaybackLevel(audio, initialVolume);
+  } catch {
+    setPlaybackLevel(audio, initialVolume);
+  }
+}
+
+async function disposeAudioNodes(audio) {
+  if (!audio) {
+    return;
+  }
+
+  try {
+    audio._sourceNode?.disconnect?.();
+  } catch {}
+
+  try {
+    audio._gainNode?.disconnect?.();
+  } catch {}
+
+  if (audio._audioContext) {
+    await audio._audioContext.close().catch(() => {});
+  }
+
+  delete audio._sourceNode;
+  delete audio._gainNode;
+  delete audio._audioContext;
+}
+
 async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
   if (!audio || !audio.src) {
     return;
   }
 
-  const startVolume = Math.max(0, audio.volume);
+  const startVolume = getPlaybackLevel(audio);
   const fadeStart = performance.now();
   const fadeDuration = Math.max(40, durationMs);
 
@@ -56,7 +125,7 @@ async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
       }
 
       const progress = Math.min(1, (now - fadeStart) / fadeDuration);
-      audio.volume = startVolume * (1 - progress);
+      setPlaybackLevel(audio, startVolume * (1 - progress));
 
       if (progress >= 1) {
         resolve();
@@ -69,17 +138,18 @@ async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
     window.requestAnimationFrame(tick);
   });
 
-  audio.volume = 0;
+  setPlaybackLevel(audio, 0);
   audio.pause();
   await wait(30, signal).catch(() => {});
   audio.currentTime = 0;
   audio.removeAttribute("src");
   audio.load();
+  await disposeAudioNodes(audio);
 }
 
 async function fadeVolume(audio, signal, fromVolume, toVolume, durationMs) {
   if (!audio || durationMs <= 0) {
-    audio.volume = toVolume;
+    setPlaybackLevel(audio, toVolume);
     return;
   }
 
@@ -90,7 +160,7 @@ async function fadeVolume(audio, signal, fromVolume, toVolume, durationMs) {
     }
 
     const progress = index / steps;
-    audio.volume = fromVolume + (toVolume - fromVolume) * progress;
+    setPlaybackLevel(audio, fromVolume + (toVolume - fromVolume) * progress);
     await wait(durationMs / steps, signal).catch(() => {});
   }
 }
@@ -152,6 +222,7 @@ export function useAudioEngine({ volume, fadeMs }) {
           entry.audio.currentTime = 0;
           entry.audio.removeAttribute("src");
           entry.audio.load();
+          return disposeAudioNodes(entry.audio);
         }),
       ),
     );
@@ -281,7 +352,7 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     const audio = createAudioElement(volume);
     audio.src = item.dataUrl ?? item.src;
-    audio.volume = fadeMs > 0 ? 0 : volume;
+    await attachAudioGainNode(audio, fadeMs > 0 ? 0 : volume);
 
     const entry = {
       item,
@@ -344,10 +415,10 @@ export function useAudioEngine({ volume, fadeMs }) {
             ? volume
             : volume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
 
-        audio.volume = Math.max(0, Math.min(volume, startingVolume));
-        await fadeVolume(audio, session.controller.signal, audio.volume, volume, fadeInDurationMs);
+        setPlaybackLevel(audio, Math.max(0, Math.min(volume, startingVolume)));
+        await fadeVolume(audio, session.controller.signal, getPlaybackLevel(audio), volume, fadeInDurationMs);
       } else {
-        audio.volume = volume;
+        setPlaybackLevel(audio, volume);
       }
     } else if (fadeMs > 0) {
       const steps = 8;
@@ -356,11 +427,11 @@ export function useAudioEngine({ volume, fadeMs }) {
           return;
         }
 
-        audio.volume = volume * (index / steps);
+        setPlaybackLevel(audio, volume * (index / steps));
         await wait(fadeMs / steps, session.controller.signal).catch(() => {});
       }
     } else {
-      audio.volume = volume;
+      setPlaybackLevel(audio, volume);
     }
 
     scheduleEntryTimeouts(session, entry);
