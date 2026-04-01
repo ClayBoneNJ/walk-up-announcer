@@ -525,17 +525,15 @@ export default function App() {
         </main>
       </div>
 
-      {activeTab !== "soundboard" ? (
-        <button
-          type="button"
-          onClick={stopAll}
-          className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
-          aria-label="Stop all audio"
-          title="Stop all audio"
-        >
-          <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={stopAll}
+        className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
+        aria-label="Stop all audio"
+        title="Stop all audio"
+      >
+        <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+      </button>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">
