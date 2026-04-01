@@ -773,20 +773,20 @@ function SoundboardPage({ clips, onPlayClip }) {
 
   return (
     <div className="space-y-4">
-      <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
+      <section className="glass-panel rounded-[1.5rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-amber-300">
           Strike 3
         </div>
-        <div className="grid auto-rows-[4.5rem] grid-cols-6 grid-flow-dense gap-2 md:grid-cols-8 xl:grid-cols-12">
+        <div className="grid auto-rows-[5.5rem] grid-cols-4 grid-flow-dense gap-2 md:grid-cols-6 xl:grid-cols-8">
           {strikeThreeClips.map((clip) => (
             <button
               key={clip.id}
               type="button"
               onClick={() => onPlayClip({ clip })}
-              className="col-span-3 rounded-[0.7rem] border border-amber-200/55 bg-[linear-gradient(145deg,rgba(251,191,36,0.4),rgba(217,119,6,0.28)_42%,rgba(15,23,42,0.96))] px-2 py-1 text-center shadow-[0_10px_22px_rgba(245,158,11,0.22)] transition duration-150 hover:border-amber-100/80 active:scale-[0.97] md:col-span-4 xl:col-span-4"
+              className="col-span-2 rounded-[0.45rem] border border-amber-200/60 bg-[linear-gradient(145deg,rgba(251,191,36,0.46),rgba(217,119,6,0.34)_42%,rgba(15,23,42,0.98))] px-2 py-2 text-center shadow-[0_12px_24px_rgba(245,158,11,0.24)] transition duration-150 hover:border-amber-100/85 active:translate-y-[2px] active:scale-[0.97]"
             >
               <div className="flex h-full flex-col items-center justify-center">
-                <div className="line-clamp-2 text-[14px] font-extrabold uppercase leading-[0.9] tracking-[0] text-white sm:text-[16px]">
+                <div className="line-clamp-2 text-[13px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[15px]">
                   {clip.nickname}
                 </div>
               </div>
@@ -801,20 +801,20 @@ function SoundboardPage({ clips, onPlayClip }) {
         </div>
       </section>
 
-      <section className="glass-panel rounded-[2rem] border border-white/8 p-4 sm:p-5">
+      <section className="glass-panel rounded-[1.5rem] border border-white/8 p-3 sm:rounded-[2rem] sm:p-5">
         <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.28em] text-cyan-300">
           Crowd Hype
         </div>
-        <div className="grid auto-rows-[4.5rem] grid-cols-6 grid-flow-dense gap-2 md:grid-cols-8 xl:grid-cols-12">
+        <div className="grid auto-rows-[5.5rem] grid-cols-4 grid-flow-dense gap-2 md:grid-cols-6 xl:grid-cols-8">
           {crowdHypeClips.map((clip) => (
             <button
               key={clip.id}
               type="button"
               onClick={() => onPlayClip({ clip })}
-              className="col-span-3 rounded-[0.7rem] border border-cyan-200/55 bg-[linear-gradient(145deg,rgba(34,211,238,0.4),rgba(8,145,178,0.28)_42%,rgba(15,23,42,0.96))] px-2 py-1 text-center shadow-[0_10px_22px_rgba(8,145,178,0.22)] transition duration-150 hover:border-cyan-100/80 active:scale-[0.97] md:col-span-4 xl:col-span-4"
+              className="col-span-2 rounded-[0.45rem] border border-cyan-200/60 bg-[linear-gradient(145deg,rgba(34,211,238,0.46),rgba(8,145,178,0.34)_42%,rgba(15,23,42,0.98))] px-2 py-2 text-center shadow-[0_12px_24px_rgba(8,145,178,0.24)] transition duration-150 hover:border-cyan-100/85 active:translate-y-[2px] active:scale-[0.97]"
             >
               <div className="flex h-full flex-col items-center justify-center">
-                <div className="line-clamp-2 text-[14px] font-extrabold uppercase leading-[0.9] tracking-[0] text-white sm:text-[16px]">
+                <div className="line-clamp-2 text-[13px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[15px]">
                   {clip.nickname}
                 </div>
               </div>
