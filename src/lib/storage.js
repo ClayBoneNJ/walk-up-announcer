@@ -344,7 +344,7 @@ export function loadState() {
     const parsed = JSON.parse(raw);
     const empty = createEmptyState();
 
-    return {
+    const loadedState = {
       ...empty,
       ...parsed,
       libraries: normalizeLibraries(parsed.libraries ?? {}),
@@ -355,6 +355,16 @@ export function loadState() {
         ...(parsed.settings ?? {}),
       },
     };
+
+    if (
+      empty.publishedRevision &&
+      (!loadedState.publishedRevision ||
+        String(loadedState.publishedRevision) < String(empty.publishedRevision))
+    ) {
+      return applyPublishedTeamSnapshot(loadedState, createPublishedTeamSnapshot(empty, empty.publishedRevision));
+    }
+
+    return loadedState;
   } catch {
     return createEmptyState();
   }
