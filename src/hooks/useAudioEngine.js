@@ -29,7 +29,7 @@ function wait(ms, signal) {
 }
 
 const WALKUP_SONG_FADE_OUT_MS = 1800;
-const MIN_STOP_FADE_MS = 550;
+const MIN_STOP_FADE_MS = 750;
 
 function createAudioElement(volume) {
   const audio = new Audio();
