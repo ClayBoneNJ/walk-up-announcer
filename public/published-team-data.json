@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedRevision": 1775018209418,
+  "publishedRevision": 1775068500000,
   "players": [
     {
       "id": "3db86e72-b7dd-46f6-9277-d63f354a8985",
@@ -572,20 +572,20 @@
         "dataUrl": null,
         "src": "/walk-up-announcer/assets/audio/songs/Skillet%20-%20Savior%20(Lyrics).mp3",
         "builtIn": true,
-        "trimStartMs": 10500,
-        "trimEndMs": 30500,
-        "fadeInEndMs": 19250,
-        "fadeOutStartMs": 28250,
-        "fadeOutEndMs": 30500
+        "trimStartMs": 64750,
+        "trimEndMs": 77500,
+        "fadeInEndMs": 65700,
+        "fadeOutStartMs": 75500,
+        "fadeOutEndMs": 75500
       },
       "announcementClipId": "announcement-up-next",
       "numberClipId": "number-28",
       "positionClipId": "position-cf",
       "sequence": [
         "announcement",
-        "song",
         "number",
-        "name"
+        "name",
+        "song"
       ],
       "timeline": [
         {
@@ -598,21 +598,21 @@
         {
           "id": "cc85fd7c-9e1b-4d49-9ce9-dbf5f9eb0f62",
           "slot": "number",
-          "startMs": 1262,
+          "startMs": 1400,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "fc79a3ef-7e88-465d-9e3e-3dcdf0f0a4ae",
           "slot": "name",
-          "startMs": 2595,
+          "startMs": 2733,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "b3ae7c02-2bee-4c2e-bc5e-086c87ee2e81",
           "slot": "song",
-          "startMs": 0,
+          "startMs": 4100,
           "track": 1,
           "clipId": ""
         }
