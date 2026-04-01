@@ -623,6 +623,8 @@ function WalkupsView({
     started: false,
     startX: 0,
     startY: 0,
+    currentX: 0,
+    currentY: 0,
     lastTargetId: "",
     offsetX: 0,
     offsetY: 0,
@@ -680,12 +682,11 @@ function WalkupsView({
         return;
       }
 
-      const movedFar =
-        Math.abs(event.clientX - state.startX) > 8 || Math.abs(event.clientY - state.startY) > 8;
-
-      if (!state.started && movedFar) {
-        clearTouchHoldTimer();
-      }
+      touchDragStateRef.current = {
+        ...state,
+        currentX: event.clientX,
+        currentY: event.clientY,
+      };
 
       if (!state.started) {
         return;
@@ -734,6 +735,8 @@ function WalkupsView({
         started: false,
         startX: 0,
         startY: 0,
+        currentX: 0,
+        currentY: 0,
         lastTargetId: "",
         offsetX: 0,
         offsetY: 0,
@@ -759,6 +762,9 @@ function WalkupsView({
       return;
     }
 
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
     clearTouchHoldTimer();
 
     touchDragStateRef.current = {
@@ -768,6 +774,8 @@ function WalkupsView({
       started: false,
       startX: event.clientX,
       startY: event.clientY,
+      currentX: event.clientX,
+      currentY: event.clientY,
       lastTargetId: "",
       offsetX: 0,
       offsetY: 0,
@@ -781,8 +789,10 @@ function WalkupsView({
 
       const sourceRow = event.currentTarget.closest("[data-lineup-row='true']");
       const rowRect = sourceRow?.getBoundingClientRect();
-      const offsetX = rowRect ? event.clientX - rowRect.left : 18;
-      const offsetY = rowRect ? event.clientY - rowRect.top : 18;
+      const holdX = state.currentX || event.clientX;
+      const holdY = state.currentY || event.clientY;
+      const offsetX = rowRect ? holdX - rowRect.left : 18;
+      const offsetY = rowRect ? holdY - rowRect.top : 18;
 
       touchDragStateRef.current = {
         ...state,
@@ -795,8 +805,8 @@ function WalkupsView({
         rowRect
           ? {
               playerId: player.id,
-              x: rowRect.left,
-              y: rowRect.top,
+              x: holdX - offsetX,
+              y: holdY - offsetY,
               width: rowRect.width,
             }
           : null,
@@ -855,10 +865,10 @@ function WalkupsView({
                   ? "border-cyan-300/70 bg-[linear-gradient(135deg,rgba(34,211,238,0.28),rgba(14,165,233,0.14)_45%,rgba(8,47,73,0.65))] shadow-[0_22px_50px_rgba(14,165,233,0.2)]"
                   : isCurrentBatter
                     ? "border-emerald-300/45 bg-[linear-gradient(135deg,rgba(34,197,94,0.18),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))] shadow-[0_18px_40px_rgba(34,197,94,0.12)]"
-                    : draggedPlayerId === player.id
+                    : draggedPlayerId === player.id && touchGhost?.playerId !== player.id
                       ? "border-cyan-300/50 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.94)_45%,rgba(2,6,23,0.98))]"
                   : "border-sky-400/15 bg-[linear-gradient(135deg,rgba(8,47,73,0.9),rgba(15,23,42,0.94)_40%,rgba(2,6,23,0.98))] shadow-[0_14px_36px_rgba(2,6,23,0.45)] hover:border-cyan-300/30 hover:shadow-[0_18px_42px_rgba(14,165,233,0.14)]"
-              }`}
+              } ${touchGhost?.playerId === player.id ? "opacity-35 scale-[0.985]" : ""}`}
             >
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(34,211,238,0.16),transparent_34%),linear-gradient(90deg,rgba(255,255,255,0.04),transparent_24%)]" />
               {active ? (
@@ -915,6 +925,7 @@ function WalkupsView({
                   event.stopPropagation();
                   handleDragStart(event, player);
                 }}
+                onContextMenu={(event) => event.preventDefault()}
                 onPointerDown={(event) => handleTouchDragStart(event, player)}
                 className="icon-button relative z-10 flex cursor-grab touch-none active:cursor-grabbing"
                 aria-label={`Drag ${player.name}`}
@@ -949,7 +960,7 @@ function WalkupsView({
           }
 
           return (
-            <div className="relative flex w-full items-center gap-2.5 overflow-hidden rounded-[1.35rem] border border-cyan-200/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.28),rgba(14,165,233,0.16)_45%,rgba(8,47,73,0.82))] px-2.5 py-2.5 text-left opacity-95 shadow-[0_24px_60px_rgba(14,165,233,0.34)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
+            <div className="relative flex w-full scale-[1.02] items-center gap-2.5 overflow-hidden rounded-[1.35rem] border border-cyan-200/70 bg-[linear-gradient(135deg,rgba(56,189,248,0.28),rgba(14,165,233,0.16)_45%,rgba(8,47,73,0.82))] px-2.5 py-2.5 text-left opacity-95 shadow-[0_24px_60px_rgba(14,165,233,0.34)] sm:gap-3 sm:rounded-[1.7rem] sm:px-3 sm:py-3">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_left,rgba(125,211,252,0.24),transparent_34%),linear-gradient(90deg,rgba(255,255,255,0.05),transparent_24%)]" />
               <div className="relative z-10 flex min-w-0 flex-1 items-center gap-3 text-left">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[1rem] border border-cyan-100/70 bg-cyan-100 text-sm font-black uppercase tracking-[0.03em] text-slate-950 sm:h-12 sm:w-12 sm:rounded-[1.15rem] sm:text-base">
