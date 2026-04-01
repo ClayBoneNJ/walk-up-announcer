@@ -238,6 +238,34 @@ export const BUILT_IN_LIBRARIES = {
       fileName: "when i say.mp3",
       src: assetRootSrc("when i say.mp3"),
     }),
+    builtInClip({
+      id: "effect-here-we-go",
+      group: "effects",
+      nickname: "Here We Go",
+      fileName: "Here We Go.mp3",
+      src: assetRootSrc("Here We Go.mp3"),
+    }),
+    builtInClip({
+      id: "effect-organ-scale-chant",
+      group: "effects",
+      nickname: "Organ Scale Chant",
+      fileName: "Organ Scale Chant.mp3",
+      src: assetRootSrc("Organ Scale Chant.mp3"),
+    }),
+    builtInClip({
+      id: "effect-we-will-rock-you",
+      group: "effects",
+      nickname: "We Will Rock You",
+      fileName: "we will rock you.mp3",
+      src: assetRootSrc("we will rock you.mp3"),
+    }),
+    builtInClip({
+      id: "effect-queen-we-will-rock-you-lyrics",
+      group: "effects",
+      nickname: "We Will Rock You Lyrics",
+      fileName: "Queen - We Will Rock You [Lyrics].mp3",
+      src: assetRootSrc("Queen - We Will Rock You [Lyrics].mp3"),
+    }),
   ],
 };
 

@@ -768,8 +768,13 @@ function WalkupsView({
 }
 
 function SoundboardPage({ clips, onPlayClip }) {
-  const strikeThreeClips = clips.filter((clip) => clip.id !== "effect-when-i-say");
-  const crowdHypeClips = clips.filter((clip) => clip.id === "effect-when-i-say");
+  const STRIKE_THREE_IDS = new Set([
+    "effect-he-gone",
+    "effect-hes-outta-there",
+    "effect-strike-3-hes-out",
+  ]);
+  const strikeThreeClips = clips.filter((clip) => STRIKE_THREE_IDS.has(clip.id));
+  const crowdHypeClips = clips.filter((clip) => !STRIKE_THREE_IDS.has(clip.id));
 
   return (
     <div className="space-y-3">
