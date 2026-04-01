@@ -29,7 +29,7 @@ function wait(ms, signal) {
 }
 
 const WALKUP_SONG_FADE_OUT_MS = 1800;
-const STOP_FADE_MS = 140;
+const MIN_STOP_FADE_MS = 550;
 
 function createAudioElement(volume) {
   const audio = new Audio();
@@ -180,6 +180,7 @@ export function useAudioEngine({ volume, fadeMs }) {
   const [playbackProgress, setPlaybackProgress] = useState(0);
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
+  const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
 
   const stopProgressLoop = () => {
     if (progressFrameRef.current) {
@@ -217,7 +218,7 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     await Promise.all(
       activeEntries.map((entry) =>
-        fadeOut ? fadeOutAndStop(entry.audio, stopController.signal) : Promise.resolve().then(() => {
+        fadeOut ? fadeOutAndStop(entry.audio, stopController.signal, stopFadeMs) : Promise.resolve().then(() => {
           entry.audio.pause();
           entry.audio.currentTime = 0;
           entry.audio.removeAttribute("src");
