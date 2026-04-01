@@ -376,6 +376,7 @@ export default function App() {
         playerId,
         playerName: playerName || clip.nickname,
       },
+      interruptFadeOut: false,
     });
   };
 

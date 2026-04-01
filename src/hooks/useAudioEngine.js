@@ -230,7 +230,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     session.activeEntries.clear();
   };
 
-  const stopAll = async () => {
+  const stopAll = async (fadeOut = true) => {
     const session = sessionRef.current;
     if (session) {
       session.controller.abort();
@@ -239,7 +239,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         session.resolved = true;
         session.reject?.(new DOMException("Playback cancelled", "AbortError"));
       }
-      await teardownSession(session, true);
+      await teardownSession(session, fadeOut);
     }
 
     resetUiState();
@@ -462,11 +462,16 @@ export function useAudioEngine({ volume, fadeMs }) {
     });
   };
 
-  const playSequence = async ({ items, descriptor, startOffsetMs = 0 }) => {
+  const playSequence = async ({
+    items,
+    descriptor,
+    startOffsetMs = 0,
+    interruptFadeOut = true,
+  }) => {
     requestIdRef.current += 1;
     const requestId = requestIdRef.current;
 
-    await stopAll();
+    await stopAll(interruptFadeOut);
 
     if (requestId !== requestIdRef.current) {
       return;
