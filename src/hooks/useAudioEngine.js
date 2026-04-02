@@ -32,6 +32,11 @@ function wait(ms, signal) {
 const WALKUP_SONG_FADE_OUT_MS = 1800;
 const MIN_STOP_FADE_MS = 750;
 
+function getTargetPlaybackLevel(baseVolume, item = null) {
+  const multiplier = Math.max(0, Number(item?.volumeMultiplier) || 1);
+  return Math.max(0, Math.min(1.4, Number(baseVolume) * multiplier));
+}
+
 function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
@@ -757,8 +762,9 @@ export function useAudioEngine({ volume, fadeMs }) {
         );
         const sourceNode = context.createBufferSource();
         const gainNode = context.createGain();
+        const targetVolume = getTargetPlaybackLevel(volume, item);
         sourceNode.buffer = audioBuffer;
-        gainNode.gain.value = volume;
+        gainNode.gain.value = targetVolume;
         sourceNode.connect(gainNode);
         gainNode.connect(context.destination);
 
@@ -840,13 +846,14 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     const createConfiguredAudio = async () => {
-      const nextAudio = createAudioElement(volume);
+      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
+      const nextAudio = createAudioElement(targetVolume);
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
       if (item.slot === "song") {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : volume);
+        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       } else {
-        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : volume);
+        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       }
       return nextAudio;
     };
@@ -966,6 +973,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     if (item.slot === "song") {
+      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const trimEndMs = Math.max(
         trimStartMs + MIN_WALKUP_TRIM_MS,
@@ -981,26 +989,27 @@ export function useAudioEngine({ volume, fadeMs }) {
         const fadeInDurationMs = Math.max(0, fadeInEndMs - currentPositionMs);
         const startingVolume =
           fadeInEndMs === trimStartMs
-            ? volume
-            : volume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
+            ? targetVolume
+            : targetVolume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
 
-        setPlaybackLevel(audio, Math.max(0, Math.min(volume, startingVolume)));
-        await fadeVolume(audio, session.controller.signal, getPlaybackLevel(audio), volume, fadeInDurationMs);
+        setPlaybackLevel(audio, Math.max(0, Math.min(targetVolume, startingVolume)));
+        await fadeVolume(audio, session.controller.signal, getPlaybackLevel(audio), targetVolume, fadeInDurationMs);
       } else {
-        setPlaybackLevel(audio, volume);
+        setPlaybackLevel(audio, targetVolume);
       }
     } else if (fadeMs > 0) {
+      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
       const steps = 8;
       for (let index = 1; index <= steps; index += 1) {
         if (session.controller.signal.aborted || session.paused) {
           return;
         }
 
-        setPlaybackLevel(audio, volume * (index / steps));
+        setPlaybackLevel(audio, targetVolume * (index / steps));
         await wait(fadeMs / steps, session.controller.signal).catch(() => {});
       }
     } else {
-      setPlaybackLevel(audio, volume);
+      setPlaybackLevel(audio, Math.min(1, getTargetPlaybackLevel(volume, item)));
     }
 
     scheduleEntryTimeouts(session, entry);

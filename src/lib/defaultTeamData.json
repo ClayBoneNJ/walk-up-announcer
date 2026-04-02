@@ -495,6 +495,7 @@
         "dataUrl": null,
         "src": "/walk-up-announcer/assets/audio/songs/DJ%20Khaled-All%20I%20do%20is%20Win%20(Lyrics).mp3",
         "builtIn": true,
+        "volumeMultiplier": 1.25,
         "trimStartMs": 5750,
         "trimEndMs": 26500,
         "fadeInEndMs": 6000,
@@ -1259,7 +1260,8 @@
         "createdAt": 0,
         "dataUrl": null,
         "src": "/walk-up-announcer/assets/audio/songs/DJ%20Khaled-All%20I%20do%20is%20Win%20(Lyrics).mp3",
-        "builtIn": true
+        "builtIn": true,
+        "volumeMultiplier": 1.25
       },
       {
         "id": "song-eoo-bad-bunny",
