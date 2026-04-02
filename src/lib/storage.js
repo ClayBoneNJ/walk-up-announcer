@@ -530,8 +530,34 @@ export function getPlayerStatus(player) {
 export function getFreestyleGroups(players, libraries) {
   return {
     announcements: libraries.announcements,
-    positions: libraries.positions,
-    numbers: libraries.numbers,
+    positions: players
+      .map((player) => {
+        const clip = libraries.positions.find((item) => item.id === player.positionClipId);
+        if (!clip?.dataUrl && !clip?.src) {
+          return null;
+        }
+        return {
+          ...clip,
+          playerId: player.id,
+          playerName: player.name,
+          playerJerseyNumber: player.jerseyNumber,
+        };
+      })
+      .filter(Boolean),
+    numbers: players
+      .map((player) => {
+        const clip = libraries.numbers.find((item) => item.id === player.numberClipId);
+        if (!clip?.dataUrl && !clip?.src) {
+          return null;
+        }
+        return {
+          ...clip,
+          playerId: player.id,
+          playerName: player.name,
+          playerJerseyNumber: player.jerseyNumber,
+        };
+      })
+      .filter(Boolean),
     names: players
       .filter((player) => player.nameClip?.dataUrl || player.nameClip?.src)
       .map((player) => ({
