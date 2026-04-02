@@ -36,6 +36,7 @@ function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
   audio.loop = false;
+  audio.playsInline = true;
   audio.volume = volume;
   return audio;
 }
@@ -107,6 +108,27 @@ async function disposeAudioNodes(audio) {
   delete audio._sourceNode;
   delete audio._gainNode;
   delete audio._audioContext;
+}
+
+async function destroyAudioElement(audio) {
+  if (!audio) {
+    return;
+  }
+
+  try {
+    audio.pause();
+  } catch {}
+
+  try {
+    audio.currentTime = 0;
+  } catch {}
+
+  try {
+    audio.removeAttribute("src");
+    audio.load();
+  } catch {}
+
+  await disposeAudioNodes(audio);
 }
 
 async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
@@ -494,14 +516,19 @@ export function useAudioEngine({ volume, fadeMs }) {
       trimEndMs: item.trimEndMs ?? null,
     });
 
-    const audio = createAudioElement(volume);
-    audio.src = item.dataUrl ?? item.src;
-    audio.load();
-    if (item.slot === "song") {
-      await attachAudioGainNode(audio, fadeMs > 0 ? 0 : volume);
-    } else {
-      setPlaybackLevel(audio, fadeMs > 0 ? 0 : volume);
-    }
+    const createConfiguredAudio = async () => {
+      const nextAudio = createAudioElement(volume);
+      nextAudio.src = item.dataUrl ?? item.src;
+      nextAudio.load();
+      if (item.slot === "song") {
+        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : volume);
+      } else {
+        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : volume);
+      }
+      return nextAudio;
+    };
+
+    const audio = await createConfiguredAudio();
 
     const entry = {
       item,
@@ -537,13 +564,18 @@ export function useAudioEngine({ volume, fadeMs }) {
       markItemComplete(session, item.id);
     };
 
-    audio.onended = finalize;
-    audio.onerror = finalize;
+    const bindEntryAudioHandlers = () => {
+      entry.audio.onended = finalize;
+      entry.audio.onerror = finalize;
+    };
 
-    try {
+    bindEntryAudioHandlers();
+
+    const attemptPlayback = async (attempt = "initial") => {
+      const activeAudio = entry.audio;
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
-      const readiness = await waitForAudioReady(audio, session.controller.signal);
+      const readiness = await waitForAudioReady(activeAudio, session.controller.signal);
       recordDiagnosticEvent("audio.item.ready", {
         sessionId: session.id,
         itemId: item.id,
@@ -551,32 +583,75 @@ export function useAudioEngine({ volume, fadeMs }) {
         playerName: item.playerName || "",
         clipName: item.nickname || "",
         readiness,
-        readyState: audio.readyState,
-        networkState: audio.networkState,
+        readyState: activeAudio.readyState,
+        networkState: activeAudio.networkState,
+        attempt,
       });
       if (seekSeconds > 0) {
-        await seekAudio(audio, seekSeconds);
+        await seekAudio(activeAudio, seekSeconds);
       }
-      await audio.play();
+      await activeAudio.play();
       recordDiagnosticEvent("audio.item.playing", {
         sessionId: session.id,
         itemId: item.id,
         slot: item.slot,
         playerName: item.playerName || "",
         clipName: item.nickname || "",
-        currentTimeMs: Math.round((audio.currentTime || 0) * 1000),
+        currentTimeMs: Math.round((activeAudio.currentTime || 0) * 1000),
+        attempt,
       });
-    } catch {
-      recordDiagnosticEvent("audio.item.play_failed", {
-        sessionId: session.id,
-        itemId: item.id,
-        slot: item.slot,
-        playerName: item.playerName || "",
-        clipName: item.nickname || "",
-        src: item.src || "",
-      });
-      finalize();
-      return;
+    };
+
+    try {
+      await attemptPlayback("initial");
+    } catch (error) {
+      if (item.slot === "song" && !session.controller.signal.aborted) {
+        recordDiagnosticEvent("audio.item.retrying", {
+          sessionId: session.id,
+          itemId: item.id,
+          slot: item.slot,
+          playerName: item.playerName || "",
+          clipName: item.nickname || "",
+          src: item.src || "",
+          reason: error instanceof Error ? error.message : String(error || ""),
+        });
+
+        entry.audio.onended = null;
+        entry.audio.onerror = null;
+        await destroyAudioElement(entry.audio);
+
+        try {
+          entry.audio = await createConfiguredAudio();
+          bindEntryAudioHandlers();
+          await attemptPlayback("retry");
+        } catch (retryError) {
+          recordDiagnosticEvent("audio.item.play_failed", {
+            sessionId: session.id,
+            itemId: item.id,
+            slot: item.slot,
+            playerName: item.playerName || "",
+            clipName: item.nickname || "",
+            src: item.src || "",
+            attempt: "retry",
+            reason: retryError instanceof Error ? retryError.message : String(retryError || ""),
+          });
+          finalize();
+          return;
+        }
+      } else {
+        recordDiagnosticEvent("audio.item.play_failed", {
+          sessionId: session.id,
+          itemId: item.id,
+          slot: item.slot,
+          playerName: item.playerName || "",
+          clipName: item.nickname || "",
+          src: item.src || "",
+          attempt: "initial",
+          reason: error instanceof Error ? error.message : String(error || ""),
+        });
+        finalize();
+        return;
+      }
     }
 
     if (item.slot === "song") {
