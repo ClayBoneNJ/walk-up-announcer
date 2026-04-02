@@ -543,7 +543,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
       if (item.slot === "song") {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : volume);
+        await attachAudioGainNode(nextAudio, 0);
       } else {
         setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : volume);
       }
@@ -691,7 +691,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         setPlaybackLevel(audio, volume * (index / steps));
         await wait(fadeMs / steps, session.controller.signal).catch(() => {});
       }
-    } else {
+    } else if (item.slot !== "song") {
       setPlaybackLevel(audio, volume);
     }
 
