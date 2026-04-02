@@ -959,7 +959,10 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
   return (
     <div className="grid auto-rows-[4.3rem] grid-cols-6 grid-flow-dense gap-1 md:grid-cols-8 xl:grid-cols-12">
       {entries.map((clip) => {
-        const isActive = activePlayback?.assetId === clip.id;
+        const isPlayerOwned = Boolean(clip.playerId);
+        const isActive = isPlayerOwned
+          ? activePlayback?.playerId === clip.playerId
+          : activePlayback?.assetId === clip.id;
         const isCompact = clip.groupId === "positions" || clip.groupId === "numbers";
         const accentClass = getFreestyleClipAccent(clip);
 
