@@ -432,6 +432,18 @@ export function getSongClipDurationMs(clip = null) {
     return WALKUP_TRIM_MS;
   }
 
+  const fileName = String(clip.fileName || "").toLowerCase();
+  const src = String(clip.src || "").toLowerCase();
+  const mimeType = String(clip.mimeType || "").toLowerCase();
+  const isFinishedMobileSong =
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
+    mimeType === "audio/wav";
+
+  if (isFinishedMobileSong && Number.isFinite(clip.duration) && clip.duration > 0) {
+    return Math.round(clip.duration * 1000);
+  }
+
   const trimStartMs = Math.max(0, Number(clip.trimStartMs) || 0);
   const trimEndMs = Math.max(trimStartMs + MIN_WALKUP_TRIM_MS, Number(clip.trimEndMs) || (trimStartMs + WALKUP_TRIM_MS));
   return trimEndMs - trimStartMs;

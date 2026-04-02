@@ -37,6 +37,22 @@ function getTargetPlaybackLevel(baseVolume, item = null) {
   return Math.max(0, Math.min(1.4, Number(baseVolume) * multiplier));
 }
 
+function isFinishedMobileSongClip(item) {
+  if (!item || item.slot !== "song") {
+    return false;
+  }
+
+  const fileName = String(item.fileName || "").toLowerCase();
+  const src = String(item.src || "").toLowerCase();
+  const mimeType = String(item.mimeType || "").toLowerCase();
+
+  return (
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
+    mimeType === "audio/wav"
+  );
+}
+
 function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
@@ -651,6 +667,10 @@ export function useAudioEngine({ volume, fadeMs }) {
     clearTimer(entry.audibleTimeoutId);
 
     if (entry.item.slot === "song") {
+      if (isFinishedMobileSongClip(entry.item)) {
+        return;
+      }
+
       const fadeStartMs = Math.min(
         trimEndMs,
         Math.max(trimStartMs, Number(entry.item.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - WALKUP_SONG_FADE_OUT_MS)),
@@ -753,12 +773,15 @@ export function useAudioEngine({ volume, fadeMs }) {
 
         const seekOffsetMs = Math.max(0, Number(seekMs) || 0);
         const playStartDelayMs = Math.max(0, item.startMs - session.offsetMs);
+        const useFullClipDuration = isFinishedMobileSongClip(item);
         const clipDurationMs = Math.max(
           MIN_WALKUP_TRIM_MS,
-          Math.min(
-            Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
-            Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
-          ),
+          useFullClipDuration
+            ? Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs)
+            : Math.min(
+                Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
+                Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
+              ),
         );
         const sourceNode = context.createBufferSource();
         const gainNode = context.createGain();
@@ -769,7 +792,11 @@ export function useAudioEngine({ volume, fadeMs }) {
         gainNode.connect(context.destination);
 
         const startAtContextTime = context.currentTime + playStartDelayMs / 1000;
-        sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
+        if (useFullClipDuration) {
+          sourceNode.start(startAtContextTime, seekOffsetMs / 1000);
+        } else {
+          sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
+        }
 
         const entry = {
           kind: "buffer",
@@ -973,6 +1000,12 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     if (item.slot === "song") {
+      if (isFinishedMobileSongClip(item)) {
+        setPlaybackLevel(audio, Math.min(1, getTargetPlaybackLevel(volume, item)));
+        scheduleEntryTimeouts(session, entry);
+        return;
+      }
+
       const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const trimEndMs = Math.max(
