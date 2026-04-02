@@ -37,33 +37,6 @@ function getTargetPlaybackLevel(baseVolume, item = null) {
   return Math.max(0, Math.min(1.4, Number(baseVolume) * multiplier));
 }
 
-function shouldUseNaturalSongEnding(item) {
-  if (!item || item.slot !== "song") {
-    return false;
-  }
-
-  const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
-  const trimEndMs = Math.max(
-    trimStartMs + MIN_WALKUP_TRIM_MS,
-    Number(item.trimEndMs) || (trimStartMs + Number(item.durationMs || 0)),
-  );
-  const clipDurationMs = Number.isFinite(Number(item.duration)) && Number(item.duration) > 0
-    ? Math.round(Number(item.duration) * 1000)
-    : 0;
-  const fadeOutStartMs = Number(item.fadeOutStartMs);
-  const fadeOutEndMs = Number(item.fadeOutEndMs);
-  const hasCustomFadeOut =
-    Number.isFinite(fadeOutStartMs) && fadeOutStartMs < trimEndMs - 120;
-
-  return (
-    trimStartMs === 0 &&
-    clipDurationMs > 0 &&
-    Math.abs(trimEndMs - clipDurationMs) <= 180 &&
-    !hasCustomFadeOut &&
-    (!Number.isFinite(fadeOutEndMs) || fadeOutEndMs >= trimEndMs - 40)
-  );
-}
-
 function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
@@ -428,7 +401,6 @@ export function useAudioEngine({ volume, fadeMs }) {
   const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
   const requestIdRef = useRef(0);
-  const preloadRequestIdRef = useRef(0);
   const songAudioContextRef = useRef(null);
   const songBufferCacheRef = useRef(new Map());
   const useScheduledMobileSongs = isMobileSafari();
@@ -437,12 +409,6 @@ export function useAudioEngine({ volume, fadeMs }) {
   const [playbackProgress, setPlaybackProgress] = useState(0);
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
-  const [songPreloadStatus, setSongPreloadStatus] = useState({
-    total: 0,
-    loaded: 0,
-    ready: !useScheduledMobileSongs,
-    needsGesture: useScheduledMobileSongs,
-  });
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
 
   const getSongAudioContext = async () => {
@@ -497,66 +463,15 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
   };
 
-  const primeSongSources = async (sources = [], options = {}) => {
-    const { userInitiated = false } = options;
-
+  const primeSongSources = async (sources = []) => {
     if (!useScheduledMobileSongs) {
-      setSongPreloadStatus({
-        total: 0,
-        loaded: 0,
-        ready: true,
-        needsGesture: false,
-      });
       return;
     }
 
     const uniqueSources = [...new Set(sources.filter(Boolean))];
-    const requestId = ++preloadRequestIdRef.current;
-
-    if (!uniqueSources.length) {
-      setSongPreloadStatus({
-        total: 0,
-        loaded: 0,
-        ready: true,
-        needsGesture: false,
-      });
-      return;
-    }
-
-    if (!userInitiated && !songAudioContextRef.current) {
-      setSongPreloadStatus({
-        total: uniqueSources.length,
-        loaded: 0,
-        ready: false,
-        needsGesture: true,
-      });
-      return;
-    }
-
-    setSongPreloadStatus({
-      total: uniqueSources.length,
-      loaded: 0,
-      ready: false,
-      needsGesture: false,
-    });
-
-    let settledCount = 0;
-
     await Promise.allSettled(
       uniqueSources.map(async (src) => {
-        try {
-          await getDecodedSongBuffer(src);
-        } finally {
-          settledCount += 1;
-          if (requestId === preloadRequestIdRef.current) {
-            setSongPreloadStatus({
-              total: uniqueSources.length,
-              loaded: settledCount,
-              ready: settledCount >= uniqueSources.length,
-              needsGesture: false,
-            });
-          }
-        }
+        await getDecodedSongBuffer(src);
       }),
     );
   };
@@ -736,16 +651,6 @@ export function useAudioEngine({ volume, fadeMs }) {
     clearTimer(entry.audibleTimeoutId);
 
     if (entry.item.slot === "song") {
-      if (shouldUseNaturalSongEnding(entry.item)) {
-        recordDiagnosticEvent("audio.song.natural_end", {
-          sessionId: session.id,
-          itemId: entry.item.id,
-          playerName: entry.item.playerName || "",
-          songName: entry.item.nickname || "",
-        });
-        return;
-      }
-
       const fadeStartMs = Math.min(
         trimEndMs,
         Math.max(trimStartMs, Number(entry.item.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - WALKUP_SONG_FADE_OUT_MS)),
@@ -848,15 +753,12 @@ export function useAudioEngine({ volume, fadeMs }) {
 
         const seekOffsetMs = Math.max(0, Number(seekMs) || 0);
         const playStartDelayMs = Math.max(0, item.startMs - session.offsetMs);
-        const useNaturalEnding = shouldUseNaturalSongEnding(item);
         const clipDurationMs = Math.max(
           MIN_WALKUP_TRIM_MS,
-          useNaturalEnding
-            ? Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs)
-            : Math.min(
-                Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
-                Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
-              ),
+          Math.min(
+            Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
+            Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
+          ),
         );
         const sourceNode = context.createBufferSource();
         const gainNode = context.createGain();
@@ -867,11 +769,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         gainNode.connect(context.destination);
 
         const startAtContextTime = context.currentTime + playStartDelayMs / 1000;
-        if (useNaturalEnding) {
-          sourceNode.start(startAtContextTime, seekOffsetMs / 1000);
-        } else {
-          sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
-        }
+        sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
 
         const entry = {
           kind: "buffer",
@@ -1323,7 +1221,6 @@ export function useAudioEngine({ volume, fadeMs }) {
     playbackProgress,
     playbackTimeMs,
     playbackTotalMs,
-    songPreloadStatus,
     playSequence,
     primeSongSources,
     stopAll,

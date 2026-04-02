@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v fcee00a-fix2";
+const APP_BUILD_LABEL = "v rollback-base-1";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -154,7 +154,6 @@ export default function App() {
   const [appState, setAppState] = useState(() => loadState());
   const [activeTab, setActiveTab] = useState("walkups");
   const [persistError, setPersistError] = useState(false);
-  const [isArmingWalkups, setIsArmingWalkups] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState("");
   const [editingReturnTab, setEditingReturnTab] = useState("");
   const [lineupCursorId, setLineupCursorId] = useState("");
@@ -259,7 +258,6 @@ export default function App() {
     playbackProgress,
     playbackTimeMs,
     playbackTotalMs,
-    songPreloadStatus,
     playSequence,
     primeSongSources,
     stopAll,
@@ -284,29 +282,14 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
-  const songSources = useMemo(
-    () =>
-      players
-        .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
-        .filter(Boolean),
-    [players],
-  );
-  const songPreloadProgress = songPreloadStatus.total > 0
-    ? songPreloadStatus.loaded / songPreloadStatus.total
-    : 1;
 
   useEffect(() => {
-    primeSongSources(songSources);
-  }, [songSources]);
+    const sources = players
+      .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
+      .filter(Boolean);
 
-  const handleManualWalkupLoad = async () => {
-    setIsArmingWalkups(true);
-    try {
-      await primeSongSources(songSources, { userInitiated: true });
-    } finally {
-      setIsArmingWalkups(false);
-    }
-  };
+    primeSongSources(sources);
+  }, [players]);
 
   const updateState = (updater) => setAppState((current) => updater(current));
 
@@ -527,45 +510,6 @@ export default function App() {
               <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200">
                 <Waves className="h-3.5 w-3.5" />
                 Walk-Up Announcer
-              </div>
-              <div className="mt-3 max-w-xs">
-                <div className="mb-1 flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
-                  <span>
-                    {songPreloadStatus.ready
-                      ? "Walkups Ready"
-                      : songPreloadStatus.needsGesture
-                        ? "Tap Load To Arm"
-                        : "Loading Walkups"}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span>
-                      {songPreloadStatus.needsGesture
-                        ? "Standby"
-                        : songPreloadStatus.total > 0
-                        ? `${songPreloadStatus.loaded}/${songPreloadStatus.total}`
-                        : "Ready"}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleManualWalkupLoad}
-                      className={`rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-sky-100 transition active:scale-[0.96] ${
-                        isArmingWalkups
-                          ? "border-emerald-300/50 bg-emerald-400/20 text-emerald-50"
-                          : "border-sky-300/40 bg-sky-400/15 shadow-[0_0_0_1px_rgba(125,211,252,0.08)] hover:border-sky-200/65 hover:bg-sky-300/22"
-                      }`}
-                    >
-                      {isArmingWalkups ? "Loading" : "Load"}
-                    </button>
-                  </div>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className={`h-full rounded-full transition-[width,background-color] duration-300 ${
-                      songPreloadStatus.ready ? "bg-emerald-400" : "bg-sky-400"
-                    }`}
-                    style={{ width: `${Math.max(6, Math.round(songPreloadProgress * 100))}%` }}
-                  />
-                </div>
               </div>
               <h1
                 className="mt-3 text-3xl font-black uppercase tracking-[0.08em] text-white"
