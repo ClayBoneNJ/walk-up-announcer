@@ -664,7 +664,9 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     clearTimer(entry.endTimeoutId);
     clearTimer(entry.fadeTimeoutId);
-    clearTimer(entry.audibleTimeoutId);
+    if (entry.item.slot !== "song" || entry.kind !== "buffer") {
+      clearTimer(entry.audibleTimeoutId);
+    }
 
     if (entry.item.slot === "song") {
       if (isFinishedMobileSongClip(entry.item)) {
