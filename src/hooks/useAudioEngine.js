@@ -172,19 +172,21 @@ function clearTimer(timerId) {
   }
 }
 
-function waitForAudioReady(audio, signal) {
+function waitForAudioReady(audio, signal, timeoutMs = 1500) {
   if (!audio) {
-    return Promise.resolve();
+    return Promise.resolve("missing-audio");
   }
 
   if (audio.readyState >= 1) {
-    return Promise.resolve();
+    return Promise.resolve("ready");
   }
 
   return new Promise((resolve, reject) => {
+    let timeoutId = null;
+
     const handleReady = () => {
       cleanup();
-      resolve();
+      resolve("ready");
     };
 
     const handleError = () => {
@@ -197,9 +199,18 @@ function waitForAudioReady(audio, signal) {
       reject(new DOMException("Playback cancelled", "AbortError"));
     };
 
+    const handleTimeout = () => {
+      cleanup();
+      resolve("timeout");
+    };
+
     const cleanup = () => {
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
       audio.removeEventListener("loadedmetadata", handleReady);
       audio.removeEventListener("canplay", handleReady);
+      audio.removeEventListener("loadeddata", handleReady);
       audio.removeEventListener("error", handleError);
       signal?.removeEventListener("abort", handleAbort);
     };
@@ -211,8 +222,10 @@ function waitForAudioReady(audio, signal) {
 
     audio.addEventListener("loadedmetadata", handleReady, { once: true });
     audio.addEventListener("canplay", handleReady, { once: true });
+    audio.addEventListener("loadeddata", handleReady, { once: true });
     audio.addEventListener("error", handleError, { once: true });
     signal?.addEventListener("abort", handleAbort, { once: true });
+    timeoutId = window.setTimeout(handleTimeout, Math.max(250, timeoutMs));
   });
 }
 
@@ -483,6 +496,7 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     const audio = createAudioElement(volume);
     audio.src = item.dataUrl ?? item.src;
+    audio.load();
     if (item.slot === "song") {
       await attachAudioGainNode(audio, fadeMs > 0 ? 0 : volume);
     } else {
@@ -529,7 +543,17 @@ export function useAudioEngine({ volume, fadeMs }) {
     try {
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
-      await waitForAudioReady(audio, session.controller.signal);
+      const readiness = await waitForAudioReady(audio, session.controller.signal);
+      recordDiagnosticEvent("audio.item.ready", {
+        sessionId: session.id,
+        itemId: item.id,
+        slot: item.slot,
+        playerName: item.playerName || "",
+        clipName: item.nickname || "",
+        readiness,
+        readyState: audio.readyState,
+        networkState: audio.networkState,
+      });
       if (seekSeconds > 0) {
         await seekAudio(audio, seekSeconds);
       }
