@@ -62,30 +62,10 @@ function setPlaybackLevel(audio, value) {
 }
 
 async function attachAudioGainNode(audio, initialVolume) {
-  const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
-
-  if (!AudioContextCtor || !audio) {
-    setPlaybackLevel(audio, initialVolume);
-    return;
-  }
-
-  try {
-    const context = new AudioContextCtor();
-    const sourceNode = context.createMediaElementSource(audio);
-    const gainNode = context.createGain();
-    gainNode.gain.value = Math.max(0, Number(initialVolume) || 0);
-    sourceNode.connect(gainNode);
-    gainNode.connect(context.destination);
-    audio._audioContext = context;
-    audio._sourceNode = sourceNode;
-    audio._gainNode = gainNode;
-    if (context.state === "suspended") {
-      await context.resume().catch(() => {});
-    }
-    setPlaybackLevel(audio, initialVolume);
-  } catch {
-    setPlaybackLevel(audio, initialVolume);
-  }
+  // iPhone Safari proved more reliable when walk-up songs stayed on the
+  // native HTMLAudioElement path instead of spinning up a new AudioContext
+  // for each song start.
+  setPlaybackLevel(audio, initialVolume);
 }
 
 async function disposeAudioNodes(audio) {
