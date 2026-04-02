@@ -111,7 +111,7 @@ async function destroyAudioElement(audio) {
   await disposeAudioNodes(audio);
 }
 
-async function fadeOutAndStop(audio, signal, durationMs = STOP_FADE_MS) {
+async function fadeOutAndStop(audio, signal, durationMs = MIN_STOP_FADE_MS) {
   if (!audio || !audio.src) {
     return;
   }
@@ -521,7 +521,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
   };
 
-  const startItemPlayback = async (session, item, seekMs = 0) => {
+  const startItemPlayback = async (session, item, seekMs = 0, preRollMs = 0) => {
     if (session.controller.signal.aborted || session.paused) {
       return;
     }
@@ -534,6 +534,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       clipName: item.nickname || "",
       startMs: item.startMs,
       seekMs,
+      preRollMs,
       trimStartMs: item.trimStartMs ?? null,
       trimEndMs: item.trimEndMs ?? null,
     });
@@ -598,8 +599,8 @@ export function useAudioEngine({ volume, fadeMs }) {
     const attemptPlayback = async (attempt = "initial") => {
       const activeAudio = entry.audio;
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
-      const preRollMs = item.slot === "song" ? Math.max(0, Number(item.preRollMs) || 0) : 0;
-      const seekSeconds = Math.max(0, (trimStartMs - preRollMs + seekMs) / 1000);
+      const effectivePreRollMs = item.slot === "song" ? Math.max(0, Number(preRollMs) || 0) : 0;
+      const seekSeconds = Math.max(0, (trimStartMs - effectivePreRollMs + seekMs) / 1000);
       const readiness = await waitForAudioReady(activeAudio, session.controller.signal);
       recordDiagnosticEvent("audio.item.ready", {
         sessionId: session.id,
@@ -611,7 +612,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         readyState: activeAudio.readyState,
         networkState: activeAudio.networkState,
         attempt,
-        preRollMs,
+        preRollMs: effectivePreRollMs,
       });
       if (seekSeconds > 0) {
         await seekAudio(activeAudio, seekSeconds);
@@ -625,7 +626,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         clipName: item.nickname || "",
         currentTimeMs: Math.round((activeAudio.currentTime || 0) * 1000),
         attempt,
-        preRollMs,
+        preRollMs: effectivePreRollMs,
       });
     };
 
@@ -709,7 +710,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       const effectiveStartMs = Math.max(0, entry.item.startMs - (entry.preRollMs || 0));
       const remainingMs = Math.max(0, effectiveStartMs - session.offsetMs);
       const timeoutId = window.setTimeout(() => {
-        startItemPlayback(session, entry.item, entry.seekMs);
+        startItemPlayback(session, entry.item, entry.seekMs, entry.preRollMs);
       }, remainingMs);
 
       return {
