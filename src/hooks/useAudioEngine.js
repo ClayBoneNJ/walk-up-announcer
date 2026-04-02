@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { MIN_WALKUP_TRIM_MS, WALKUP_TRIM_MS } from "../lib/storage";
+import { recordDiagnosticEvent } from "../lib/diagnostics";
 
 function wait(ms, signal) {
   return new Promise((resolve, reject) => {
@@ -290,6 +291,13 @@ export function useAudioEngine({ volume, fadeMs }) {
       return;
     }
 
+    recordDiagnosticEvent("audio.session.teardown", {
+      sessionId: session.id,
+      fadeOut,
+      activeEntryCount: session.activeEntries.size,
+      pendingCount: session.pendingStarts.length,
+    });
+
     session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
     session.pendingStarts = [];
 
@@ -321,6 +329,11 @@ export function useAudioEngine({ volume, fadeMs }) {
   const stopAll = async (fadeOut = true) => {
     const session = sessionRef.current;
     if (session) {
+      recordDiagnosticEvent("audio.stop_all", {
+        sessionId: session.id,
+        fadeOut,
+        activeEntryCount: session.activeEntries.size,
+      });
       session.controller.abort();
       sessionRef.current = null;
       if (!session.resolved) {
@@ -382,6 +395,10 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     session.resolved = true;
     sessionRef.current = null;
+    recordDiagnosticEvent("audio.session.completed", {
+      sessionId: session.id,
+      itemCount: session.items.length,
+    });
     resetUiState();
     session.resolve();
   };
@@ -392,6 +409,12 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     session.completedItemIds.add(itemId);
+    recordDiagnosticEvent("audio.item.completed", {
+      sessionId: session.id,
+      itemId,
+      completedCount: session.completedItemIds.size,
+      totalCount: session.items.length,
+    });
     finishSessionIfComplete(session);
   };
 
@@ -421,6 +444,14 @@ export function useAudioEngine({ volume, fadeMs }) {
       const fadeDurationMs = Math.max(0, fadeEndMs - Math.max(currentPositionMs, fadeStartMs));
 
       entry.fadeTimeoutId = window.setTimeout(async () => {
+        recordDiagnosticEvent("audio.song.fadeout.start", {
+          sessionId: session.id,
+          itemId: entry.item.id,
+          playerName: entry.item.playerName || "",
+          songName: entry.item.nickname || "",
+          fadeStartMs,
+          fadeEndMs,
+        });
         await fadeOutAndStop(
           entry.audio,
           session.controller.signal,
@@ -437,6 +468,18 @@ export function useAudioEngine({ volume, fadeMs }) {
     if (session.controller.signal.aborted || session.paused) {
       return;
     }
+
+    recordDiagnosticEvent("audio.item.starting", {
+      sessionId: session.id,
+      itemId: item.id,
+      slot: item.slot,
+      playerName: item.playerName || "",
+      clipName: item.nickname || "",
+      startMs: item.startMs,
+      seekMs,
+      trimStartMs: item.trimStartMs ?? null,
+      trimEndMs: item.trimEndMs ?? null,
+    });
 
     const audio = createAudioElement(volume);
     audio.src = item.dataUrl ?? item.src;
@@ -470,6 +513,13 @@ export function useAudioEngine({ volume, fadeMs }) {
       entry.audio.onended = null;
       entry.audio.onerror = null;
       session.activeEntries.delete(item.id);
+      recordDiagnosticEvent("audio.item.finalized", {
+        sessionId: session.id,
+        itemId: item.id,
+        slot: item.slot,
+        playerName: item.playerName || "",
+        clipName: item.nickname || "",
+      });
       markItemComplete(session, item.id);
     };
 
@@ -484,7 +534,23 @@ export function useAudioEngine({ volume, fadeMs }) {
         await seekAudio(audio, seekSeconds);
       }
       await audio.play();
+      recordDiagnosticEvent("audio.item.playing", {
+        sessionId: session.id,
+        itemId: item.id,
+        slot: item.slot,
+        playerName: item.playerName || "",
+        clipName: item.nickname || "",
+        currentTimeMs: Math.round((audio.currentTime || 0) * 1000),
+      });
     } catch {
+      recordDiagnosticEvent("audio.item.play_failed", {
+        sessionId: session.id,
+        itemId: item.id,
+        slot: item.slot,
+        playerName: item.playerName || "",
+        clipName: item.nickname || "",
+        src: item.src || "",
+      });
       finalize();
       return;
     }
@@ -559,6 +625,13 @@ export function useAudioEngine({ volume, fadeMs }) {
   }) => {
     requestIdRef.current += 1;
     const requestId = requestIdRef.current;
+    recordDiagnosticEvent("audio.sequence.requested", {
+      requestId,
+      descriptor,
+      itemCount: items.length,
+      startOffsetMs,
+      interruptFadeOut,
+    });
 
     await stopAll(interruptFadeOut);
 
@@ -624,6 +697,24 @@ export function useAudioEngine({ volume, fadeMs }) {
       reject: null,
     };
 
+    recordDiagnosticEvent("audio.session.created", {
+      sessionId: session.id,
+      requestId,
+      descriptor,
+      itemCount: filteredItems.length,
+      totalDurationMs,
+      songItems: filteredItems
+        .filter((item) => item.slot === "song")
+        .map((item) => ({
+          itemId: item.id,
+          playerName: item.playerName || "",
+          clipName: item.nickname || "",
+          startMs: item.startMs,
+          trimStartMs: item.trimStartMs ?? null,
+          trimEndMs: item.trimEndMs ?? null,
+        })),
+    });
+
     setActivePlayback(descriptor);
     setPlaybackTotalMs(totalDurationMs);
     setPlaybackTimeMs(Math.max(0, startOffsetMs));
@@ -645,6 +736,9 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     if (session.paused) {
+      recordDiagnosticEvent("audio.resume", {
+        sessionId: session.id,
+      });
       session.paused = false;
       session.anchorMs = performance.now() - session.offsetMs;
 
@@ -661,6 +755,10 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     session.offsetMs = performance.now() - session.anchorMs;
     session.paused = true;
+    recordDiagnosticEvent("audio.pause", {
+      sessionId: session.id,
+      offsetMs: Math.round(session.offsetMs),
+    });
     stopProgressLoop();
 
     session.pendingStarts.forEach((entry) => {

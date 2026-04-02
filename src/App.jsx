@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioLines,
   ArrowDown,
@@ -25,6 +25,7 @@ import {
   resolvePlayerSequence,
   saveState,
 } from "./lib/storage";
+import { downloadDiagnosticReport, recordDiagnosticEvent } from "./lib/diagnostics";
 
 const TABS = [
   { id: "walkups", label: "Walkups", shortLabel: "Walkups", icon: Users },
@@ -134,10 +135,69 @@ export default function App() {
   const [editingPlayerId, setEditingPlayerId] = useState("");
   const [editingReturnTab, setEditingReturnTab] = useState("");
   const [lineupCursorId, setLineupCursorId] = useState("");
+  const [diagnosticTapCount, setDiagnosticTapCount] = useState(0);
+  const diagnosticTapTimerRef = useRef(null);
 
   useEffect(() => {
     setPersistError(!saveState(appState));
   }, [appState]);
+
+  useEffect(() => {
+    recordDiagnosticEvent("app.loaded", {
+      activeTab: "walkups",
+      publishedRevision: appState?.publishedRevision ?? "",
+    });
+  }, []);
+
+  useEffect(() => {
+    const handleError = (event) => {
+      recordDiagnosticEvent("window.error", {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+      });
+    };
+
+    const handleRejection = (event) => {
+      recordDiagnosticEvent("window.unhandledrejection", {
+        reason: event.reason,
+      });
+    };
+
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleRejection);
+
+    return () => {
+      window.removeEventListener("error", handleError);
+      window.removeEventListener("unhandledrejection", handleRejection);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("diagnostics") !== "download") {
+      return;
+    }
+
+    downloadDiagnosticReport(appState);
+    params.delete("diagnostics");
+    const nextQuery = params.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", nextUrl);
+  }, [appState]);
+
+  useEffect(() => {
+    return () => {
+      if (diagnosticTapTimerRef.current) {
+        window.clearTimeout(diagnosticTapTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -312,6 +372,12 @@ export default function App() {
   };
 
   const playPlayer = async (player) => {
+    recordDiagnosticEvent("walkup.play.requested", {
+      playerId: player.id,
+      playerName: player.name,
+      songId: player.songClip?.id || "",
+      songName: player.songClip?.nickname || "",
+    });
     const sequence = resolvePlayerSequence(player, libraries);
     await playSequence({
       items: sequence,
@@ -371,6 +437,12 @@ export default function App() {
   };
 
   const playClip = async ({ clip, playerId = "", playerName = "" }) => {
+    recordDiagnosticEvent("clip.play.requested", {
+      clipId: clip.id,
+      clipName: clip.nickname,
+      playerId,
+      playerName,
+    });
     await playSequence({
       items: [{ ...clip, playerId, playerName }],
       descriptor: {
@@ -392,7 +464,26 @@ export default function App() {
                 <Waves className="h-3.5 w-3.5" />
                 Walk-Up Announcer
               </div>
-              <h1 className="mt-3 text-3xl font-black uppercase tracking-[0.08em] text-white">
+              <h1
+                className="mt-3 text-3xl font-black uppercase tracking-[0.08em] text-white"
+                onClick={() => {
+                  if (diagnosticTapTimerRef.current) {
+                    window.clearTimeout(diagnosticTapTimerRef.current);
+                  }
+
+                  const nextCount = diagnosticTapCount + 1;
+                  if (nextCount >= 7) {
+                    setDiagnosticTapCount(0);
+                    downloadDiagnosticReport(appState);
+                    return;
+                  }
+
+                  setDiagnosticTapCount(nextCount);
+                  diagnosticTapTimerRef.current = window.setTimeout(() => {
+                    setDiagnosticTapCount(0);
+                  }, 1800);
+                }}
+              >
                 {activeTab === "walkups" ? "Walkups" : activeTab === "soundboard" ? "Events" : activeTab === "freestyle" ? "Team" : "Roster"}
               </h1>
             </div>
