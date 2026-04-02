@@ -344,6 +344,52 @@ function normalizeLibraries(libraries = {}) {
   };
 }
 
+function createLocalPlayerOverride(player, index) {
+  return {
+    id: player.id ?? "",
+    order: index,
+    jerseyNumber: player.jerseyNumber ?? player.number ?? "",
+    positionLabel: player.positionLabel ?? player.position ?? "",
+    numberClipId: player.numberClipId ?? "",
+    positionClipId: player.positionClipId ?? "",
+  };
+}
+
+function applyLocalPlayerOverrides(basePlayers = [], savedOverrides = []) {
+  const overridesById = new Map(
+    (savedOverrides ?? [])
+      .filter((override) => override?.id)
+      .map((override, index) => [
+        override.id,
+        {
+          order: Number.isFinite(Number(override.order)) ? Number(override.order) : index,
+          jerseyNumber: override.jerseyNumber ?? override.number ?? "",
+          positionLabel: override.positionLabel ?? override.position ?? "",
+          numberClipId: override.numberClipId ?? "",
+          positionClipId: override.positionClipId ?? "",
+        },
+      ]),
+  );
+
+  const mergedPlayers = (basePlayers ?? []).map((player, index) => {
+    const override = overridesById.get(player.id);
+    return {
+      order: override?.order ?? index,
+      player: normalizePlayer({
+        ...player,
+        jerseyNumber: override?.jerseyNumber ?? player.jerseyNumber,
+        positionLabel: override?.positionLabel ?? player.positionLabel,
+        numberClipId: override?.numberClipId ?? player.numberClipId,
+        positionClipId: override?.positionClipId ?? player.positionClipId,
+      }),
+    };
+  });
+
+  return mergedPlayers
+    .sort((left, right) => left.order - right.order)
+    .map((entry) => entry.player);
+}
+
 export function loadState() {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -353,26 +399,14 @@ export function loadState() {
 
     const parsed = JSON.parse(raw);
     const empty = createEmptyState();
+    const savedOverrides = parsed.playerOverrides ?? parsed.players ?? [];
 
     const loadedState = {
       ...empty,
-      ...parsed,
-      libraries: normalizeLibraries(parsed.libraries ?? {}),
-      players: (parsed.players ?? empty.players).map(normalizePlayer),
-      publishedRevision: parsed.publishedRevision ?? "",
-      settings: {
-        ...empty.settings,
-        ...(parsed.settings ?? {}),
-      },
+      players: applyLocalPlayerOverrides(empty.players, savedOverrides),
+      publishedRevision: empty.publishedRevision ?? parsed.publishedRevision ?? "",
+      settings: empty.settings,
     };
-
-    if (
-      empty.publishedRevision &&
-      (!loadedState.publishedRevision ||
-        String(loadedState.publishedRevision) < String(empty.publishedRevision))
-    ) {
-      return applyPublishedTeamSnapshot(loadedState, createPublishedTeamSnapshot(empty, empty.publishedRevision));
-    }
 
     return loadedState;
   } catch {
@@ -384,15 +418,11 @@ export function saveState(state) {
   try {
     const empty = createEmptyState();
     const normalizedState = {
-      ...empty,
-      ...state,
-      libraries: normalizeLibraries(state.libraries ?? {}),
-      players: (state.players ?? empty.players).map(normalizePlayer),
-      publishedRevision: state.publishedRevision ?? "",
-      settings: {
-        ...empty.settings,
-        ...(state.settings ?? {}),
-      },
+      schemaVersion: 2,
+      publishedRevision: state.publishedRevision ?? empty.publishedRevision ?? "",
+      playerOverrides: (state.players ?? empty.players).map((player, index) =>
+        createLocalPlayerOverride(normalizePlayer(player), index),
+      ),
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedState));
     return true;
@@ -452,11 +482,14 @@ export function applyPublishedTeamSnapshot(currentState, snapshot) {
   }
 
   const empty = createEmptyState();
+  const currentOverrides = (currentState?.players ?? []).map((player, index) =>
+    createLocalPlayerOverride(normalizePlayer(player), index),
+  );
 
   return {
     ...currentState,
     libraries: normalizeLibraries(snapshot.libraries ?? empty.libraries),
-    players: (snapshot.players ?? empty.players).map(normalizePlayer),
+    players: applyLocalPlayerOverrides(snapshot.players ?? empty.players, currentOverrides),
     publishedRevision: snapshot.publishedRevision,
   };
 }
