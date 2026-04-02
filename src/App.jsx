@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v 2661475";
+const APP_BUILD_LABEL = "v 18b4500-load";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -283,17 +283,20 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
+  const songSources = useMemo(
+    () =>
+      players
+        .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
+        .filter(Boolean),
+    [players],
+  );
   const songPreloadProgress = songPreloadStatus.total > 0
     ? songPreloadStatus.loaded / songPreloadStatus.total
     : 1;
 
   useEffect(() => {
-    const sources = players
-      .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
-      .filter(Boolean);
-
-    primeSongSources(sources);
-  }, [players]);
+    primeSongSources(songSources);
+  }, [songSources]);
 
   const updateState = (updater) => setAppState((current) => updater(current));
 
@@ -516,13 +519,24 @@ export default function App() {
                 Walk-Up Announcer
               </div>
               <div className="mt-3 max-w-xs">
-                <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                <div className="mb-1 flex items-center justify-between gap-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
                   <span>{songPreloadStatus.ready ? "Walkups Ready" : "Loading Walkups"}</span>
-                  <span>
-                    {songPreloadStatus.total > 0
-                      ? `${songPreloadStatus.loaded}/${songPreloadStatus.total}`
-                      : "Ready"}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span>
+                      {songPreloadStatus.total > 0
+                        ? `${songPreloadStatus.loaded}/${songPreloadStatus.total}`
+                        : "Ready"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        primeSongSources(songSources);
+                      }}
+                      className="rounded-full border border-sky-300/30 bg-sky-400/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-sky-100 transition hover:border-sky-200/55 hover:bg-sky-300/18"
+                    >
+                      Load
+                    </button>
+                  </div>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                   <div
