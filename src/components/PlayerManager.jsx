@@ -380,6 +380,7 @@ export function PlayerManager({
   const [setupTab, setSetupTab] = useState("roster");
   const [rosterModal, setRosterModal] = useState(null);
   const [playerDraft, setPlayerDraft] = useState(() => createPlayerDraft());
+  const [isBulkExportingSongs, setIsBulkExportingSongs] = useState(false);
 
   const openAddPlayerModal = () => {
     setPlayerDraft(createPlayerDraft());
@@ -447,6 +448,83 @@ export function PlayerManager({
     closeRosterModal();
   };
 
+  const exportAllSongTrims = async () => {
+    const playersWithSongs = players.filter((player) => {
+      const clipSource = player.songClip?.dataUrl ?? player.songClip?.src;
+      return Boolean(player.songClip && clipSource);
+    });
+
+    if (!playersWithSongs.length) {
+      window.alert("No player walk-up songs are available to export.");
+      return;
+    }
+
+    setIsBulkExportingSongs(true);
+
+    const failedExports = [];
+
+    try {
+      for (const player of playersWithSongs) {
+        const clip = player.songClip;
+        const clipSource = clip?.dataUrl ?? clip?.src;
+
+        if (!clip || !clipSource) {
+          continue;
+        }
+
+        try {
+          const trimStartMs = Math.max(0, Number(clip.trimStartMs) || 0);
+          const trimEndMs = Math.max(
+            trimStartMs + MIN_WALKUP_TRIM_MS,
+            Number(clip.trimEndMs) || (trimStartMs + WALKUP_TRIM_MS),
+          );
+          const fadeInEndMs = Math.min(
+            trimEndMs,
+            Math.max(trimStartMs, Number(clip.fadeInEndMs) || Math.min(trimEndMs, trimStartMs + 800)),
+          );
+          const fadeOutStartMs = Math.min(
+            trimEndMs,
+            Math.max(trimStartMs, Number(clip.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - 1200)),
+          );
+          const fadeOutEndMs = Math.min(
+            trimEndMs,
+            Math.max(fadeOutStartMs, Number(clip.fadeOutEndMs) || trimEndMs),
+          );
+
+          const wavBlob = await renderTrimmedClipToWav({
+            source: clipSource,
+            trimStartMs,
+            trimEndMs,
+            fadeInEndMs,
+            fadeOutStartMs,
+            fadeOutEndMs,
+          });
+
+          const objectUrl = URL.createObjectURL(wavBlob);
+          const anchor = document.createElement("a");
+          anchor.href = objectUrl;
+          anchor.download = `${slugifyFileLabel(player.name || clip.nickname || clip.fileName)}-mobile.wav`;
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          URL.revokeObjectURL(objectUrl);
+
+          await new Promise((resolve) => window.setTimeout(resolve, 150));
+        } catch (error) {
+          failedExports.push(
+            `${player.name}: ${error instanceof Error ? error.message : "Export failed."}`,
+          );
+        }
+      }
+    } finally {
+      setIsBulkExportingSongs(false);
+    }
+
+    if (failedExports.length) {
+      window.alert(`Some exports failed:\n\n${failedExports.join("\n")}`);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <section className="glass-panel rounded-[1.6rem] border border-white/8 p-4">
@@ -459,9 +537,20 @@ export function PlayerManager({
               App and code changes can ship anytime. Team data only changes on other devices when you download a snapshot and tell me to sync it.
             </div>
           </div>
-          <button type="button" onClick={onDownloadTeamSnapshot} className="secondary-button">
-            Download Team Snapshot
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={exportAllSongTrims}
+              disabled={isBulkExportingSongs}
+              className={`secondary-button ${isBulkExportingSongs ? "cursor-not-allowed opacity-60" : ""}`}
+            >
+              <Download className="h-4 w-4" />
+              {isBulkExportingSongs ? "Exporting WAVs..." : "Export All Song WAVs"}
+            </button>
+            <button type="button" onClick={onDownloadTeamSnapshot} className="secondary-button">
+              Download Team Snapshot
+            </button>
+          </div>
         </div>
       </section>
 
