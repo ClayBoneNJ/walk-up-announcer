@@ -987,7 +987,7 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
               isCompact ? "col-span-1 px-1 py-0.5" : "col-span-2 px-1 py-0.5"
             } ${
               isActive
-                ? "border-white/70 bg-white/18 shadow-[0_0_0_1px_rgba(255,255,255,0.32),0_8px_16px_rgba(255,255,255,0.14),0_0_14px_rgba(255,255,255,0.12)] ring-2 ring-white/45"
+                ? "border-white/85 bg-white/24 shadow-[0_0_0_1px_rgba(255,255,255,0.4),0_10px_24px_rgba(255,255,255,0.2),0_0_20px_rgba(255,255,255,0.2)] ring-2 ring-white/60"
                 : ""
             } ${accentClass}`}
           >
