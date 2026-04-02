@@ -111,7 +111,11 @@ function getFreestyleClipLabel(clip) {
     }
   }
 
-  return clip.groupId === "songs" ? nickname : clip.playerName || nickname;
+  if (clip.groupId === "names") {
+    return clip.playerName || nickname;
+  }
+
+  return nickname || clip.playerName || "";
 }
 
 function getFreestyleClipAccent(clip) {
