@@ -996,6 +996,11 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
               >
                 {getFreestyleClipLabel(clip)}
               </div>
+              {clip.groupId === "names" && clip.playerJerseyNumber ? (
+                <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/55">
+                  #{clip.playerJerseyNumber}
+                </div>
+              ) : null}
               {clip.playerName && clip.playerName !== clip.nickname ? (
                 <div
                   className={`mt-0.5 inline-flex max-w-full self-center rounded-[0.35rem] border px-1 py-0.5 text-[8px] font-semibold uppercase tracking-[0.04em] ${FREESTYLE_GROUP_STYLES[clip.groupId].chip}`}

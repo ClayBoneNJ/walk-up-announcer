@@ -538,6 +538,7 @@ export function getFreestyleGroups(players, libraries) {
         ...player.nameClip,
         playerId: player.id,
         playerName: player.name,
+        playerJerseyNumber: player.jerseyNumber,
       })),
     nicknames: players
       .filter((player) => player.nicknameClip?.dataUrl || player.nicknameClip?.src)
@@ -545,17 +546,18 @@ export function getFreestyleGroups(players, libraries) {
         ...player.nicknameClip,
         playerId: player.id,
         playerName: player.name,
+        playerJerseyNumber: player.jerseyNumber,
       })),
-    songs: dedupeClipsByIdentity([
-      ...libraries.songs,
-      ...players
+    songs: dedupeClipsByIdentity(
+      players
         .filter((player) => player.songClip?.dataUrl || player.songClip?.src)
         .map((player) => ({
           ...player.songClip,
           playerId: player.id,
           playerName: player.name,
+          playerJerseyNumber: player.jerseyNumber,
         })),
-    ]),
+    ),
     effects: libraries.effects,
   };
 }
