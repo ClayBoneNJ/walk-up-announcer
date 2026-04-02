@@ -440,8 +440,6 @@ export function useAudioEngine({ volume, fadeMs }) {
       trimStartMs + MIN_WALKUP_TRIM_MS,
       Number(entry.item.trimEndMs) || (trimStartMs + entry.item.durationMs),
     );
-    const elapsedMs = Math.max(0, entry.audio.currentTime * 1000 - trimStartMs);
-    const remainingMs = Math.max(0, entry.item.durationMs - elapsedMs);
 
     clearTimer(entry.endTimeoutId);
     clearTimer(entry.fadeTimeoutId);
@@ -479,14 +477,6 @@ export function useAudioEngine({ volume, fadeMs }) {
       }, fadeDelayMs);
       return;
     }
-
-    entry.endTimeoutId = window.setTimeout(() => {
-      try {
-        entry.audio.pause();
-        entry.audio.currentTime = 0;
-      } catch {}
-      finalizeEntry(entry, session);
-    }, remainingMs);
   };
 
   const finalizeEntry = (entry, session) => {
