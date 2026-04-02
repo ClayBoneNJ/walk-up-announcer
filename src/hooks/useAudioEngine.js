@@ -512,7 +512,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         await fadeOutAndStop(
           entry.audio,
           session.controller.signal,
-          fadeDurationMs || Math.max(0, trimEndMs - fadeStartMs) || STOP_FADE_MS,
+          fadeDurationMs || Math.max(0, trimEndMs - fadeStartMs) || MIN_STOP_FADE_MS,
         ).catch(() => {});
         session.activeEntries.delete(entry.item.id);
         markItemComplete(session, entry.item.id);
@@ -521,7 +521,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
   };
 
-  const startItemPlayback = async (session, item, seekMs = 0, preRollMs = 0) => {
+  const startItemPlayback = async (session, item, seekMs = 0) => {
     if (session.controller.signal.aborted || session.paused) {
       return;
     }
@@ -534,7 +534,6 @@ export function useAudioEngine({ volume, fadeMs }) {
       clipName: item.nickname || "",
       startMs: item.startMs,
       seekMs,
-      preRollMs,
       trimStartMs: item.trimStartMs ?? null,
       trimEndMs: item.trimEndMs ?? null,
     });
@@ -599,8 +598,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     const attemptPlayback = async (attempt = "initial") => {
       const activeAudio = entry.audio;
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
-      const effectivePreRollMs = item.slot === "song" ? Math.max(0, Number(preRollMs) || 0) : 0;
-      const seekSeconds = Math.max(0, (trimStartMs - effectivePreRollMs + seekMs) / 1000);
+      const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
       const readiness = await waitForAudioReady(activeAudio, session.controller.signal);
       recordDiagnosticEvent("audio.item.ready", {
         sessionId: session.id,
@@ -612,7 +610,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         readyState: activeAudio.readyState,
         networkState: activeAudio.networkState,
         attempt,
-        preRollMs: effectivePreRollMs,
+        preRollMs: 0,
       });
       if (seekSeconds > 0) {
         await seekAudio(activeAudio, seekSeconds);
@@ -626,7 +624,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         clipName: item.nickname || "",
         currentTimeMs: Math.round((activeAudio.currentTime || 0) * 1000),
         attempt,
-        preRollMs: effectivePreRollMs,
+        preRollMs: 0,
       });
     };
 
@@ -707,10 +705,9 @@ export function useAudioEngine({ volume, fadeMs }) {
         return entry;
       }
 
-      const effectiveStartMs = Math.max(0, entry.item.startMs - (entry.preRollMs || 0));
-      const remainingMs = Math.max(0, effectiveStartMs - session.offsetMs);
+      const remainingMs = Math.max(0, entry.item.startMs - session.offsetMs);
       const timeoutId = window.setTimeout(() => {
-        startItemPlayback(session, entry.item, entry.seekMs, entry.preRollMs);
+        startItemPlayback(session, entry.item, entry.seekMs);
       }, remainingMs);
 
       return {
@@ -785,10 +782,6 @@ export function useAudioEngine({ volume, fadeMs }) {
       paused: false,
       pendingStarts: filteredItems.map((item) => ({
         item,
-        preRollMs:
-          item.slot === "song"
-            ? Math.max(0, Math.min(item.startMs, Math.max(0, Number(item.trimStartMs) || 0)))
-            : 0,
         seekMs: 0,
         remainingMs: Math.max(0, item.startMs - startOffsetMs),
         timeoutId: null,
