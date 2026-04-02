@@ -90,8 +90,8 @@ function getFreestyleEntries(groups) {
 
   return [
     ...announcementEntries,
-    ...(groups.positions ?? []).map((clip) => ({ ...clip, groupId: "positions" })),
     ...(groups.numbers ?? []).map((clip) => ({ ...clip, groupId: "numbers" })),
+    ...(groups.positions ?? []).map((clip) => ({ ...clip, groupId: "positions" })),
     ...(groups.names ?? []).map((clip) => ({ ...clip, groupId: "names" })),
     ...(groups.nicknames ?? []).map((clip) => ({ ...clip, groupId: "nicknames" })),
     ...(groups.songs ?? []).map((clip) => ({ ...clip, groupId: "songs" })),
