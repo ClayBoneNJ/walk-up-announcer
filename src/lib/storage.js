@@ -156,7 +156,17 @@ function normalizeOwnedClip(clip, fallbackBuiltInClip = null) {
     if (fallbackBuiltInClip && clip.group === fallbackBuiltInClip.group) {
       resolvedClip = fallbackBuiltInClip;
     } else if (clip.group === "songs") {
-      resolvedClip = BUILT_IN_LIBRARIES.songs.find((builtInClip) => builtInClip.id === clip.id) ?? clip;
+      const matchingBuiltInSong =
+        BUILT_IN_LIBRARIES.songs.find((builtInClip) => builtInClip.id === clip.id) ?? null;
+      const keepAssignedSongSource =
+        matchingBuiltInSong &&
+        (
+          (clip.src && clip.src !== matchingBuiltInSong.src) ||
+          (clip.fileName && clip.fileName !== matchingBuiltInSong.fileName) ||
+          (clip.mimeType && clip.mimeType !== matchingBuiltInSong.mimeType)
+        );
+
+      resolvedClip = keepAssignedSongSource ? clip : matchingBuiltInSong ?? clip;
     }
   }
 
