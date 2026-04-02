@@ -458,6 +458,19 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
   };
 
+  const primeSongSources = async (sources = []) => {
+    if (!useScheduledMobileSongs) {
+      return;
+    }
+
+    const uniqueSources = [...new Set(sources.filter(Boolean))];
+    await Promise.allSettled(
+      uniqueSources.map(async (src) => {
+        await getDecodedSongBuffer(src);
+      }),
+    );
+  };
+
   const stopProgressLoop = () => {
     if (progressFrameRef.current) {
       window.cancelAnimationFrame(progressFrameRef.current);
@@ -1200,6 +1213,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     playbackTimeMs,
     playbackTotalMs,
     playSequence,
+    primeSongSources,
     stopAll,
     togglePause,
   };

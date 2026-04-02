@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-wav-5";
+const APP_BUILD_LABEL = "v mobile-wav-6";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -240,6 +240,7 @@ export default function App() {
     playbackTimeMs,
     playbackTotalMs,
     playSequence,
+    primeSongSources,
     stopAll,
     togglePause,
   } = useAudioEngine({
@@ -262,6 +263,14 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
+
+  useEffect(() => {
+    const sources = players
+      .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
+      .filter(Boolean);
+
+    primeSongSources(sources);
+  }, [players, primeSongSources]);
 
   const updateState = (updater) => setAppState((current) => updater(current));
 
