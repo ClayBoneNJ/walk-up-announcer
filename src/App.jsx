@@ -293,7 +293,7 @@ export default function App() {
       .filter(Boolean);
 
     primeSongSources(sources);
-  }, [players, primeSongSources]);
+  }, [players]);
 
   const updateState = (updater) => setAppState((current) => updater(current));
 
