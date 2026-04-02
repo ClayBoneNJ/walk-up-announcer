@@ -459,6 +459,10 @@ export function useAudioEngine({ volume, fadeMs }) {
       const fadeDurationMs = Math.max(0, fadeEndMs - Math.max(fadeReferenceMs, fadeStartMs));
 
       entry.fadeTimeoutId = window.setTimeout(async () => {
+        if (!session.activeEntries.has(entry.item.id) || session.controller.signal.aborted) {
+          return;
+        }
+
         recordDiagnosticEvent("audio.song.fadeout.start", {
           sessionId: session.id,
           itemId: entry.item.id,
@@ -475,6 +479,26 @@ export function useAudioEngine({ volume, fadeMs }) {
         session.activeEntries.delete(entry.item.id);
         markItemComplete(session, entry.item.id);
       }, fadeDelayMs);
+
+      const trimEndReferenceMs = Math.max(trimStartMs, entry.audio.currentTime * 1000);
+      const trimEndDelayMs = Math.max(0, trimEndMs - trimEndReferenceMs);
+      entry.endTimeoutId = window.setTimeout(async () => {
+        if (!session.activeEntries.has(entry.item.id) || session.controller.signal.aborted) {
+          return;
+        }
+
+        recordDiagnosticEvent("audio.song.trim_end.stop", {
+          sessionId: session.id,
+          itemId: entry.item.id,
+          playerName: entry.item.playerName || "",
+          songName: entry.item.nickname || "",
+          trimEndMs,
+        });
+
+        await fadeOutAndStop(entry.audio, session.controller.signal, Math.max(80, Math.min(220, stopFadeMs))).catch(() => {});
+        session.activeEntries.delete(entry.item.id);
+        markItemComplete(session, entry.item.id);
+      }, trimEndDelayMs + 60);
       return;
     }
   };
