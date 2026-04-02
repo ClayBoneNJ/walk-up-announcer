@@ -171,6 +171,93 @@ function clearTimer(timerId) {
   }
 }
 
+function waitForAudioReady(audio, signal) {
+  if (!audio) {
+    return Promise.resolve();
+  }
+
+  if (audio.readyState >= 1) {
+    return Promise.resolve();
+  }
+
+  return new Promise((resolve, reject) => {
+    const handleReady = () => {
+      cleanup();
+      resolve();
+    };
+
+    const handleError = () => {
+      cleanup();
+      reject(new Error("Audio failed to load."));
+    };
+
+    const handleAbort = () => {
+      cleanup();
+      reject(new DOMException("Playback cancelled", "AbortError"));
+    };
+
+    const cleanup = () => {
+      audio.removeEventListener("loadedmetadata", handleReady);
+      audio.removeEventListener("canplay", handleReady);
+      audio.removeEventListener("error", handleError);
+      signal?.removeEventListener("abort", handleAbort);
+    };
+
+    if (signal?.aborted) {
+      handleAbort();
+      return;
+    }
+
+    audio.addEventListener("loadedmetadata", handleReady, { once: true });
+    audio.addEventListener("canplay", handleReady, { once: true });
+    audio.addEventListener("error", handleError, { once: true });
+    signal?.addEventListener("abort", handleAbort, { once: true });
+  });
+}
+
+async function seekAudio(audio, timeSeconds) {
+  if (!audio || !Number.isFinite(timeSeconds) || timeSeconds <= 0) {
+    return;
+  }
+
+  if (Math.abs((audio.currentTime || 0) - timeSeconds) < 0.01) {
+    return;
+  }
+
+  await new Promise((resolve) => {
+    let settled = false;
+
+    const cleanup = () => {
+      audio.removeEventListener("seeked", handleSettled);
+      audio.removeEventListener("timeupdate", handleSettled);
+      audio.removeEventListener("error", handleSettled);
+    };
+
+    const handleSettled = () => {
+      if (settled) {
+        return;
+      }
+
+      settled = true;
+      cleanup();
+      resolve();
+    };
+
+    audio.addEventListener("seeked", handleSettled, { once: true });
+    audio.addEventListener("timeupdate", handleSettled, { once: true });
+    audio.addEventListener("error", handleSettled, { once: true });
+
+    try {
+      audio.currentTime = timeSeconds;
+    } catch {
+      handleSettled();
+      return;
+    }
+
+    window.setTimeout(handleSettled, 250);
+  });
+}
+
 export function useAudioEngine({ volume, fadeMs }) {
   const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
@@ -392,8 +479,9 @@ export function useAudioEngine({ volume, fadeMs }) {
     try {
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
+      await waitForAudioReady(audio, session.controller.signal);
       if (seekSeconds > 0) {
-        audio.currentTime = seekSeconds;
+        await seekAudio(audio, seekSeconds);
       }
       await audio.play();
     } catch {
