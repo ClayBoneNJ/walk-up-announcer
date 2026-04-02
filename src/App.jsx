@@ -258,6 +258,7 @@ export default function App() {
     playbackProgress,
     playbackTimeMs,
     playbackTotalMs,
+    songPreloadStatus,
     playSequence,
     primeSongSources,
     stopAll,
@@ -282,6 +283,9 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
+  const songPreloadProgress = songPreloadStatus.total > 0
+    ? songPreloadStatus.loaded / songPreloadStatus.total
+    : 1;
 
   useEffect(() => {
     const sources = players
@@ -510,6 +514,24 @@ export default function App() {
               <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200">
                 <Waves className="h-3.5 w-3.5" />
                 Walk-Up Announcer
+              </div>
+              <div className="mt-3 max-w-xs">
+                <div className="mb-1 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.16em] text-white/50">
+                  <span>{songPreloadStatus.ready ? "Walkups Ready" : "Loading Walkups"}</span>
+                  <span>
+                    {songPreloadStatus.total > 0
+                      ? `${songPreloadStatus.loaded}/${songPreloadStatus.total}`
+                      : "Ready"}
+                  </span>
+                </div>
+                <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className={`h-full rounded-full transition-[width,background-color] duration-300 ${
+                      songPreloadStatus.ready ? "bg-emerald-400" : "bg-sky-400"
+                    }`}
+                    style={{ width: `${Math.max(6, Math.round(songPreloadProgress * 100))}%` }}
+                  />
+                </div>
               </div>
               <h1
                 className="mt-3 text-3xl font-black uppercase tracking-[0.08em] text-white"

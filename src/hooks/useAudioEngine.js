@@ -401,15 +401,21 @@ export function useAudioEngine({ volume, fadeMs }) {
   const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
   const requestIdRef = useRef(0);
+  const preloadRequestIdRef = useRef(0);
   const songAudioContextRef = useRef(null);
   const songBufferCacheRef = useRef(new Map());
+  const useScheduledMobileSongs = isMobileSafari();
   const [activePlayback, setActivePlayback] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackProgress, setPlaybackProgress] = useState(0);
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
+  const [songPreloadStatus, setSongPreloadStatus] = useState({
+    total: 0,
+    loaded: 0,
+    ready: !useScheduledMobileSongs,
+  });
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
-  const useScheduledMobileSongs = isMobileSafari();
 
   const getSongAudioContext = async () => {
     const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
@@ -465,13 +471,48 @@ export function useAudioEngine({ volume, fadeMs }) {
 
   const primeSongSources = async (sources = []) => {
     if (!useScheduledMobileSongs) {
+      setSongPreloadStatus({
+        total: 0,
+        loaded: 0,
+        ready: true,
+      });
       return;
     }
 
     const uniqueSources = [...new Set(sources.filter(Boolean))];
+    const requestId = ++preloadRequestIdRef.current;
+
+    if (!uniqueSources.length) {
+      setSongPreloadStatus({
+        total: 0,
+        loaded: 0,
+        ready: true,
+      });
+      return;
+    }
+
+    setSongPreloadStatus({
+      total: uniqueSources.length,
+      loaded: 0,
+      ready: false,
+    });
+
+    let settledCount = 0;
+
     await Promise.allSettled(
       uniqueSources.map(async (src) => {
-        await getDecodedSongBuffer(src);
+        try {
+          await getDecodedSongBuffer(src);
+        } finally {
+          settledCount += 1;
+          if (requestId === preloadRequestIdRef.current) {
+            setSongPreloadStatus({
+              total: uniqueSources.length,
+              loaded: settledCount,
+              ready: settledCount >= uniqueSources.length,
+            });
+          }
+        }
       }),
     );
   };
@@ -1221,6 +1262,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     playbackProgress,
     playbackTimeMs,
     playbackTotalMs,
+    songPreloadStatus,
     playSequence,
     primeSongSources,
     stopAll,
