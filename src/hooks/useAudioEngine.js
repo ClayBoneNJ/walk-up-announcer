@@ -322,6 +322,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     activeEntries.forEach((entry) => {
       clearTimer(entry.endTimeoutId);
       clearTimer(entry.fadeTimeoutId);
+      clearTimer(entry.audibleTimeoutId);
       entry.audio.onended = null;
       entry.audio.onerror = null;
     });
@@ -439,13 +440,54 @@ export function useAudioEngine({ volume, fadeMs }) {
       trimStartMs + MIN_WALKUP_TRIM_MS,
       Number(entry.item.trimEndMs) || (trimStartMs + entry.item.durationMs),
     );
-    const elapsedMs = Math.max(0, entry.audio.currentTime * 1000 - trimStartMs);
-    const remainingMs = Math.max(0, entry.item.durationMs - elapsedMs);
 
     clearTimer(entry.endTimeoutId);
     clearTimer(entry.fadeTimeoutId);
+    clearTimer(entry.audibleTimeoutId);
 
     if (entry.item.slot === "song") {
+      const currentPositionMs = Math.max(0, entry.audio.currentTime * 1000);
+      const fadeInEndMs = Math.min(
+        trimEndMs,
+        Math.max(trimStartMs, Number(entry.item.fadeInEndMs) || Math.min(trimEndMs, trimStartMs + 800)),
+      );
+
+      const applySongFadeIn = async () => {
+        const latestPositionMs = Math.max(trimStartMs, entry.audio.currentTime * 1000);
+
+        if (fadeInEndMs > trimStartMs && latestPositionMs < fadeInEndMs) {
+          const fadeInDurationMs = Math.max(0, fadeInEndMs - latestPositionMs);
+          const startingVolume =
+            fadeInEndMs === trimStartMs
+              ? volume
+              : volume * ((latestPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
+
+          setPlaybackLevel(entry.audio, Math.max(0, Math.min(volume, startingVolume)));
+          await fadeVolume(
+            entry.audio,
+            session.controller.signal,
+            getPlaybackLevel(entry.audio),
+            volume,
+            fadeInDurationMs,
+          );
+        } else {
+          setPlaybackLevel(entry.audio, volume);
+        }
+      };
+
+      if (currentPositionMs < trimStartMs) {
+        setPlaybackLevel(entry.audio, 0);
+        entry.audibleTimeoutId = window.setTimeout(() => {
+          if (session.controller.signal.aborted || session.paused) {
+            return;
+          }
+
+          applySongFadeIn().catch(() => {});
+        }, Math.max(0, trimStartMs - currentPositionMs));
+      } else {
+        applySongFadeIn().catch(() => {});
+      }
+
       const fadeStartMs = Math.min(
         trimEndMs,
         Math.max(trimStartMs, Number(entry.item.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - WALKUP_SONG_FADE_OUT_MS)),
@@ -454,9 +496,9 @@ export function useAudioEngine({ volume, fadeMs }) {
         trimEndMs,
         Math.max(fadeStartMs, Number(entry.item.fadeOutEndMs) || trimEndMs),
       );
-      const currentPositionMs = Math.max(trimStartMs, entry.audio.currentTime * 1000);
-      const fadeDelayMs = Math.max(0, fadeStartMs - currentPositionMs);
-      const fadeDurationMs = Math.max(0, fadeEndMs - Math.max(currentPositionMs, fadeStartMs));
+      const fadeReferenceMs = Math.max(trimStartMs, entry.audio.currentTime * 1000);
+      const fadeDelayMs = Math.max(0, fadeStartMs - fadeReferenceMs);
+      const fadeDurationMs = Math.max(0, fadeEndMs - Math.max(fadeReferenceMs, fadeStartMs));
 
       entry.fadeTimeoutId = window.setTimeout(async () => {
         recordDiagnosticEvent("audio.song.fadeout.start", {
@@ -515,6 +557,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       audio,
       endTimeoutId: null,
       fadeTimeoutId: null,
+      audibleTimeoutId: null,
     };
 
     session.activeEntries.set(item.id, entry);
@@ -531,6 +574,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     const finalize = () => {
       clearTimer(entry.endTimeoutId);
       clearTimer(entry.fadeTimeoutId);
+      clearTimer(entry.audibleTimeoutId);
       entry.audio.onended = null;
       entry.audio.onerror = null;
       session.activeEntries.delete(item.id);
@@ -554,7 +598,8 @@ export function useAudioEngine({ volume, fadeMs }) {
     const attemptPlayback = async (attempt = "initial") => {
       const activeAudio = entry.audio;
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
-      const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
+      const preRollMs = item.slot === "song" ? Math.max(0, Number(item.preRollMs) || 0) : 0;
+      const seekSeconds = Math.max(0, (trimStartMs - preRollMs + seekMs) / 1000);
       const readiness = await waitForAudioReady(activeAudio, session.controller.signal);
       recordDiagnosticEvent("audio.item.ready", {
         sessionId: session.id,
@@ -566,6 +611,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         readyState: activeAudio.readyState,
         networkState: activeAudio.networkState,
         attempt,
+        preRollMs,
       });
       if (seekSeconds > 0) {
         await seekAudio(activeAudio, seekSeconds);
@@ -579,6 +625,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         clipName: item.nickname || "",
         currentTimeMs: Math.round((activeAudio.currentTime || 0) * 1000),
         attempt,
+        preRollMs,
       });
     };
 
@@ -634,31 +681,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       }
     }
 
-    if (item.slot === "song") {
-      const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
-      const trimEndMs = Math.max(
-        trimStartMs + MIN_WALKUP_TRIM_MS,
-        Number(item.trimEndMs) || (trimStartMs + item.durationMs),
-      );
-      const fadeInEndMs = Math.min(
-        trimEndMs,
-        Math.max(trimStartMs, Number(item.fadeInEndMs) || Math.min(trimEndMs, trimStartMs + 800)),
-      );
-      const currentPositionMs = Math.max(trimStartMs, audio.currentTime * 1000);
-
-      if (fadeInEndMs > trimStartMs && currentPositionMs < fadeInEndMs) {
-        const fadeInDurationMs = Math.max(0, fadeInEndMs - currentPositionMs);
-        const startingVolume =
-          fadeInEndMs === trimStartMs
-            ? volume
-            : volume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
-
-        setPlaybackLevel(audio, Math.max(0, Math.min(volume, startingVolume)));
-        await fadeVolume(audio, session.controller.signal, getPlaybackLevel(audio), volume, fadeInDurationMs);
-      } else {
-        setPlaybackLevel(audio, volume);
-      }
-    } else if (fadeMs > 0) {
+    if (item.slot !== "song" && fadeMs > 0) {
       const steps = 8;
       for (let index = 1; index <= steps; index += 1) {
         if (session.controller.signal.aborted || session.paused) {
@@ -676,14 +699,15 @@ export function useAudioEngine({ volume, fadeMs }) {
   };
 
   const schedulePendingStarts = (session) => {
-    session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
+      session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
 
     session.pendingStarts = session.pendingStarts.map((entry) => {
       if (session.startedItemIds.has(entry.item.id)) {
         return entry;
       }
 
-      const remainingMs = Math.max(0, entry.item.startMs - session.offsetMs);
+      const effectiveStartMs = Math.max(0, entry.item.startMs - (entry.preRollMs || 0));
+      const remainingMs = Math.max(0, effectiveStartMs - session.offsetMs);
       const timeoutId = window.setTimeout(() => {
         startItemPlayback(session, entry.item, entry.seekMs);
       }, remainingMs);
@@ -731,7 +755,7 @@ export function useAudioEngine({ volume, fadeMs }) {
           Number.isFinite(item.durationMs) && item.durationMs > 0
             ? item.durationMs
             : item.slot === "song"
-              ? Math.max(
+            ? Math.max(
                   MIN_WALKUP_TRIM_MS,
                   (Number(item.trimEndMs) || ((Number(item.trimStartMs) || 0) + WALKUP_TRIM_MS)) -
                     (Number(item.trimStartMs) || 0),
@@ -760,7 +784,11 @@ export function useAudioEngine({ volume, fadeMs }) {
       paused: false,
       pendingStarts: filteredItems.map((item) => ({
         item,
-        seekMs: Math.max(0, startOffsetMs - item.startMs),
+        preRollMs:
+          item.slot === "song"
+            ? Math.max(0, Math.min(item.startMs, Math.max(0, Number(item.trimStartMs) || 0)))
+            : 0,
+        seekMs: 0,
         remainingMs: Math.max(0, item.startMs - startOffsetMs),
         timeoutId: null,
       })),
@@ -852,6 +880,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     session.activeEntries.forEach((entry) => {
       clearTimer(entry.endTimeoutId);
       clearTimer(entry.fadeTimeoutId);
+      clearTimer(entry.audibleTimeoutId);
       entry.audio.pause();
     });
 
