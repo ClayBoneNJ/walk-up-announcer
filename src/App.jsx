@@ -74,6 +74,21 @@ function getFirstName(name = "") {
   return String(name || "").trim().split(/\s+/)[0] || "";
 }
 
+function getFreestyleOwnerChip(clip) {
+  if (Array.isArray(clip.playerNames) && clip.playerNames.length > 1) {
+    if (clip.playerNames.length === 2) {
+      return `${getFirstName(clip.playerNames[0])} + ${getFirstName(clip.playerNames[1])}`;
+    }
+    return `${clip.playerNames.length} players`;
+  }
+
+  if (clip.playerName && clip.playerName !== clip.nickname) {
+    return getFirstName(clip.playerName);
+  }
+
+  return "";
+}
+
 function getFreestyleEntries(groups) {
   const announcementEntries = [...(groups.announcements ?? [])]
     .map((clip) => ({ ...clip, groupId: "announcements" }))
@@ -452,7 +467,7 @@ export default function App() {
     await playTrackedBatter(nextPlayer, visiblePlayers);
   };
 
-  const playClip = async ({ clip, playerId = "", playerName = "" }) => {
+  const playClip = async ({ clip, playerId = "", playerName = "", relatedPlayerIds = [] }) => {
     recordDiagnosticEvent("clip.play.requested", {
       clipId: clip.id,
       clipName: clip.nickname,
@@ -477,6 +492,7 @@ export default function App() {
         type: "clip",
         playerId,
         playerName: playerName || clip.nickname,
+        relatedPlayerIds,
       },
       interruptFadeOut: false,
     });
@@ -963,12 +979,23 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
   return (
     <div className="grid auto-rows-[4.3rem] grid-cols-6 grid-flow-dense gap-1 md:grid-cols-8 xl:grid-cols-12">
       {entries.map((clip) => {
-        const isPlayerOwned = Boolean(clip.playerId);
+        const relatedPlayerIds = Array.isArray(clip.playerIds)
+          ? clip.playerIds.filter(Boolean)
+          : clip.playerId
+            ? [clip.playerId]
+            : [];
+        const activePlayerIds = Array.isArray(activePlayback?.relatedPlayerIds)
+          ? activePlayback.relatedPlayerIds.filter(Boolean)
+          : activePlayback?.playerId
+            ? [activePlayback.playerId]
+            : [];
+        const isPlayerOwned = relatedPlayerIds.length > 0;
         const isActive = isPlayerOwned
-          ? activePlayback?.playerId === clip.playerId
+          ? activePlayerIds.some((playerId) => relatedPlayerIds.includes(playerId))
           : activePlayback?.assetId === clip.id;
         const isCompact = clip.groupId === "positions" || clip.groupId === "numbers";
         const accentClass = getFreestyleClipAccent(clip);
+        const ownerChip = getFreestyleOwnerChip(clip);
 
         return (
           <button
@@ -979,6 +1006,7 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
                 clip,
                 playerId: clip.playerId ?? "",
                 playerName: clip.playerName ?? "",
+                relatedPlayerIds,
               })
             }
             className={`group relative overflow-hidden rounded-[0.5rem] border text-center transition duration-150 active:scale-[0.94] active:translate-y-[2px] ${
@@ -1008,11 +1036,11 @@ function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress })
                   #{clip.playerJerseyNumber}
                 </div>
               ) : null}
-              {clip.playerName && clip.playerName !== clip.nickname ? (
+              {ownerChip ? (
                 <div
                   className={`mt-0.5 inline-flex max-w-full self-center rounded-[0.35rem] border px-1 py-0.5 text-[8px] font-semibold uppercase tracking-[0.04em] ${FREESTYLE_GROUP_STYLES[clip.groupId].chip}`}
                 >
-                  <span className="truncate">{getFirstName(clip.playerName)}</span>
+                  <span className="truncate">{ownerChip}</span>
                 </div>
               ) : null}
             </div>

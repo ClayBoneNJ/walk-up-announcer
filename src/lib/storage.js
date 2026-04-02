@@ -528,22 +528,44 @@ export function getPlayerStatus(player) {
 }
 
 export function getFreestyleGroups(players, libraries) {
+  const groupedPositions = new Map();
+
+  players.forEach((player) => {
+    const clip = libraries.positions.find((item) => item.id === player.positionClipId);
+    if (!clip?.dataUrl && !clip?.src) {
+      return;
+    }
+
+    const identity = [
+      clip.id || "",
+      clip.src || "",
+      clip.dataUrl || "",
+      clip.fileName || "",
+      clip.nickname || "",
+    ].join("::");
+
+    const existing = groupedPositions.get(identity);
+    if (existing) {
+      existing.playerIds.push(player.id);
+      existing.playerNames.push(player.name);
+      existing.playerJerseyNumbers.push(player.jerseyNumber);
+      return;
+    }
+
+    groupedPositions.set(identity, {
+      ...clip,
+      playerId: player.id,
+      playerName: player.name,
+      playerJerseyNumber: player.jerseyNumber,
+      playerIds: [player.id],
+      playerNames: [player.name],
+      playerJerseyNumbers: [player.jerseyNumber],
+    });
+  });
+
   return {
     announcements: libraries.announcements,
-    positions: players
-      .map((player) => {
-        const clip = libraries.positions.find((item) => item.id === player.positionClipId);
-        if (!clip?.dataUrl && !clip?.src) {
-          return null;
-        }
-        return {
-          ...clip,
-          playerId: player.id,
-          playerName: player.name,
-          playerJerseyNumber: player.jerseyNumber,
-        };
-      })
-      .filter(Boolean),
+    positions: [...groupedPositions.values()],
     numbers: players
       .map((player) => {
         const clip = libraries.numbers.find((item) => item.id === player.numberClipId);
