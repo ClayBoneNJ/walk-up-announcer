@@ -848,12 +848,15 @@ export function useAudioEngine({ volume, fadeMs }) {
 
         const seekOffsetMs = Math.max(0, Number(seekMs) || 0);
         const playStartDelayMs = Math.max(0, item.startMs - session.offsetMs);
+        const useNaturalEnding = shouldUseNaturalSongEnding(item);
         const clipDurationMs = Math.max(
           MIN_WALKUP_TRIM_MS,
-          Math.min(
-            Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
-            Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
-          ),
+          useNaturalEnding
+            ? Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs)
+            : Math.min(
+                Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
+                Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
+              ),
         );
         const sourceNode = context.createBufferSource();
         const gainNode = context.createGain();
@@ -864,7 +867,11 @@ export function useAudioEngine({ volume, fadeMs }) {
         gainNode.connect(context.destination);
 
         const startAtContextTime = context.currentTime + playStartDelayMs / 1000;
-        sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
+        if (useNaturalEnding) {
+          sourceNode.start(startAtContextTime, seekOffsetMs / 1000);
+        } else {
+          sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
+        }
 
         const entry = {
           kind: "buffer",
