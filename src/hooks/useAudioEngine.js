@@ -37,6 +37,33 @@ function getTargetPlaybackLevel(baseVolume, item = null) {
   return Math.max(0, Math.min(1.4, Number(baseVolume) * multiplier));
 }
 
+function shouldUseNaturalSongEnding(item) {
+  if (!item || item.slot !== "song") {
+    return false;
+  }
+
+  const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
+  const trimEndMs = Math.max(
+    trimStartMs + MIN_WALKUP_TRIM_MS,
+    Number(item.trimEndMs) || (trimStartMs + Number(item.durationMs || 0)),
+  );
+  const clipDurationMs = Number.isFinite(Number(item.duration)) && Number(item.duration) > 0
+    ? Math.round(Number(item.duration) * 1000)
+    : 0;
+  const fadeOutStartMs = Number(item.fadeOutStartMs);
+  const fadeOutEndMs = Number(item.fadeOutEndMs);
+  const hasCustomFadeOut =
+    Number.isFinite(fadeOutStartMs) && fadeOutStartMs < trimEndMs - 120;
+
+  return (
+    trimStartMs === 0 &&
+    clipDurationMs > 0 &&
+    Math.abs(trimEndMs - clipDurationMs) <= 180 &&
+    !hasCustomFadeOut &&
+    (!Number.isFinite(fadeOutEndMs) || fadeOutEndMs >= trimEndMs - 40)
+  );
+}
+
 function createAudioElement(volume) {
   const audio = new Audio();
   audio.preload = "auto";
@@ -709,6 +736,16 @@ export function useAudioEngine({ volume, fadeMs }) {
     clearTimer(entry.audibleTimeoutId);
 
     if (entry.item.slot === "song") {
+      if (shouldUseNaturalSongEnding(entry.item)) {
+        recordDiagnosticEvent("audio.song.natural_end", {
+          sessionId: session.id,
+          itemId: entry.item.id,
+          playerName: entry.item.playerName || "",
+          songName: entry.item.nickname || "",
+        });
+        return;
+      }
+
       const fadeStartMs = Math.min(
         trimEndMs,
         Math.max(trimStartMs, Number(entry.item.fadeOutStartMs) || Math.max(trimStartMs, trimEndMs - WALKUP_SONG_FADE_OUT_MS)),
