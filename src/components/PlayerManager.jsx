@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Minus, Pause, Play, Plus, Trash2 } from "lucide-react";
-import { createFallbackWaveformPeaks, getAudioDuration, getAudioWaveformPeaks } from "../lib/audio";
+import { ArrowDown, ArrowUp, Download, Minus, Pause, Play, Plus, Trash2 } from "lucide-react";
+import {
+  createFallbackWaveformPeaks,
+  getAudioDuration,
+  getAudioWaveformPeaks,
+  renderTrimmedClipToWav,
+} from "../lib/audio";
 import { BUILT_IN_PLAYER_CLIPS } from "../lib/builtInAudio";
 import {
   buildTimelineFromSequence,
@@ -135,6 +140,16 @@ function formatMsTimestamp(valueMs = 0) {
   const mins = Math.floor(totalSeconds / 60);
   const secs = (totalSeconds % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;
+}
+
+function slugifyFileLabel(value = "") {
+  return (
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "walk-up"
+  );
 }
 
 function parseMsTimestampInput(value) {
@@ -1222,6 +1237,60 @@ function RosterModal({
     setShowSongTrimModal(false);
   };
 
+  const exportSongTrim = async () => {
+    if (!draft.songClip) {
+      return;
+    }
+
+    const nextTrimStartMs = Math.min(Math.max(0, Number(songTrimStartMs) || 0), maxSongTrimStartMs);
+    const nextTrimEndMs = Math.min(
+      Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, Number(songTrimEndMs) || (nextTrimStartMs + WALKUP_TRIM_MS)),
+      Math.max(nextTrimStartMs + MIN_WALKUP_TRIM_MS, songClipDurationMs || (nextTrimStartMs + WALKUP_TRIM_MS)),
+    );
+    const nextFadeInEndMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextTrimStartMs, Number(songFadeInEndMs) || Math.min(nextTrimEndMs, nextTrimStartMs + 800)),
+    );
+    const nextFadeOutStartMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextTrimStartMs, Number(songFadeOutStartMs) || Math.max(nextTrimStartMs, nextTrimEndMs - 1200)),
+    );
+    const nextFadeOutEndMs = Math.min(
+      nextTrimEndMs,
+      Math.max(nextFadeOutStartMs, Number(songFadeOutEndMs) || nextTrimEndMs),
+    );
+    const clipSource = draft.songClip.dataUrl ?? draft.songClip.src;
+
+    if (!clipSource) {
+      return;
+    }
+
+    try {
+      const wavBlob = await renderTrimmedClipToWav({
+        source: clipSource,
+        trimStartMs: nextTrimStartMs,
+        trimEndMs: nextTrimEndMs,
+        fadeInEndMs: nextFadeInEndMs,
+        fadeOutStartMs: nextFadeOutStartMs,
+        fadeOutEndMs: nextFadeOutEndMs,
+      });
+      const objectUrl = URL.createObjectURL(wavBlob);
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = `${slugifyFileLabel(draft.name || draft.songClip.nickname || draft.songClip.fileName)}-mobile.wav`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? `Unable to export WAV: ${error.message}`
+          : "Unable to export WAV.",
+      );
+    }
+  };
+
   const previewSongTrim = () => {
     if (!draft.songClip) {
       return;
@@ -1677,6 +1746,7 @@ function RosterModal({
       {showSongTrimModal ? (
         <SongTrimModal
           clip={draft.songClip}
+          playerName={draft.name}
           clipDurationMs={songClipDurationMs}
           trimStartMs={songTrimStartMs}
           trimEndMs={songTrimEndMs}
@@ -1691,6 +1761,7 @@ function RosterModal({
           onFadeOutEndChange={setSongFadeOutEndMs}
           onClose={() => setShowSongTrimModal(false)}
           onSave={saveSongTrim}
+          onExport={exportSongTrim}
           onPreview={previewSongTrim}
           isPreviewActive={isSongTrimPreviewActive}
           isPreviewPaused={Boolean(isPlaybackPaused && isSongTrimPreviewActive)}
@@ -2385,6 +2456,7 @@ function LegacySongTrimModal({
 
 function SongTrimModal({
   clip,
+  playerName,
   clipDurationMs,
   trimStartMs,
   trimEndMs,
@@ -2399,6 +2471,7 @@ function SongTrimModal({
   onFadeOutEndChange,
   onClose,
   onSave,
+  onExport,
   onPreview,
   isPreviewActive,
   isPreviewPaused,
@@ -2664,7 +2737,7 @@ function SongTrimModal({
         <div className="rounded-[1.5rem] border border-white/8 bg-slate-950/55 p-4">
           <div className="text-sm font-semibold text-white">{clip?.nickname || "Walk-Up Song"}</div>
           <div className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">
-            {clip?.fileName} - original {formatDuration(totalDurationMs / 1000)} - window {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
+            {(playerName || clip?.fileName) ? `${playerName ? `${playerName} - ` : ""}${clip?.fileName}` : ""} - original {formatDuration(totalDurationMs / 1000)} - window {formatMsTimestamp(safeTrimStartMs)} to {formatMsTimestamp(safeTrimEndMs)}
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs uppercase tracking-[0.18em] text-slate-400">
             <span>
@@ -2985,6 +3058,10 @@ function SongTrimModal({
           <button type="button" onClick={onPreview} className="secondary-button">
             <Play className="h-4 w-4" />
             Preview Window
+          </button>
+          <button type="button" onClick={onExport} className="secondary-button">
+            <Download className="h-4 w-4" />
+            Export WAV
           </button>
           <button
             type="button"
