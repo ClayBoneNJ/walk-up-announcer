@@ -414,6 +414,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     total: 0,
     loaded: 0,
     ready: !useScheduledMobileSongs,
+    needsGesture: useScheduledMobileSongs,
   });
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
 
@@ -469,12 +470,15 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
   };
 
-  const primeSongSources = async (sources = []) => {
+  const primeSongSources = async (sources = [], options = {}) => {
+    const { userInitiated = false } = options;
+
     if (!useScheduledMobileSongs) {
       setSongPreloadStatus({
         total: 0,
         loaded: 0,
         ready: true,
+        needsGesture: false,
       });
       return;
     }
@@ -487,6 +491,17 @@ export function useAudioEngine({ volume, fadeMs }) {
         total: 0,
         loaded: 0,
         ready: true,
+        needsGesture: false,
+      });
+      return;
+    }
+
+    if (!userInitiated && !songAudioContextRef.current) {
+      setSongPreloadStatus({
+        total: uniqueSources.length,
+        loaded: 0,
+        ready: false,
+        needsGesture: true,
       });
       return;
     }
@@ -495,6 +510,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       total: uniqueSources.length,
       loaded: 0,
       ready: false,
+      needsGesture: false,
     });
 
     let settledCount = 0;
@@ -510,6 +526,7 @@ export function useAudioEngine({ volume, fadeMs }) {
               total: uniqueSources.length,
               loaded: settledCount,
               ready: settledCount >= uniqueSources.length,
+              needsGesture: false,
             });
           }
         }
