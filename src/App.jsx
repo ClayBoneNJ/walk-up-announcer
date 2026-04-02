@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-wav-2";
+const APP_BUILD_LABEL = "v mobile-wav-3";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -131,6 +131,41 @@ function getFreestyleClipAccent(clip) {
   return "";
 }
 
+function hasPublishedSongDrift(currentPlayers = [], snapshotPlayers = []) {
+  if (!Array.isArray(currentPlayers) || !Array.isArray(snapshotPlayers)) {
+    return false;
+  }
+
+  const snapshotById = new Map(
+    snapshotPlayers.map((player) => [player.id, player]),
+  );
+
+  return currentPlayers.some((currentPlayer) => {
+    const snapshotPlayer = snapshotById.get(currentPlayer.id);
+    if (!snapshotPlayer) {
+      return false;
+    }
+
+    const currentSong = currentPlayer.songClip;
+    const snapshotSong = snapshotPlayer.songClip;
+
+    if (!currentSong && !snapshotSong) {
+      return false;
+    }
+
+    if (!currentSong || !snapshotSong) {
+      return true;
+    }
+
+    return (
+      (currentSong.src ?? "") !== (snapshotSong.src ?? "") ||
+      (currentSong.fileName ?? "") !== (snapshotSong.fileName ?? "") ||
+      Number(currentSong.trimStartMs ?? 0) !== Number(snapshotSong.trimStartMs ?? 0) ||
+      Number(currentSong.trimEndMs ?? 0) !== Number(snapshotSong.trimEndMs ?? 0)
+    );
+  });
+}
+
 export default function App() {
   const [appState, setAppState] = useState(() => loadState());
   const [activeTab, setActiveTab] = useState("walkups");
@@ -215,9 +250,14 @@ export default function App() {
         }
 
         setAppState((current) => {
+          const shouldRepairSnapshotDrift =
+            String(current.publishedRevision ?? "") === String(snapshot.publishedRevision) &&
+            hasPublishedSongDrift(current.players, snapshot.players);
+
           if (
             current.publishedRevision &&
-            String(current.publishedRevision) >= String(snapshot.publishedRevision)
+            String(current.publishedRevision) >= String(snapshot.publishedRevision) &&
+            !shouldRepairSnapshotDrift
           ) {
             return current;
           }
