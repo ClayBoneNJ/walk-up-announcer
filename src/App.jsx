@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v wav-straight-1";
+const APP_BUILD_LABEL = "v arm-button-1";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -154,6 +154,7 @@ export default function App() {
   const [appState, setAppState] = useState(() => loadState());
   const [activeTab, setActiveTab] = useState("walkups");
   const [persistError, setPersistError] = useState(false);
+  const [isArmingAudio, setIsArmingAudio] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState("");
   const [editingReturnTab, setEditingReturnTab] = useState("");
   const [lineupCursorId, setLineupCursorId] = useState("");
@@ -282,14 +283,26 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
+  const songSources = useMemo(
+    () =>
+      players
+        .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
+        .filter(Boolean),
+    [players],
+  );
 
   useEffect(() => {
-    const sources = players
-      .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
-      .filter(Boolean);
+    primeSongSources(songSources);
+  }, [songSources]);
 
-    primeSongSources(sources);
-  }, [players]);
+  const handleArmAudio = async () => {
+    setIsArmingAudio(true);
+    try {
+      await primeSongSources(songSources);
+    } finally {
+      setIsArmingAudio(false);
+    }
+  };
 
   const updateState = (updater) => setAppState((current) => updater(current));
 
@@ -510,6 +523,19 @@ export default function App() {
               <div className="inline-flex items-center gap-2 rounded-full border border-sky-400/20 bg-sky-400/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.35em] text-sky-200">
                 <Waves className="h-3.5 w-3.5" />
                 Walk-Up Announcer
+              </div>
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={handleArmAudio}
+                  className={`rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] transition active:scale-[0.97] ${
+                    isArmingAudio
+                      ? "border-emerald-300/55 bg-emerald-400/18 text-emerald-50"
+                      : "border-sky-300/35 bg-sky-400/10 text-sky-100 hover:border-sky-200/60 hover:bg-sky-300/18"
+                  }`}
+                >
+                  {isArmingAudio ? "Arming..." : "Arm Audio"}
+                </button>
               </div>
               <h1
                 className="mt-3 text-3xl font-black uppercase tracking-[0.08em] text-white"
