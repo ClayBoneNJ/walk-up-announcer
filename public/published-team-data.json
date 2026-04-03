@@ -1,1362 +1,1215 @@
 {
-    "schemaVersion":  1,
-    "publishedRevision":  1775250600000,
-    "players":  [
-                    {
-                        "id":  "3db86e72-b7dd-46f6-9277-d63f354a8985",
-                        "name":  "Alex Bonk",
-                        "jerseyNumber":  "9",
-                        "positionLabel":  "",
-                        "nameClip":  {
-                                         "id":  "name-alex_bonk",
-                                         "group":  "names",
-                                         "nickname":  "Alex Bonk",
-                                         "fileName":  "ALEX BONK.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/ALEX%20BONK.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-the-white-stripes-seven-nation-army-official-music-video",
-                                         "group":  "songs",
-                                         "nickname":  "Seven Nation Army",
-                                         "fileName":  "alex-bonk-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  18.25,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/alex-bonk-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  18250,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  18250,
-                                         "fadeOutEndMs":  18250
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-9",
-                        "positionClipId":  "",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "0c969020-3f7e-4fd6-9402-170a965be116",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "3936e47c-e5bd-4b1f-bda4-36e0ca54d4c2",
-                                             "slot":  "number",
-                                             "startMs":  1400,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "d4a39ae5-2f58-4072-a149-8291fa38b2fd",
-                                             "slot":  "name",
-                                             "startMs":  2700,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "8ef54765-ec47-4adc-823a-58481aa619d5",
-                                             "slot":  "song",
-                                             "startMs":  3900,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "ea11f14b-f247-4303-92c7-3f686225c98f",
-                        "name":  "Benjamin Yunker",
-                        "jerseyNumber":  "48",
-                        "positionLabel":  "",
-                        "nameClip":  {
-                                         "id":  "name-benjamin_yunker",
-                                         "group":  "names",
-                                         "nickname":  "Benjamin Yunker",
-                                         "fileName":  "BENJAMIN YUNKER.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/BENJAMIN%20YUNKER.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-digital-underground-the-humpty-dance",
-                                         "group":  "songs",
-                                         "nickname":  "humpty dance",
-                                         "fileName":  "benjamin-yunker-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  19,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/benjamin-yunker-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  19000,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  19000,
-                                         "fadeOutEndMs":  19000
-                                     },
-                        "announcementClipId":  "announcement-up-next",
-                        "numberClipId":  "number-48",
-                        "positionClipId":  "",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "eb2526d1-e4bb-460d-9ab1-0775bcd760e2",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "b0c91cbf-4f50-4cab-ac4c-b124d8c4fea2",
-                                             "slot":  "number",
-                                             "startMs":  1100,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "ed065d92-6fe5-436b-b191-d05d4d2fe991",
-                                             "slot":  "name",
-                                             "startMs":  2400,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "34ff05c2-e40b-4f55-bf14-c67f1cd1a517",
-                                             "slot":  "song",
-                                             "startMs":  4000,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "8c377fa9-ee83-41dc-915b-b89d3fdd3142",
-                        "name":  "Billy Wanko",
-                        "jerseyNumber":  "28",
-                        "positionLabel":  "3B",
-                        "nameClip":  {
-                                         "id":  "name-billy_wanko",
-                                         "group":  "names",
-                                         "nickname":  "Billy Wanko",
-                                         "fileName":  "BILLY WANKO.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/BILLY%20WANKO.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-trapt-headstrong-official-music-video-warner-vault",
-                                         "group":  "songs",
-                                         "nickname":  "headstrong",
-                                         "fileName":  "billy-wanko-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  11.925,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/billy-wanko-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  11925,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  11925,
-                                         "fadeOutEndMs":  11925
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-28",
-                        "positionClipId":  "position-3b",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "d0a574b6-786d-4c17-a4f8-6d520b288184",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "307bf7c8-da98-4837-a9fb-572b93a46e44",
-                                             "slot":  "number",
-                                             "startMs":  1200,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "cdb665a8-7607-4f6b-b388-7386c733c1c1",
-                                             "slot":  "name",
-                                             "startMs":  2400,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "2d146ae3-b600-4e7b-a00b-bb221ba8d15a",
-                                             "slot":  "song",
-                                             "startMs":  3400,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "97ac9e38-a2b2-4ca9-9572-818fc1c2db18",
-                        "name":  "Camden Pagoda",
-                        "jerseyNumber":  "33",
-                        "positionLabel":  "2B",
-                        "nameClip":  {
-                                         "id":  "name-camden_pagoda",
-                                         "group":  "names",
-                                         "nickname":  "Camden Pagoda",
-                                         "fileName":  "CAMDEN PAGODA.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/CAMDEN%20PAGODA.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-system-of-a-down-toxicity-official-hd-video",
-                                         "group":  "songs",
-                                         "nickname":  "toxicity",
-                                         "fileName":  "camden-pagoda-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  17,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/camden-pagoda-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  17000,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  17000,
-                                         "fadeOutEndMs":  17000
-                                     },
-                        "announcementClipId":  "announcement-up-next",
-                        "numberClipId":  "number-33",
-                        "positionClipId":  "position-2b",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "4503abad-da29-4e5b-a82a-0d4c4f0016e7",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "22d6bba0-6661-4ba7-bb52-6a5a3de456cf",
-                                             "slot":  "number",
-                                             "startMs":  1400,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "6a69adc7-7883-4422-86e6-05b7a2b3c9b6",
-                                             "slot":  "name",
-                                             "startMs":  3062,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "7fc0afa3-a948-46ec-9ae0-907839d25c87",
-                                             "slot":  "song",
-                                             "startMs":  4800,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "67ba4930-e5b9-4604-b770-8de2da3a4561",
-                        "name":  "Giovanni Turchi",
-                        "jerseyNumber":  "2",
-                        "positionLabel":  "3B",
-                        "nameClip":  {
-                                         "id":  "name-giovanni_turchi",
-                                         "group":  "names",
-                                         "nickname":  "Giovanni Turchi",
-                                         "fileName":  "GIOVANNI TURCHI.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/GIOVANNI%20TURCHI.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-brain-stew",
-                                         "group":  "songs",
-                                         "nickname":  "brain stew",
-                                         "fileName":  "giovanni-turchi-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  17.75,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/giovanni-turchi-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  17750,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  17750,
-                                         "fadeOutEndMs":  17750
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-2",
-                        "positionClipId":  "position-3b",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "d590c269-a90f-468d-b77c-3ec652267da0",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "1cd9f4bc-f5c3-453a-8781-16742e05dae4",
-                                             "slot":  "number",
-                                             "startMs":  1300,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "c5d766a5-94b1-43e1-bc55-41d1b5dd5d36",
-                                             "slot":  "name",
-                                             "startMs":  2627,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "2a4b6295-bcda-484b-8ba8-0d3e86b079bf",
-                                             "slot":  "song",
-                                             "startMs":  4300,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "7293011f-1ff9-4d61-95ad-dbb801700aa6",
-                        "name":  "Landon Hanrahan",
-                        "jerseyNumber":  "23",
-                        "positionLabel":  "C",
-                        "nameClip":  {
-                                         "id":  "name-landon_hanrahan",
-                                         "group":  "names",
-                                         "nickname":  "Landon Hanrahan",
-                                         "fileName":  "LANDON HANRAHAN.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/LANDON%20HANRAHAN.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-pitbull-fireball-lyrics-ft-john-ryan",
-                                         "group":  "songs",
-                                         "nickname":  "Fireball",
-                                         "fileName":  "landon-hanrahan-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  13,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/landon-hanrahan-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  13000,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  13000,
-                                         "fadeOutEndMs":  13000
-                                     },
-                        "announcementClipId":  "announcement-up-next",
-                        "numberClipId":  "number-23",
-                        "positionClipId":  "position-c",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "4ea720bb-09ae-4288-88cf-d07ea7b129d9",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "75718df1-790b-4271-9952-1d2d7a642458",
-                                             "slot":  "name",
-                                             "startMs":  2800,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "84363a83-fbc8-4c08-b445-ab7e5f29f439",
-                                             "slot":  "number",
-                                             "startMs":  1262,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "f5676ec3-b346-46fc-b346-1c3a0c94f6e6",
-                                             "slot":  "song",
-                                             "startMs":  4800,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "039de4d2-064e-4b6b-b7f6-0ba50f34ca8a",
-                        "name":  "Logan Hanrahan",
-                        "jerseyNumber":  "88",
-                        "positionLabel":  "1B",
-                        "nameClip":  {
-                                         "id":  "name-logan_hanrahan",
-                                         "group":  "names",
-                                         "nickname":  "Logan Hanrahan",
-                                         "fileName":  "LOGAN HANRAHAN.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/LOGAN%20HANRAHAN.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-dj-khaled-all-i-do-is-win-official-video-ft-t-pain-ludacris-rick-ross-snoop-dogg",
-                                         "group":  "songs",
-                                         "nickname":  "all i do is win",
-                                         "fileName":  "logan-hanrahan-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  20.75,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/logan-hanrahan-mobile.wav",
-                                         "builtIn":  true,
-                                         "volumeMultiplier":  1.25,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  20750,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  20750,
-                                         "fadeOutEndMs":  20750
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-88",
-                        "positionClipId":  "position-1b",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "5864ba06-c8a3-4d09-9721-388dab9db052",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "d484fe6a-95e2-448b-81e4-e49a2a499a29",
-                                             "slot":  "number",
-                                             "startMs":  1262,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "4c72eb6d-ac9e-4c99-a558-a0cccd7cd726",
-                                             "slot":  "name",
-                                             "startMs":  2670,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "89a27f0f-ec55-4ff8-9156-687c3c9f7d2a",
-                                             "slot":  "song",
-                                             "startMs":  4681,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "09355e80-9835-444e-af36-c865ea32a180",
-                        "name":  "Marty Happle",
-                        "jerseyNumber":  "28",
-                        "positionLabel":  "CF",
-                        "nameClip":  {
-                                         "id":  "name-marty_happle",
-                                         "group":  "names",
-                                         "nickname":  "Marty Happle",
-                                         "fileName":  "MARTY HAPPLE.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/MARTY%20HAPPLE.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-skillet-savior-official-music-video-hd-lyrics-subtitulado",
-                                         "group":  "songs",
-                                         "nickname":  "Savior",
-                                         "fileName":  "marty-happle-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  17.704,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/marty-happle-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  17704,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  17704,
-                                         "fadeOutEndMs":  17704
-                                     },
-                        "announcementClipId":  "announcement-up-next",
-                        "numberClipId":  "number-28",
-                        "positionClipId":  "position-cf",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "527c570b-c075-49fe-b3ac-eb1ebc62cb9f",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "cc85fd7c-9e1b-4d49-9ce9-dbf5f9eb0f62",
-                                             "slot":  "number",
-                                             "startMs":  1400,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "fc79a3ef-7e88-465d-9e3e-3dcdf0f0a4ae",
-                                             "slot":  "name",
-                                             "startMs":  2733,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "b3ae7c02-2bee-4c2e-bc5e-086c87ee2e81",
-                                             "slot":  "song",
-                                             "startMs":  4100,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "f56f75ab-cca6-4b24-98e3-f6672a68bbeb",
-                        "name":  "Matty Wanko",
-                        "jerseyNumber":  "33",
-                        "positionLabel":  "P",
-                        "nameClip":  {
-                                         "id":  "name-matty_wanko",
-                                         "group":  "names",
-                                         "nickname":  "Matty Wanko",
-                                         "fileName":  "MATTY WANKO.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/MATTY%20WANKO.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-foo-fighters-everlong",
-                                         "group":  "songs",
-                                         "nickname":  "Everlong",
-                                         "fileName":  "matty-wanko-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  26.841,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/matty-wanko-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  26841,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  26841,
-                                         "fadeOutEndMs":  26841
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-33",
-                        "positionClipId":  "position-p",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "8e838975-83fd-4d74-a5c5-16b38d2b0cc5",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "7160e9af-e68e-4d03-8a22-d485ebea2df1",
-                                             "slot":  "number",
-                                             "startMs":  1262,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "aed0387c-7766-4d5e-ba3b-7790cc5f0dce",
-                                             "slot":  "name",
-                                             "startMs":  2949,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "b859a835-9338-42ad-8ee7-3c4ce0ba123b",
-                                             "slot":  "song",
-                                             "startMs":  4700,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "12309b17-bf68-44e5-ae8e-17294314efb7",
-                        "name":  "Nate Clay",
-                        "jerseyNumber":  "13",
-                        "positionLabel":  "RF",
-                        "nameClip":  {
-                                         "id":  "name-nate_clay",
-                                         "group":  "names",
-                                         "nickname":  "Nate Clay",
-                                         "fileName":  "NATE CLAY.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/NATE%20CLAY.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-can-t-stop-won-t-stop-stop-drop-roll",
-                                         "group":  "songs",
-                                         "nickname":  "cant stop",
-                                         "fileName":  "nate-clay-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  19.25,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/nate-clay-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  19250,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  19250,
-                                         "fadeOutEndMs":  19250
-                                     },
-                        "announcementClipId":  "announcement-up-next",
-                        "numberClipId":  "number-13",
-                        "positionClipId":  "position-rf",
-                        "sequence":  [
-                                         "announcement",
-                                         "number",
-                                         "name",
-                                         "song"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "e040ee9f-2993-40b4-bd1e-4a9fa29e9616",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "7d4fc238-2be1-46c5-a923-de85062c6815",
-                                             "slot":  "number",
-                                             "startMs":  1262,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "0817aaf2-4e2c-4693-92a1-1d0cfbacc3a8",
-                                             "slot":  "name",
-                                             "startMs":  2568,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "1b284205-168b-4661-9cdd-c1f596b03b6c",
-                                             "slot":  "song",
-                                             "startMs":  3400,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    },
-                    {
-                        "id":  "e2c5dce2-5e82-42b0-9bc1-b493c24cf495",
-                        "name":  "Tristan Aquino",
-                        "jerseyNumber":  "17",
-                        "positionLabel":  "C",
-                        "nameClip":  {
-                                         "id":  "name-tristan_aquino",
-                                         "group":  "names",
-                                         "nickname":  "Tristan Aquino",
-                                         "fileName":  "TRISTAN AQUINO.mp3",
-                                         "mimeType":  "audio/mpeg",
-                                         "size":  0,
-                                         "duration":  null,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/names/TRISTAN%20AQUINO.mp3",
-                                         "builtIn":  true
-                                     },
-                        "nicknameClip":  null,
-                        "songClip":  {
-                                         "id":  "song-eoo-bad-bunny",
-                                         "group":  "songs",
-                                         "nickname":  "EoO",
-                                         "fileName":  "tristan-aquino-mobile.wav",
-                                         "mimeType":  "audio/wav",
-                                         "size":  0,
-                                         "duration":  18,
-                                         "createdAt":  0,
-                                         "dataUrl":  null,
-                                         "src":  "/walk-up-announcer/assets/audio/songs/tristan-aquino-mobile.wav",
-                                         "builtIn":  true,
-                                         "trimStartMs":  0,
-                                         "trimEndMs":  18000,
-                                         "fadeInEndMs":  0,
-                                         "fadeOutStartMs":  18000,
-                                         "fadeOutEndMs":  18000
-                                     },
-                        "announcementClipId":  "announcement-now-batting",
-                        "numberClipId":  "number-17",
-                        "positionClipId":  "position-c",
-                        "sequence":  [
-                                         "announcement",
-                                         "song",
-                                         "number",
-                                         "name"
-                                     ],
-                        "timeline":  [
-                                         {
-                                             "id":  "ad1d498e-998c-4d52-969d-c15c9b7272df",
-                                             "slot":  "announcement",
-                                             "startMs":  0,
-                                             "track":  0,
-                                             "clipId":  "announcement-now-batting"
-                                         },
-                                         {
-                                             "id":  "79197e98-d23e-430c-a5cb-c9eaed085e73",
-                                             "slot":  "number",
-                                             "startMs":  1662,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "2683342a-3a5f-4d0f-bf18-a858cfa281d1",
-                                             "slot":  "name",
-                                             "startMs":  3500,
-                                             "track":  0,
-                                             "clipId":  ""
-                                         },
-                                         {
-                                             "id":  "a63357ec-57a8-47b8-bac8-4424d27ee562",
-                                             "slot":  "song",
-                                             "startMs":  1100,
-                                             "track":  1,
-                                             "clipId":  ""
-                                         }
-                                     ]
-                    }
-                ],
-    "libraries":  {
-                      "announcements":  [
-                                            {
-                                                "id":  "announcement-now-batting",
-                                                "group":  "announcements",
-                                                "nickname":  "Now Batting",
-                                                "fileName":  "now batting.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/now%20batting.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-up-next",
-                                                "group":  "announcements",
-                                                "nickname":  "Up Next",
-                                                "fileName":  "UP NEXT.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/UP%20NEXT.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-make-some-noise",
-                                                "group":  "announcements",
-                                                "nickname":  "Make Some Noise",
-                                                "fileName":  "MAKE SOME NOISE.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/MAKE%20SOME%20NOISE.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-coming-to-the-plat",
-                                                "group":  "announcements",
-                                                "nickname":  "Coming To The Plate",
-                                                "fileName":  "COMING TO THE PLAT.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/COMING%20TO%20THE%20PLAT.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-coming-to-the-mound",
-                                                "group":  "announcements",
-                                                "nickname":  "Coming To The Mound",
-                                                "fileName":  "COMING TO THE MOUND.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/COMING%20TO%20THE%20MOUND.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-lets-heare-it-for",
-                                                "group":  "announcements",
-                                                "nickname":  "Let\u0027s Hear It For",
-                                                "fileName":  "LETS HEREE IT FOR.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/LETS%20HEREE%20IT%20FOR.mp3",
-                                                "builtIn":  true
-                                            },
-                                            {
-                                                "id":  "announcement-now-pitching",
-                                                "group":  "announcements",
-                                                "nickname":  "Now Pitching",
-                                                "fileName":  "NOW PITCHING.mp3",
-                                                "mimeType":  "audio/mpeg",
-                                                "size":  0,
-                                                "duration":  null,
-                                                "createdAt":  0,
-                                                "dataUrl":  null,
-                                                "src":  "/walk-up-announcer/assets/audio/announcements/NOW%20PITCHING.mp3",
-                                                "builtIn":  true
-                                            }
-                                        ],
-                      "positions":  [
-                                        {
-                                            "id":  "position-p",
-                                            "group":  "positions",
-                                            "nickname":  "P",
-                                            "fileName":  "PITCHER.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/PITCHER.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-c",
-                                            "group":  "positions",
-                                            "nickname":  "C",
-                                            "fileName":  "CATCHER.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/CATCHER.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-1b",
-                                            "group":  "positions",
-                                            "nickname":  "1B",
-                                            "fileName":  "FIRST BASEMEN.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/FIRST%20BASEMEN.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-2b",
-                                            "group":  "positions",
-                                            "nickname":  "2B",
-                                            "fileName":  "SECOND BASEMEN.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/SECOND%20BASEMEN.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-3b",
-                                            "group":  "positions",
-                                            "nickname":  "3B",
-                                            "fileName":  "THIRD BASEMEN.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/THIRD%20BASEMEN.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-ss",
-                                            "group":  "positions",
-                                            "nickname":  "SS",
-                                            "fileName":  "SHORT STOP.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/SHORT%20STOP.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-lf",
-                                            "group":  "positions",
-                                            "nickname":  "LF",
-                                            "fileName":  "LEFT FIELDER.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/LEFT%20FIELDER.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-cf",
-                                            "group":  "positions",
-                                            "nickname":  "CF",
-                                            "fileName":  "CENTER FIELDER.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/CENTER%20FIELDER.mp3",
-                                            "builtIn":  true
-                                        },
-                                        {
-                                            "id":  "position-rf",
-                                            "group":  "positions",
-                                            "nickname":  "RF",
-                                            "fileName":  "RIGHT FIELDER.mp3",
-                                            "mimeType":  "audio/mpeg",
-                                            "size":  0,
-                                            "duration":  null,
-                                            "createdAt":  0,
-                                            "dataUrl":  null,
-                                            "src":  "/walk-up-announcer/assets/audio/positions/RIGHT%20FIELDER.mp3",
-                                            "builtIn":  true
-                                        }
-                                    ],
-                      "numbers":  [
-                                      {
-                                          "id":  "number-2",
-                                          "group":  "numbers",
-                                          "nickname":  "#2",
-                                          "fileName":  "2.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/2.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-4",
-                                          "group":  "numbers",
-                                          "nickname":  "#4",
-                                          "fileName":  "4.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/4.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-9",
-                                          "group":  "numbers",
-                                          "nickname":  "#9",
-                                          "fileName":  "9.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/9.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-13",
-                                          "group":  "numbers",
-                                          "nickname":  "#13",
-                                          "fileName":  "13.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/13.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-16",
-                                          "group":  "numbers",
-                                          "nickname":  "#16",
-                                          "fileName":  "16.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/16.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-17",
-                                          "group":  "numbers",
-                                          "nickname":  "#17",
-                                          "fileName":  "17.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/17.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-23",
-                                          "group":  "numbers",
-                                          "nickname":  "#23",
-                                          "fileName":  "23.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/23.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-28",
-                                          "group":  "numbers",
-                                          "nickname":  "#28",
-                                          "fileName":  "28.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/28.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-33",
-                                          "group":  "numbers",
-                                          "nickname":  "#33",
-                                          "fileName":  "33.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/33.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-48",
-                                          "group":  "numbers",
-                                          "nickname":  "#48",
-                                          "fileName":  "48.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/48.mp3",
-                                          "builtIn":  true
-                                      },
-                                      {
-                                          "id":  "number-88",
-                                          "group":  "numbers",
-                                          "nickname":  "#88",
-                                          "fileName":  "88.mp3",
-                                          "mimeType":  "audio/mpeg",
-                                          "size":  0,
-                                          "duration":  null,
-                                          "createdAt":  0,
-                                          "dataUrl":  null,
-                                          "src":  "/walk-up-announcer/assets/audio/numbers/88.mp3",
-                                          "builtIn":  true
-                                      }
-                                  ],
-                      "songs":  [
-                                    {
-                                        "id":  "song-brain-stew",
-                                        "group":  "songs",
-                                        "nickname":  "brain stew",
-                                        "fileName":  "Brain Stew.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  193,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Brain%20Stew.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-can-t-stop-won-t-stop-stop-drop-roll",
-                                        "group":  "songs",
-                                        "nickname":  "cant stop",
-                                        "fileName":  "Can\u0027t Stop Won\u0027t Stop - Stop Drop Roll.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  211,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Can\u0027t%20Stop%20Won\u0027t%20Stop%20-%20Stop%20Drop%20Roll.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-digital-underground-the-humpty-dance",
-                                        "group":  "songs",
-                                        "nickname":  "humpty dance",
-                                        "fileName":  "Digital Underground - The Humpty Dance.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  392,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Digital%20Underground%20-%20The%20Humpty%20Dance.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-dj-khaled-all-i-do-is-win-official-video-ft-t-pain-ludacris-rick-ross-snoop-dogg",
-                                        "group":  "songs",
-                                        "nickname":  "all i do is win",
-                                        "fileName":  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  226,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/DJ%20Khaled-All%20I%20do%20is%20Win%20(Lyrics).mp3",
-                                        "builtIn":  true,
-                                        "volumeMultiplier":  1.25
-                                    },
-                                    {
-                                        "id":  "song-eoo-bad-bunny",
-                                        "group":  "songs",
-                                        "nickname":  "EoO",
-                                        "fileName":  "EoO - BAD BUNNY.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  204,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/EoO%20-%20BAD%20BUNNY.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-foo-fighters-everlong",
-                                        "group":  "songs",
-                                        "nickname":  "Everlong",
-                                        "fileName":  "Foo Fighters - Everlong.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  250,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Foo%20Fighters%20-%20Everlong.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-pitbull-fireball-lyrics-ft-john-ryan",
-                                        "group":  "songs",
-                                        "nickname":  "Fireball",
-                                        "fileName":  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  235,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Pitbull%20-%20Fireball%20(Lyrics)%20ft.%20John%20Ryan.mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-skillet-savior-official-music-video-hd-lyrics-subtitulado",
-                                        "group":  "songs",
-                                        "nickname":  "Savior",
-                                        "fileName":  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  271,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Skillet%20-%20Savior%20(Lyrics).mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-system-of-a-down-toxicity-official-hd-video",
-                                        "group":  "songs",
-                                        "nickname":  "toxicity",
-                                        "fileName":  "System Of A Down - Toxicity (Official HD Video).mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  224,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/System%20Of%20A%20Down%20-%20Toxicity%20(Official%20HD%20Video).mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-the-white-stripes-seven-nation-army-official-music-video",
-                                        "group":  "songs",
-                                        "nickname":  "Seven Nation Army",
-                                        "fileName":  "The White Stripes - Seven Nation Army (Official Music Video).mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  238,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/The%20White%20Stripes%20-%20Seven%20Nation%20Army%20(Official%20Music%20Video).mp3",
-                                        "builtIn":  true
-                                    },
-                                    {
-                                        "id":  "song-trapt-headstrong-official-music-video-warner-vault",
-                                        "group":  "songs",
-                                        "nickname":  "headstrong",
-                                        "fileName":  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3",
-                                        "mimeType":  "audio/mpeg",
-                                        "size":  0,
-                                        "duration":  217,
-                                        "createdAt":  0,
-                                        "dataUrl":  null,
-                                        "src":  "/walk-up-announcer/assets/audio/songs/Trapt%20-%20Headstrong%20(Official%20Music%20Video)%20_%20Warner%20Vault.mp3",
-                                        "builtIn":  true
-                                    }
-                                ],
-                      "effects":  [
-
-                                  ]
-                  }
+    "schemaVersion": 1,
+    "publishedRevision": 1775254200000,
+    "players": [
+        {
+            "id": "3db86e72-b7dd-46f6-9277-d63f354a8985",
+            "name": "Alex Bonk",
+            "jerseyNumber": "9",
+            "positionLabel": "",
+            "nameClip": {
+                "id": "name-alex_bonk",
+                "group": "names",
+                "nickname": "Alex Bonk",
+                "fileName": "ALEX BONK.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/ALEX%20BONK.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-alex-bonk-mobile",
+                "group": "songs",
+                "nickname": "Seven Nation Army",
+                "fileName": "alex-bonk-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 18.25,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/alex-bonk-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 18250,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 18250,
+                "fadeOutEndMs": 18250
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-9",
+            "positionClipId": "",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "0c969020-3f7e-4fd6-9402-170a965be116",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "3936e47c-e5bd-4b1f-bda4-36e0ca54d4c2",
+                    "slot": "number",
+                    "startMs": 1400,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "d4a39ae5-2f58-4072-a149-8291fa38b2fd",
+                    "slot": "name",
+                    "startMs": 2700,
+                    "track": 1,
+                    "clipId": ""
+                },
+                {
+                    "id": "8ef54765-ec47-4adc-823a-58481aa619d5",
+                    "slot": "song",
+                    "startMs": 3900,
+                    "track": 0,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "ea11f14b-f247-4303-92c7-3f686225c98f",
+            "name": "Benjamin Yunker",
+            "jerseyNumber": "48",
+            "positionLabel": "",
+            "nameClip": {
+                "id": "name-benjamin_yunker",
+                "group": "names",
+                "nickname": "Benjamin Yunker",
+                "fileName": "BENJAMIN YUNKER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/BENJAMIN%20YUNKER.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-benjamin-yunker-mobile",
+                "group": "songs",
+                "nickname": "humpty dance",
+                "fileName": "benjamin-yunker-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 19,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/benjamin-yunker-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 19000,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 19000,
+                "fadeOutEndMs": 19000
+            },
+            "announcementClipId": "announcement-up-next",
+            "numberClipId": "number-48",
+            "positionClipId": "",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "eb2526d1-e4bb-460d-9ab1-0775bcd760e2",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "b0c91cbf-4f50-4cab-ac4c-b124d8c4fea2",
+                    "slot": "number",
+                    "startMs": 1100,
+                    "track": 1,
+                    "clipId": ""
+                },
+                {
+                    "id": "ed065d92-6fe5-436b-b191-d05d4d2fe991",
+                    "slot": "name",
+                    "startMs": 2400,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "34ff05c2-e40b-4f55-bf14-c67f1cd1a517",
+                    "slot": "song",
+                    "startMs": 4000,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "8c377fa9-ee83-41dc-915b-b89d3fdd3142",
+            "name": "Billy Wanko",
+            "jerseyNumber": "28",
+            "positionLabel": "3B",
+            "nameClip": {
+                "id": "name-billy_wanko",
+                "group": "names",
+                "nickname": "Billy Wanko",
+                "fileName": "BILLY WANKO.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/BILLY%20WANKO.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-billy-wanko-mobile",
+                "group": "songs",
+                "nickname": "headstrong",
+                "fileName": "billy-wanko-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 11.925,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/billy-wanko-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 11925,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 11925,
+                "fadeOutEndMs": 11925
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-28",
+            "positionClipId": "position-3b",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "d0a574b6-786d-4c17-a4f8-6d520b288184",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "307bf7c8-da98-4837-a9fb-572b93a46e44",
+                    "slot": "number",
+                    "startMs": 1200,
+                    "track": 1,
+                    "clipId": ""
+                },
+                {
+                    "id": "cdb665a8-7607-4f6b-b388-7386c733c1c1",
+                    "slot": "name",
+                    "startMs": 2400,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "2d146ae3-b600-4e7b-a00b-bb221ba8d15a",
+                    "slot": "song",
+                    "startMs": 3400,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "97ac9e38-a2b2-4ca9-9572-818fc1c2db18",
+            "name": "Camden Pagoda",
+            "jerseyNumber": "33",
+            "positionLabel": "2B",
+            "nameClip": {
+                "id": "name-camden_pagoda",
+                "group": "names",
+                "nickname": "Camden Pagoda",
+                "fileName": "CAMDEN PAGODA.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/CAMDEN%20PAGODA.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-camden-pagoda-mobile",
+                "group": "songs",
+                "nickname": "toxicity",
+                "fileName": "camden-pagoda-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 17,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/camden-pagoda-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 17000,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 17000,
+                "fadeOutEndMs": 17000
+            },
+            "announcementClipId": "announcement-up-next",
+            "numberClipId": "number-33",
+            "positionClipId": "position-2b",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "4503abad-da29-4e5b-a82a-0d4c4f0016e7",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "22d6bba0-6661-4ba7-bb52-6a5a3de456cf",
+                    "slot": "number",
+                    "startMs": 1400,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "6a69adc7-7883-4422-86e6-05b7a2b3c9b6",
+                    "slot": "name",
+                    "startMs": 3062,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "7fc0afa3-a948-46ec-9ae0-907839d25c87",
+                    "slot": "song",
+                    "startMs": 4800,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "67ba4930-e5b9-4604-b770-8de2da3a4561",
+            "name": "Giovanni Turchi",
+            "jerseyNumber": "2",
+            "positionLabel": "3B",
+            "nameClip": {
+                "id": "name-giovanni_turchi",
+                "group": "names",
+                "nickname": "Giovanni Turchi",
+                "fileName": "GIOVANNI TURCHI.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/GIOVANNI%20TURCHI.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-giovanni-turchi-mobile",
+                "group": "songs",
+                "nickname": "brain stew",
+                "fileName": "giovanni-turchi-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 17.75,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/giovanni-turchi-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 17750,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 17750,
+                "fadeOutEndMs": 17750
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-2",
+            "positionClipId": "position-3b",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "d590c269-a90f-468d-b77c-3ec652267da0",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "1cd9f4bc-f5c3-453a-8781-16742e05dae4",
+                    "slot": "number",
+                    "startMs": 1300,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "c5d766a5-94b1-43e1-bc55-41d1b5dd5d36",
+                    "slot": "name",
+                    "startMs": 2627,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "2a4b6295-bcda-484b-8ba8-0d3e86b079bf",
+                    "slot": "song",
+                    "startMs": 4300,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "7293011f-1ff9-4d61-95ad-dbb801700aa6",
+            "name": "Landon Hanrahan",
+            "jerseyNumber": "23",
+            "positionLabel": "C",
+            "nameClip": {
+                "id": "name-landon_hanrahan",
+                "group": "names",
+                "nickname": "Landon Hanrahan",
+                "fileName": "LANDON HANRAHAN.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/LANDON%20HANRAHAN.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-landon-hanrahan-mobile",
+                "group": "songs",
+                "nickname": "Fireball",
+                "fileName": "landon-hanrahan-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 13,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/landon-hanrahan-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 13000,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 13000,
+                "fadeOutEndMs": 13000
+            },
+            "announcementClipId": "announcement-up-next",
+            "numberClipId": "number-23",
+            "positionClipId": "position-c",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "4ea720bb-09ae-4288-88cf-d07ea7b129d9",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "75718df1-790b-4271-9952-1d2d7a642458",
+                    "slot": "name",
+                    "startMs": 2800,
+                    "track": 1,
+                    "clipId": ""
+                },
+                {
+                    "id": "84363a83-fbc8-4c08-b445-ab7e5f29f439",
+                    "slot": "number",
+                    "startMs": 1262,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "f5676ec3-b346-46fc-b346-1c3a0c94f6e6",
+                    "slot": "song",
+                    "startMs": 4800,
+                    "track": 0,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "039de4d2-064e-4b6b-b7f6-0ba50f34ca8a",
+            "name": "Logan Hanrahan",
+            "jerseyNumber": "88",
+            "positionLabel": "1B",
+            "nameClip": {
+                "id": "name-logan_hanrahan",
+                "group": "names",
+                "nickname": "Logan Hanrahan",
+                "fileName": "LOGAN HANRAHAN.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/LOGAN%20HANRAHAN.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-logan-hanrahan-mobile",
+                "group": "songs",
+                "nickname": "all i do is win",
+                "fileName": "logan-hanrahan-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 20.75,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/logan-hanrahan-mobile.wav",
+                "builtIn": false,
+                "volumeMultiplier": 1.25,
+                "trimStartMs": 0,
+                "trimEndMs": 20750,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 20750,
+                "fadeOutEndMs": 20750
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-88",
+            "positionClipId": "position-1b",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "5864ba06-c8a3-4d09-9721-388dab9db052",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "d484fe6a-95e2-448b-81e4-e49a2a499a29",
+                    "slot": "number",
+                    "startMs": 1262,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "4c72eb6d-ac9e-4c99-a558-a0cccd7cd726",
+                    "slot": "name",
+                    "startMs": 2670,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "89a27f0f-ec55-4ff8-9156-687c3c9f7d2a",
+                    "slot": "song",
+                    "startMs": 4681,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "09355e80-9835-444e-af36-c865ea32a180",
+            "name": "Marty Happle",
+            "jerseyNumber": "28",
+            "positionLabel": "CF",
+            "nameClip": {
+                "id": "name-marty_happle",
+                "group": "names",
+                "nickname": "Marty Happle",
+                "fileName": "MARTY HAPPLE.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/MARTY%20HAPPLE.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-marty-happle-mobile",
+                "group": "songs",
+                "nickname": "Savior",
+                "fileName": "marty-happle-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 17.704,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/marty-happle-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 17704,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 17704,
+                "fadeOutEndMs": 17704
+            },
+            "announcementClipId": "announcement-up-next",
+            "numberClipId": "number-28",
+            "positionClipId": "position-cf",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "527c570b-c075-49fe-b3ac-eb1ebc62cb9f",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "cc85fd7c-9e1b-4d49-9ce9-dbf5f9eb0f62",
+                    "slot": "number",
+                    "startMs": 1400,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "fc79a3ef-7e88-465d-9e3e-3dcdf0f0a4ae",
+                    "slot": "name",
+                    "startMs": 2733,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "b3ae7c02-2bee-4c2e-bc5e-086c87ee2e81",
+                    "slot": "song",
+                    "startMs": 4100,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "f56f75ab-cca6-4b24-98e3-f6672a68bbeb",
+            "name": "Matty Wanko",
+            "jerseyNumber": "33",
+            "positionLabel": "P",
+            "nameClip": {
+                "id": "name-matty_wanko",
+                "group": "names",
+                "nickname": "Matty Wanko",
+                "fileName": "MATTY WANKO.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/MATTY%20WANKO.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-matty-wanko-mobile",
+                "group": "songs",
+                "nickname": "Everlong",
+                "fileName": "matty-wanko-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 26.841,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/matty-wanko-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 26841,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 26841,
+                "fadeOutEndMs": 26841
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-33",
+            "positionClipId": "position-p",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "8e838975-83fd-4d74-a5c5-16b38d2b0cc5",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "7160e9af-e68e-4d03-8a22-d485ebea2df1",
+                    "slot": "number",
+                    "startMs": 1262,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "aed0387c-7766-4d5e-ba3b-7790cc5f0dce",
+                    "slot": "name",
+                    "startMs": 2949,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "b859a835-9338-42ad-8ee7-3c4ce0ba123b",
+                    "slot": "song",
+                    "startMs": 4700,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "12309b17-bf68-44e5-ae8e-17294314efb7",
+            "name": "Nate Clay",
+            "jerseyNumber": "13",
+            "positionLabel": "RF",
+            "nameClip": {
+                "id": "name-nate_clay",
+                "group": "names",
+                "nickname": "Nate Clay",
+                "fileName": "NATE CLAY.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/NATE%20CLAY.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-nate-clay-mobile",
+                "group": "songs",
+                "nickname": "cant stop",
+                "fileName": "nate-clay-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 19.25,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/nate-clay-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 19250,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 19250,
+                "fadeOutEndMs": 19250
+            },
+            "announcementClipId": "announcement-up-next",
+            "numberClipId": "number-13",
+            "positionClipId": "position-rf",
+            "sequence": [
+                "announcement",
+                "number",
+                "name",
+                "song"
+            ],
+            "timeline": [
+                {
+                    "id": "e040ee9f-2993-40b4-bd1e-4a9fa29e9616",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "7d4fc238-2be1-46c5-a923-de85062c6815",
+                    "slot": "number",
+                    "startMs": 1262,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "0817aaf2-4e2c-4693-92a1-1d0cfbacc3a8",
+                    "slot": "name",
+                    "startMs": 2568,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "1b284205-168b-4661-9cdd-c1f596b03b6c",
+                    "slot": "song",
+                    "startMs": 3400,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        },
+        {
+            "id": "e2c5dce2-5e82-42b0-9bc1-b493c24cf495",
+            "name": "Tristan Aquino",
+            "jerseyNumber": "17",
+            "positionLabel": "C",
+            "nameClip": {
+                "id": "name-tristan_aquino",
+                "group": "names",
+                "nickname": "Tristan Aquino",
+                "fileName": "TRISTAN AQUINO.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/names/TRISTAN%20AQUINO.mp3",
+                "builtIn": true
+            },
+            "nicknameClip": null,
+            "songClip": {
+                "id": "song-tristan-aquino-mobile",
+                "group": "songs",
+                "nickname": "EoO",
+                "fileName": "tristan-aquino-mobile.wav",
+                "mimeType": "audio/wav",
+                "size": 0,
+                "duration": 18,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/songs/tristan-aquino-mobile.wav",
+                "builtIn": false,
+                "trimStartMs": 0,
+                "trimEndMs": 18000,
+                "fadeInEndMs": 0,
+                "fadeOutStartMs": 18000,
+                "fadeOutEndMs": 18000
+            },
+            "announcementClipId": "announcement-now-batting",
+            "numberClipId": "number-17",
+            "positionClipId": "position-c",
+            "sequence": [
+                "announcement",
+                "song",
+                "number",
+                "name"
+            ],
+            "timeline": [
+                {
+                    "id": "ad1d498e-998c-4d52-969d-c15c9b7272df",
+                    "slot": "announcement",
+                    "startMs": 0,
+                    "track": 0,
+                    "clipId": "announcement-now-batting"
+                },
+                {
+                    "id": "79197e98-d23e-430c-a5cb-c9eaed085e73",
+                    "slot": "number",
+                    "startMs": 1662,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "2683342a-3a5f-4d0f-bf18-a858cfa281d1",
+                    "slot": "name",
+                    "startMs": 3500,
+                    "track": 0,
+                    "clipId": ""
+                },
+                {
+                    "id": "a63357ec-57a8-47b8-bac8-4424d27ee562",
+                    "slot": "song",
+                    "startMs": 1100,
+                    "track": 1,
+                    "clipId": ""
+                }
+            ]
+        }
+    ],
+    "libraries": {
+        "announcements": [
+            {
+                "id": "announcement-now-batting",
+                "group": "announcements",
+                "nickname": "Now Batting",
+                "fileName": "now batting.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/now%20batting.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-up-next",
+                "group": "announcements",
+                "nickname": "Up Next",
+                "fileName": "UP NEXT.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/UP%20NEXT.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-make-some-noise",
+                "group": "announcements",
+                "nickname": "Make Some Noise",
+                "fileName": "MAKE SOME NOISE.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/MAKE%20SOME%20NOISE.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-coming-to-the-plat",
+                "group": "announcements",
+                "nickname": "Coming To The Plate",
+                "fileName": "COMING TO THE PLAT.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/COMING%20TO%20THE%20PLAT.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-coming-to-the-mound",
+                "group": "announcements",
+                "nickname": "Coming To The Mound",
+                "fileName": "COMING TO THE MOUND.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/COMING%20TO%20THE%20MOUND.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-lets-heare-it-for",
+                "group": "announcements",
+                "nickname": "Let's Hear It For",
+                "fileName": "LETS HEREE IT FOR.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/LETS%20HEREE%20IT%20FOR.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "announcement-now-pitching",
+                "group": "announcements",
+                "nickname": "Now Pitching",
+                "fileName": "NOW PITCHING.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/announcements/NOW%20PITCHING.mp3",
+                "builtIn": true
+            }
+        ],
+        "positions": [
+            {
+                "id": "position-p",
+                "group": "positions",
+                "nickname": "P",
+                "fileName": "PITCHER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/PITCHER.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-c",
+                "group": "positions",
+                "nickname": "C",
+                "fileName": "CATCHER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/CATCHER.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-1b",
+                "group": "positions",
+                "nickname": "1B",
+                "fileName": "FIRST BASEMEN.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/FIRST%20BASEMEN.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-2b",
+                "group": "positions",
+                "nickname": "2B",
+                "fileName": "SECOND BASEMEN.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/SECOND%20BASEMEN.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-3b",
+                "group": "positions",
+                "nickname": "3B",
+                "fileName": "THIRD BASEMEN.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/THIRD%20BASEMEN.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-ss",
+                "group": "positions",
+                "nickname": "SS",
+                "fileName": "SHORT STOP.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/SHORT%20STOP.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-lf",
+                "group": "positions",
+                "nickname": "LF",
+                "fileName": "LEFT FIELDER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/LEFT%20FIELDER.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-cf",
+                "group": "positions",
+                "nickname": "CF",
+                "fileName": "CENTER FIELDER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/CENTER%20FIELDER.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "position-rf",
+                "group": "positions",
+                "nickname": "RF",
+                "fileName": "RIGHT FIELDER.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/positions/RIGHT%20FIELDER.mp3",
+                "builtIn": true
+            }
+        ],
+        "numbers": [
+            {
+                "id": "number-2",
+                "group": "numbers",
+                "nickname": "#2",
+                "fileName": "2.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/2.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-4",
+                "group": "numbers",
+                "nickname": "#4",
+                "fileName": "4.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/4.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-9",
+                "group": "numbers",
+                "nickname": "#9",
+                "fileName": "9.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/9.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-13",
+                "group": "numbers",
+                "nickname": "#13",
+                "fileName": "13.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/13.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-16",
+                "group": "numbers",
+                "nickname": "#16",
+                "fileName": "16.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/16.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-17",
+                "group": "numbers",
+                "nickname": "#17",
+                "fileName": "17.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/17.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-23",
+                "group": "numbers",
+                "nickname": "#23",
+                "fileName": "23.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/23.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-28",
+                "group": "numbers",
+                "nickname": "#28",
+                "fileName": "28.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/28.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-33",
+                "group": "numbers",
+                "nickname": "#33",
+                "fileName": "33.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/33.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-48",
+                "group": "numbers",
+                "nickname": "#48",
+                "fileName": "48.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/48.mp3",
+                "builtIn": true
+            },
+            {
+                "id": "number-88",
+                "group": "numbers",
+                "nickname": "#88",
+                "fileName": "88.mp3",
+                "mimeType": "audio/mpeg",
+                "size": 0,
+                "duration": null,
+                "createdAt": 0,
+                "dataUrl": null,
+                "src": "/walk-up-announcer/assets/audio/numbers/88.mp3",
+                "builtIn": true
+            }
+        ],
+        "songs": [],
+        "effects": []
+    }
 }

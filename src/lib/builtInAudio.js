@@ -53,54 +53,13 @@ const BUILT_IN_NAME_FILES = [
 ];
 
 const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
-const BUILT_IN_SONG_FILES = [
-  "Brain Stew.mp3",
-  "Can't Stop Won't Stop - Stop Drop Roll.mp3",
-  "Digital Underground - The Humpty Dance.mp3",
-  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3",
-  "EoO - BAD BUNNY.mp3",
-  "Foo Fighters - Everlong.mp3",
-  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3",
-  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3",
-  "System Of A Down - Toxicity (Official HD Video).mp3",
-  "The White Stripes - Seven Nation Army (Official Music Video).mp3",
-  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3",
-];
+const BUILT_IN_SONG_FILES = [];
 
-const BUILT_IN_SONG_TITLES = {
-  "Brain Stew.mp3": "brain stew",
-  "Can't Stop Won't Stop - Stop Drop Roll.mp3": "cant stop",
-  "Digital Underground - The Humpty Dance.mp3": "humpty dance",
-  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3": "all i do is win",
-  "EoO - BAD BUNNY.mp3": "EoO",
-  "Foo Fighters - Everlong.mp3": "Everlong",
-  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3": "Fireball",
-  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3": "Savior",
-  "System Of A Down - Toxicity (Official HD Video).mp3": "toxicity",
-  "The White Stripes - Seven Nation Army (Official Music Video).mp3": "Seven Nation Army",
-  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3": "headstrong",
-};
+const BUILT_IN_SONG_TITLES = {};
 
-const BUILT_IN_SONG_SOURCE_FILES = {
-  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3":
-    "DJ Khaled-All I do is Win (Lyrics).mp3",
-  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3":
-    "Skillet - Savior (Lyrics).mp3",
-};
+const BUILT_IN_SONG_SOURCE_FILES = {};
 
-const BUILT_IN_SONG_DURATIONS = {
-  "Brain Stew.mp3": 193,
-  "Can't Stop Won't Stop - Stop Drop Roll.mp3": 211,
-  "Digital Underground - The Humpty Dance.mp3": 392,
-  "DJ Khaled - All I Do Is Win (Official Video) ft. T-Pain, Ludacris, Rick Ross, Snoop Dogg.mp3": 226,
-  "EoO - BAD BUNNY.mp3": 204,
-  "Foo Fighters - Everlong.mp3": 250,
-  "Pitbull - Fireball (Lyrics) ft. John Ryan.mp3": 235,
-  "Skillet - Savior (Official Music Video HD) Lyrics, Subtitulado.mp3": 271,
-  "System Of A Down - Toxicity (Official HD Video).mp3": 224,
-  "The White Stripes - Seven Nation Army (Official Music Video).mp3": 238,
-  "Trapt - Headstrong (Official Music Video) _ Warner Vault.mp3": 217,
-};
+const BUILT_IN_SONG_DURATIONS = {};
 
 const DEFAULT_ROSTER_ASSIGNMENTS = [
   { jerseyNumber: "9", positionLabel: "P" },
