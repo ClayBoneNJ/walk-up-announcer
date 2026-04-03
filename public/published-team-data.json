@@ -1,6 +1,6 @@
 {
     "schemaVersion": 1,
-    "publishedRevision": 1775257800000,
+    "publishedRevision": 1775260800000,
     "players": [
         {
             "id": "3db86e72-b7dd-46f6-9277-d63f354a8985",
@@ -352,9 +352,9 @@
             "positionClipId": "position-3b",
             "sequence": [
                 "announcement",
+                "song",
                 "number",
-                "name",
-                "song"
+                "name"
             ],
             "timeline": [
                 {
@@ -367,21 +367,21 @@
                 {
                     "id": "1cd9f4bc-f5c3-453a-8781-16742e05dae4",
                     "slot": "number",
-                    "startMs": 1300,
+                    "startMs": 1400,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "c5d766a5-94b1-43e1-bc55-41d1b5dd5d36",
                     "slot": "name",
-                    "startMs": 2627,
+                    "startMs": 2665,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "2a4b6295-bcda-484b-8ba8-0d3e86b079bf",
                     "slot": "song",
-                    "startMs": 4300,
+                    "startMs": 500,
                     "track": 1,
                     "clipId": ""
                 }
@@ -599,21 +599,21 @@
                 {
                     "id": "cc85fd7c-9e1b-4d49-9ce9-dbf5f9eb0f62",
                     "slot": "number",
-                    "startMs": 1400,
+                    "startMs": 1300,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "fc79a3ef-7e88-465d-9e3e-3dcdf0f0a4ae",
                     "slot": "name",
-                    "startMs": 2733,
+                    "startMs": 2633,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "b3ae7c02-2bee-4c2e-bc5e-086c87ee2e81",
                     "slot": "song",
-                    "startMs": 4100,
+                    "startMs": 3700,
                     "track": 1,
                     "clipId": ""
                 }
@@ -661,8 +661,8 @@
             "positionClipId": "position-p",
             "sequence": [
                 "announcement",
-                "number",
                 "song",
+                "number",
                 "name"
             ],
             "timeline": [
@@ -676,21 +676,21 @@
                 {
                     "id": "7160e9af-e68e-4d03-8a22-d485ebea2df1",
                     "slot": "number",
-                    "startMs": 1400,
+                    "startMs": 1300,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "aed0387c-7766-4d5e-ba3b-7790cc5f0dce",
                     "slot": "name",
-                    "startMs": 3087,
+                    "startMs": 3000,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "b859a835-9338-42ad-8ee7-3c4ce0ba123b",
                     "slot": "song",
-                    "startMs": 2800,
+                    "startMs": 800,
                     "track": 1,
                     "clipId": ""
                 }
@@ -830,14 +830,14 @@
                 {
                     "id": "79197e98-d23e-430c-a5cb-c9eaed085e73",
                     "slot": "number",
-                    "startMs": 1662,
+                    "startMs": 1400,
                     "track": 0,
                     "clipId": ""
                 },
                 {
                     "id": "2683342a-3a5f-4d0f-bf18-a858cfa281d1",
                     "slot": "name",
-                    "startMs": 3500,
+                    "startMs": 3000,
                     "track": 0,
                     "clipId": ""
                 },
