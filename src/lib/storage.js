@@ -52,6 +52,55 @@ export function deriveSequenceFromTimeline(timeline = []) {
   return sortedTimeline.map((item) => item.slot);
 }
 
+function isMobileSongClip(clip = null) {
+  if (!clip) {
+    return false;
+  }
+
+  const fileName = String(clip.fileName || "").toLowerCase();
+  const src = String(clip.src || "").toLowerCase();
+  const mimeType = String(clip.mimeType || "").toLowerCase();
+
+  return (
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
+    mimeType === "audio/wav"
+  );
+}
+
+function getDefaultPlayerSongClip(playerName = "") {
+  return (
+    defaultTeamData?.players?.find((player) => player.name === playerName)?.songClip ?? null
+  );
+}
+
+function migratePlayerSongClip(playerName, clip) {
+  const defaultSongClip = getDefaultPlayerSongClip(playerName);
+
+  if (!defaultSongClip || !isMobileSongClip(defaultSongClip)) {
+    return clip;
+  }
+
+  if (!clip) {
+    return defaultSongClip;
+  }
+
+  if (!isMobileSongClip(clip)) {
+    return defaultSongClip;
+  }
+
+  return {
+    ...defaultSongClip,
+    ...clip,
+    id: defaultSongClip.id,
+    fileName: defaultSongClip.fileName,
+    mimeType: defaultSongClip.mimeType,
+    src: defaultSongClip.src,
+    builtIn: false,
+    duration: defaultSongClip.duration,
+  };
+}
+
 function createTimelineItem(slot, startMs, track = 0, clipId = "") {
   return {
     id: crypto.randomUUID(),
@@ -294,6 +343,7 @@ export function createEmptyState() {
 export function normalizePlayer(player) {
   const normalizedName = player.name ?? "";
   const builtInNameClip = getBuiltInPlayerClip(normalizedName);
+  const normalizedSongClip = migratePlayerSongClip(normalizedName, player.songClip);
   const normalizedSequence =
     Array.isArray(player.sequence) && player.sequence.length > 0
       ? player.sequence.filter((slot) =>
@@ -307,7 +357,7 @@ export function normalizePlayer(player) {
     positionLabel: player.positionLabel ?? player.position ?? "",
     nameClip: normalizeOwnedClip(player.nameClip, builtInNameClip),
     nicknameClip: normalizeOwnedClip(player.nicknameClip, null),
-    songClip: normalizeOwnedClip(player.songClip, null),
+    songClip: normalizeOwnedClip(normalizedSongClip, null),
     announcementClipId: player.announcementClipId ?? "",
     numberClipId: player.numberClipId ?? "",
     positionClipId: player.positionClipId ?? "",

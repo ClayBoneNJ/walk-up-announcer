@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedRevision": 1775254200000,
+  "publishedRevision": 1775257800000,
   "players": [
     {
       "id": "3db86e72-b7dd-46f6-9277-d63f354a8985",
@@ -662,8 +662,8 @@
       "sequence": [
         "announcement",
         "number",
-        "name",
-        "song"
+        "song",
+        "name"
       ],
       "timeline": [
         {
@@ -676,21 +676,21 @@
         {
           "id": "7160e9af-e68e-4d03-8a22-d485ebea2df1",
           "slot": "number",
-          "startMs": 1262,
+          "startMs": 1400,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "aed0387c-7766-4d5e-ba3b-7790cc5f0dce",
           "slot": "name",
-          "startMs": 2949,
+          "startMs": 3087,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "b859a835-9338-42ad-8ee7-3c4ce0ba123b",
           "slot": "song",
-          "startMs": 4700,
+          "startMs": 2800,
           "track": 1,
           "clipId": ""
         }
