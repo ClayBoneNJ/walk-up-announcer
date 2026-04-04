@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-9";
+const APP_BUILD_LABEL = "v mobile-song-sync-12";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -610,6 +610,7 @@ export default function App() {
               onPlayPlayer={playPlayerFromWalkups}
               onPlayCurrentBatter={playTrackedBatter}
               onReorderPlayers={reorderPlayers}
+              onStopAll={() => stopAll(true)}
               onEditPlayer={(playerId) => {
                 setEditingPlayerId(playerId);
                 setEditingReturnTab("walkups");
@@ -689,15 +690,18 @@ export default function App() {
         </main>
       </div>
 
-      <button
-        type="button"
-        onClick={() => stopAll(true)}
-        className="fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full border border-rose-300/35 bg-rose-500 text-white shadow-[0_14px_28px_rgba(244,63,94,0.3)] transition hover:bg-rose-400 sm:bottom-[calc(4.9rem+env(safe-area-inset-bottom))] sm:right-4 sm:h-12 sm:w-12"
-        aria-label="Stop all audio"
-        title="Stop all audio"
-      >
-        <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-      </button>
+      {activeTab !== "walkups" ? (
+        <button
+          type="button"
+          onClick={() => stopAll(true)}
+          className="fixed inset-x-3 bottom-[calc(5.1rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-12 max-w-[11rem] items-center justify-center gap-2 rounded-full border border-rose-300/40 bg-rose-500 px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.28)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:inset-x-auto sm:bottom-24 sm:right-4 sm:h-13 sm:max-w-none sm:px-6"
+          aria-label="Stop all audio"
+          title="Stop all audio"
+        >
+          <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+          <span>Stop</span>
+        </button>
+      ) : null}
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">
@@ -735,6 +739,7 @@ function WalkupsView({
   onPlayPlayer,
   onPlayCurrentBatter,
   onReorderPlayers,
+  onStopAll,
   onEditPlayer,
 }) {
   const [isReorderMode, setIsReorderMode] = useState(false);
@@ -901,7 +906,7 @@ function WalkupsView({
     </section>
     {players.length && currentBatter ? (
       <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
-        <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-stretch gap-2 rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
           <button
             type="button"
             onClick={() => onPlayCurrentBatter(currentBatter, players)}
@@ -922,6 +927,17 @@ function WalkupsView({
               <span className="sr-only sm:not-sr-only sm:text-xs sm:font-black sm:uppercase sm:tracking-[0.14em]">Play</span>
             </div>
           </button>
+
+          <button
+            type="button"
+            onClick={onStopAll}
+            className="flex min-w-[4.75rem] items-center justify-center gap-2 rounded-[1rem] border border-rose-300/40 bg-[linear-gradient(145deg,rgba(244,63,94,0.96),rgba(190,24,93,0.88))] px-3 py-2 text-white shadow-[0_16px_28px_rgba(244,63,94,0.22)] transition hover:brightness-110 active:translate-y-[2px] active:scale-[0.98] sm:min-w-[6.25rem] sm:gap-2.5 sm:rounded-[1.7rem] sm:px-4 sm:py-3"
+            aria-label="Stop all audio"
+            title="Stop all audio"
+          >
+            <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs">Stop</span>
+          </button>
         </div>
       </div>
     ) : null}
@@ -937,6 +953,7 @@ function SoundboardPage({ clips, onPlayClip }) {
   ]);
   const PLAYER_HYPE_IDS = new Set([
     "effect-bill-bill-bill",
+    "effect-88-mph",
     "effect-my-homie-nate",
   ]);
   const strikeThreeClips = clips.filter((clip) => STRIKE_THREE_IDS.has(clip.id));

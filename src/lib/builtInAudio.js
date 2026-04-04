@@ -251,11 +251,32 @@ export const BUILT_IN_LIBRARIES = {
       src: eventAssetSrc("crowd-hype", "Hes SAFE!.mp3"),
     }),
     builtInClip({
+      id: "effect-eye-of-the-tiger",
+      group: "effects",
+      nickname: "Eye Of The Tiger",
+      fileName: "eye of the tiger.mp3",
+      src: eventAssetSrc("crowd-hype", "eye of the tiger.mp3"),
+    }),
+    builtInClip({
+      id: "effect-clap-yo-hands",
+      group: "effects",
+      nickname: "Clap Yo Hands",
+      fileName: "clap yo hands.mp3",
+      src: eventAssetSrc("crowd-hype", "clap yo hands.mp3"),
+    }),
+    builtInClip({
       id: "effect-bill-bill-bill",
       group: "effects",
       nickname: "BILL! BILL! BILL!",
       fileName: "BILL! BILL! BILL!.mp3",
       src: eventAssetSrc("player-hype", "BILL! BILL! BILL!.mp3"),
+    }),
+    builtInClip({
+      id: "effect-88-mph",
+      group: "effects",
+      nickname: "88 MPH",
+      fileName: "88 mph.mp3",
+      src: eventAssetSrc("player-hype", "88 mph.mp3"),
     }),
     builtInClip({
       id: "effect-my-homie-nate",
