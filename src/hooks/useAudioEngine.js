@@ -565,13 +565,18 @@ export function useAudioEngine({ volume, fadeMs }) {
         fadeOut,
         activeEntryCount: session.activeEntries.size,
       });
-      session.controller.abort();
       sessionRef.current = null;
+      if (!fadeOut) {
+        session.controller.abort();
+      }
       if (!session.resolved) {
         session.resolved = true;
         session.reject?.(new DOMException("Playback cancelled", "AbortError"));
       }
       await teardownSession(session, fadeOut);
+      if (fadeOut) {
+        session.controller.abort();
+      }
     }
 
     resetUiState();
