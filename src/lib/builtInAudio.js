@@ -236,6 +236,34 @@ export const BUILT_IN_LIBRARIES = {
       fileName: "defence.mp3",
       src: eventAssetSrc("crowd-hype", "defence.mp3"),
     }),
+    builtInClip({
+      id: "effect-whistle-bomb",
+      group: "effects",
+      nickname: "Whistle Bomb",
+      fileName: "whistle bomb.mp3",
+      src: eventAssetSrc("crowd-hype", "whistle bomb.mp3"),
+    }),
+    builtInClip({
+      id: "effect-hes-safe",
+      group: "effects",
+      nickname: "He's Safe",
+      fileName: "Hes SAFE!.mp3",
+      src: eventAssetSrc("crowd-hype", "Hes SAFE!.mp3"),
+    }),
+    builtInClip({
+      id: "effect-bill-bill-bill",
+      group: "effects",
+      nickname: "BILL! BILL! BILL!",
+      fileName: "BILL! BILL! BILL!.mp3",
+      src: eventAssetSrc("player-hype", "BILL! BILL! BILL!.mp3"),
+    }),
+    builtInClip({
+      id: "effect-my-homie-nate",
+      group: "effects",
+      nickname: "My Homie Nate",
+      fileName: "my homie nate.mp3",
+      src: eventAssetSrc("player-hype", "my homie nate.mp3"),
+    }),
   ],
 };
 

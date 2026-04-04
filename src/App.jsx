@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-4";
+const APP_BUILD_LABEL = "v mobile-song-sync-9";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -935,8 +935,15 @@ function SoundboardPage({ clips, onPlayClip }) {
     "effect-hes-outta-there",
     "effect-strike-3-hes-out",
   ]);
+  const PLAYER_HYPE_IDS = new Set([
+    "effect-bill-bill-bill",
+    "effect-my-homie-nate",
+  ]);
   const strikeThreeClips = clips.filter((clip) => STRIKE_THREE_IDS.has(clip.id));
-  const crowdHypeClips = clips.filter((clip) => !STRIKE_THREE_IDS.has(clip.id));
+  const playerHypeClips = clips.filter((clip) => PLAYER_HYPE_IDS.has(clip.id));
+  const crowdHypeClips = clips.filter(
+    (clip) => !STRIKE_THREE_IDS.has(clip.id) && !PLAYER_HYPE_IDS.has(clip.id),
+  );
 
   return (
     <div className="space-y-3">
@@ -969,16 +976,16 @@ function SoundboardPage({ clips, onPlayClip }) {
       </section>
 
       <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300">
-          Crowd Hype
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-lime-300">
+          Player Hype
         </div>
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {crowdHypeClips.map((clip) => (
+          {playerHypeClips.map((clip) => (
             <button
               key={clip.id}
               type="button"
               onClick={() => onPlayClip({ clip })}
-              className="aspect-square rounded-[0.22rem] border border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(8,145,178,0.2)] transition duration-150 hover:border-cyan-100/85 active:translate-y-[2px] active:scale-[0.97]"
+              className="aspect-square rounded-[0.22rem] border border-lime-200/65 bg-[linear-gradient(145deg,rgba(163,230,53,0.5),rgba(77,124,15,0.42)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(101,163,13,0.22)] transition duration-150 hover:border-lime-100/85 active:translate-y-[2px] active:scale-[0.97]"
             >
               <div className="flex h-full flex-col items-center justify-center">
                 <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
@@ -986,6 +993,43 @@ function SoundboardPage({ clips, onPlayClip }) {
                 </div>
               </div>
             </button>
+          ))}
+
+          {playerHypeClips.length === 0 ? (
+            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
+              No player hype clips loaded yet.
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
+        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300">
+          Crowd Hype
+        </div>
+        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {crowdHypeClips.map((clip) => (
+            (() => {
+              const isHesSafe = clip.id === "effect-hes-safe";
+              const buttonClass = isHesSafe
+                ? "aspect-square rounded-[0.22rem] border border-fuchsia-200/70 bg-[linear-gradient(145deg,rgba(217,70,239,0.5),rgba(126,34,206,0.42)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(168,85,247,0.24)] transition duration-150 hover:border-fuchsia-100/85 active:translate-y-[2px] active:scale-[0.97]"
+                : "aspect-square rounded-[0.22rem] border border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] px-1.5 py-1.5 text-center shadow-[0_10px_20px_rgba(8,145,178,0.2)] transition duration-150 hover:border-cyan-100/85 active:translate-y-[2px] active:scale-[0.97]";
+
+              return (
+            <button
+              key={clip.id}
+              type="button"
+              onClick={() => onPlayClip({ clip })}
+              className={buttonClass}
+            >
+              <div className="flex h-full flex-col items-center justify-center">
+                <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
+                  {clip.nickname}
+                </div>
+              </div>
+            </button>
+              );
+            })()
           ))}
 
           {crowdHypeClips.length === 0 ? (
