@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-13";
+const APP_BUILD_LABEL = "v mobile-song-sync-14";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -374,7 +374,7 @@ export default function App() {
   };
 
   const removePlayer = async (playerId) => {
-    await stopAll();
+    await stopAll(true);
     updateState((current) => ({
       ...current,
       players: current.players.filter((player) => player.id !== playerId),
@@ -392,7 +392,7 @@ export default function App() {
   };
 
   const removeLibraryClip = async (group, clipId) => {
-    await stopAll();
+    await stopAll(true);
     updateState((current) => ({
       ...current,
       libraries: {
@@ -695,11 +695,11 @@ export default function App() {
           type="button"
           onClick={() => stopAll(true)}
           className="fixed inset-x-3 bottom-[calc(5.1rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-12 max-w-[11rem] items-center justify-center gap-2 rounded-full border border-rose-300/40 bg-rose-500 px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.28)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:inset-x-auto sm:bottom-24 sm:right-4 sm:h-13 sm:max-w-none sm:px-6"
-          aria-label="Stop all audio"
-          title="Stop all audio"
+          aria-label="Fade out audio"
+          title="Fade out audio"
         >
           <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-          <span>Stop</span>
+          <span>Fade</span>
         </button>
       ) : null}
 
@@ -932,11 +932,11 @@ function WalkupsView({
             type="button"
             onClick={onStopAll}
             className="flex min-w-[4.75rem] items-center justify-center gap-2 rounded-[1rem] border border-rose-300/40 bg-[linear-gradient(145deg,rgba(244,63,94,0.96),rgba(190,24,93,0.88))] px-3 py-2 text-white shadow-[0_16px_28px_rgba(244,63,94,0.22)] transition hover:brightness-110 active:translate-y-[2px] active:scale-[0.98] sm:min-w-[6.25rem] sm:gap-2.5 sm:rounded-[1.7rem] sm:px-4 sm:py-3"
-            aria-label="Stop all audio"
-            title="Stop all audio"
+            aria-label="Fade out audio"
+            title="Fade out audio"
           >
             <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs">Stop</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs">Fade</span>
           </button>
         </div>
       </div>
