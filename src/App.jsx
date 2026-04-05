@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-19";
+const APP_BUILD_LABEL = "v mobile-song-sync-20";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -952,6 +952,8 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
     "effect-hes-outta-there",
     "effect-strike-3-hes-out",
     "effect-hes-safe",
+    "effect-hasta-la-vista-baby",
+    "effect-bye-have-a-good-time",
   ]);
   const PLAYER_HYPE_IDS = new Set([
     "effect-bill-bill-bill",

@@ -907,7 +907,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       if (item.slot === "song") {
         await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       } else {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : targetVolume);
+        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       }
       return nextAudio;
     };
