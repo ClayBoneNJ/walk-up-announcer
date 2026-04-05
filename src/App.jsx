@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-24";
+const APP_BUILD_LABEL = "v mobile-song-sync-26";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -1056,11 +1056,25 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {crowdHypeClips.map((clip) => {
             const isActive = activePlayback?.assetId === clip.id;
-            const buttonClass = `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-              isActive
-                ? "border-cyan-50 bg-[linear-gradient(145deg,rgba(103,232,249,0.96),rgba(6,182,212,0.88)_42%,rgba(22,78,99,0.98))] shadow-[0_0_0_1px_rgba(103,232,249,0.36),0_0_24px_rgba(34,211,238,0.34),0_16px_28px_rgba(8,145,178,0.28)] ring-2 ring-cyan-200/85"
-                : "border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(8,145,178,0.2)] hover:border-cyan-100/85"
-            }`;
+            const SPECIAL_CROWD_HYPE_IDS = new Set([
+              "effect-whistle-bomb",
+              "effect-gta-sound-effect",
+              "effect-wow",
+              "effect-1up",
+              "effect-boom-goes-the-dynamite",
+            ]);
+            const isSpecialCrowdHype = SPECIAL_CROWD_HYPE_IDS.has(clip.id);
+            const buttonClass = isSpecialCrowdHype
+              ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
+                  isActive
+                    ? "border-orange-50 bg-[linear-gradient(145deg,rgba(253,186,116,0.98),rgba(249,115,22,0.9)_42%,rgba(124,45,18,0.98))] shadow-[0_0_0_1px_rgba(253,186,116,0.4),0_0_26px_rgba(249,115,22,0.36),0_16px_28px_rgba(234,88,12,0.3)] ring-2 ring-orange-200/90"
+                    : "border-orange-200/70 bg-[linear-gradient(145deg,rgba(251,146,60,0.56),rgba(234,88,12,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_12px_22px_rgba(234,88,12,0.22)] hover:border-orange-100/85"
+                }`
+              : `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
+                  isActive
+                    ? "border-cyan-50 bg-[linear-gradient(145deg,rgba(103,232,249,0.96),rgba(6,182,212,0.88)_42%,rgba(22,78,99,0.98))] shadow-[0_0_0_1px_rgba(103,232,249,0.36),0_0_24px_rgba(34,211,238,0.34),0_16px_28px_rgba(8,145,178,0.28)] ring-2 ring-cyan-200/85"
+                    : "border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(8,145,178,0.2)] hover:border-cyan-100/85"
+                }`;
 
             return (
               <button

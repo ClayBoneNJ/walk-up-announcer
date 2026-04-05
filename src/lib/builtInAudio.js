@@ -302,7 +302,7 @@ export const BUILT_IN_LIBRARIES = {
     builtInClip({
       id: "effect-boom-goes-the-dynamite",
       group: "effects",
-      nickname: "Boom Goes The Dynamite",
+      nickname: "Boom Goes The...",
       fileName: "boom goes the dynamite.mp3",
       src: eventAssetSrc("crowd-hype", "boom goes the dynamite.mp3"),
     }),
