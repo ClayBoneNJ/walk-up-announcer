@@ -254,8 +254,8 @@ export const BUILT_IN_LIBRARIES = {
       id: "effect-hasta-la-vista-baby",
       group: "effects",
       nickname: "Hasta La Vista, Baby",
-      fileName: "hasta la vista, baby.mp3",
-      src: eventAssetSrc("umpire-calls", "hasta la vista, baby.mp3"),
+      fileName: "hasta la vista baby.mp3",
+      src: eventAssetSrc("umpire-calls", "hasta la vista baby.mp3"),
     }),
     builtInClip({
       id: "effect-bye-have-a-good-time",
