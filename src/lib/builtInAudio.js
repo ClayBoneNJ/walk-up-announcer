@@ -251,6 +251,20 @@ export const BUILT_IN_LIBRARIES = {
       src: eventAssetSrc("umpire-calls", "Hes SAFE!.mp3"),
     }),
     builtInClip({
+      id: "effect-hasta-la-vista-baby",
+      group: "effects",
+      nickname: "Hasta La Vista, Baby",
+      fileName: "hasta la vista, baby.mp3",
+      src: eventAssetSrc("umpire-calls", "hasta la vista, baby.mp3"),
+    }),
+    builtInClip({
+      id: "effect-bye-have-a-good-time",
+      group: "effects",
+      nickname: "Bye Have A Good Time",
+      fileName: "bye have a good time.mp3",
+      src: eventAssetSrc("umpire-calls", "bye have a good time.mp3"),
+    }),
+    builtInClip({
       id: "effect-eye-of-the-tiger",
       group: "effects",
       nickname: "Eye Of The Tiger",
