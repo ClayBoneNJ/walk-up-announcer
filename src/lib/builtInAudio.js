@@ -178,21 +178,21 @@ export const BUILT_IN_LIBRARIES = {
       group: "effects",
       nickname: "He Gone",
       fileName: "he gone.mp3",
-      src: eventAssetSrc("strikeout", "he gone.mp3"),
+      src: eventAssetSrc("umpire-calls", "he gone.mp3"),
     }),
     builtInClip({
       id: "effect-hes-outta-there",
       group: "effects",
       nickname: "He's Outta There",
       fileName: "hes outta there.mp3",
-      src: eventAssetSrc("strikeout", "hes outta there.mp3"),
+      src: eventAssetSrc("umpire-calls", "hes outta there.mp3"),
     }),
     builtInClip({
       id: "effect-strike-3-hes-out",
       group: "effects",
       nickname: "Strike 3 He's Out",
       fileName: "strike 3 hes out.mp3",
-      src: eventAssetSrc("strikeout", "strike 3 hes out.mp3"),
+      src: eventAssetSrc("umpire-calls", "strike 3 hes out.mp3"),
     }),
     builtInClip({
       id: "effect-when-i-say",
@@ -248,7 +248,7 @@ export const BUILT_IN_LIBRARIES = {
       group: "effects",
       nickname: "He's Safe",
       fileName: "Hes SAFE!.mp3",
-      src: eventAssetSrc("crowd-hype", "Hes SAFE!.mp3"),
+      src: eventAssetSrc("umpire-calls", "Hes SAFE!.mp3"),
     }),
     builtInClip({
       id: "effect-eye-of-the-tiger",
