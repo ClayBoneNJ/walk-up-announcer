@@ -293,6 +293,20 @@ export const BUILT_IN_LIBRARIES = {
       src: eventAssetSrc("crowd-hype", "WOW!.mp3"),
     }),
     builtInClip({
+      id: "effect-1up",
+      group: "effects",
+      nickname: "1UP",
+      fileName: "1up.mp3",
+      src: eventAssetSrc("crowd-hype", "1up.mp3"),
+    }),
+    builtInClip({
+      id: "effect-boom-goes-the-dynamite",
+      group: "effects",
+      nickname: "Boom Goes The Dynamite",
+      fileName: "boom goes the dynamite.mp3",
+      src: eventAssetSrc("crowd-hype", "boom goes the dynamite.mp3"),
+    }),
+    builtInClip({
       id: "effect-bill-bill-bill",
       group: "effects",
       nickname: "BILL! BILL! BILL!",
