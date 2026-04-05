@@ -286,6 +286,13 @@ export const BUILT_IN_LIBRARIES = {
       src: eventAssetSrc("crowd-hype", "GTA Sound Effect.mp3"),
     }),
     builtInClip({
+      id: "effect-wow",
+      group: "effects",
+      nickname: "WOW!",
+      fileName: "WOW!.mp3",
+      src: eventAssetSrc("crowd-hype", "WOW!.mp3"),
+    }),
+    builtInClip({
       id: "effect-bill-bill-bill",
       group: "effects",
       nickname: "BILL! BILL! BILL!",
