@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-26";
+const APP_BUILD_LABEL = "v mobile-song-sync-27";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -960,11 +960,22 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
     "effect-88-mph",
     "effect-my-homie-nate",
   ]);
+  const SPECIAL_CROWD_HYPE_IDS = new Set([
+    "effect-whistle-bomb",
+    "effect-gta-sound-effect",
+    "effect-wow",
+    "effect-1up",
+    "effect-boom-goes-the-dynamite",
+  ]);
   const strikeThreeClips = clips.filter((clip) => STRIKE_THREE_IDS.has(clip.id));
   const playerHypeClips = clips.filter((clip) => PLAYER_HYPE_IDS.has(clip.id));
-  const crowdHypeClips = clips.filter(
-    (clip) => !STRIKE_THREE_IDS.has(clip.id) && !PLAYER_HYPE_IDS.has(clip.id),
-  );
+  const crowdHypeClips = clips
+    .filter((clip) => !STRIKE_THREE_IDS.has(clip.id) && !PLAYER_HYPE_IDS.has(clip.id))
+    .sort((left, right) => {
+      const leftPriority = SPECIAL_CROWD_HYPE_IDS.has(left.id) ? 1 : 0;
+      const rightPriority = SPECIAL_CROWD_HYPE_IDS.has(right.id) ? 1 : 0;
+      return leftPriority - rightPriority;
+    });
 
   return (
     <div className="space-y-3">
@@ -1056,19 +1067,12 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {crowdHypeClips.map((clip) => {
             const isActive = activePlayback?.assetId === clip.id;
-            const SPECIAL_CROWD_HYPE_IDS = new Set([
-              "effect-whistle-bomb",
-              "effect-gta-sound-effect",
-              "effect-wow",
-              "effect-1up",
-              "effect-boom-goes-the-dynamite",
-            ]);
             const isSpecialCrowdHype = SPECIAL_CROWD_HYPE_IDS.has(clip.id);
             const buttonClass = isSpecialCrowdHype
               ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
                   isActive
-                    ? "border-orange-50 bg-[linear-gradient(145deg,rgba(253,186,116,0.98),rgba(249,115,22,0.9)_42%,rgba(124,45,18,0.98))] shadow-[0_0_0_1px_rgba(253,186,116,0.4),0_0_26px_rgba(249,115,22,0.36),0_16px_28px_rgba(234,88,12,0.3)] ring-2 ring-orange-200/90"
-                    : "border-orange-200/70 bg-[linear-gradient(145deg,rgba(251,146,60,0.56),rgba(234,88,12,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_12px_22px_rgba(234,88,12,0.22)] hover:border-orange-100/85"
+                    ? "border-pink-50 bg-[linear-gradient(145deg,rgba(251,207,232,0.98),rgba(236,72,153,0.9)_42%,rgba(131,24,67,0.98))] shadow-[0_0_0_1px_rgba(251,207,232,0.42),0_0_26px_rgba(236,72,153,0.38),0_16px_28px_rgba(190,24,93,0.32)] ring-2 ring-pink-200/90"
+                    : "border-pink-200/70 bg-[linear-gradient(145deg,rgba(244,114,182,0.58),rgba(219,39,119,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_12px_22px_rgba(219,39,119,0.24)] hover:border-pink-100/85"
                 }`
               : `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
                   isActive
