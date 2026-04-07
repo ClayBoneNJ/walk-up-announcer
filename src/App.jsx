@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-29";
+const APP_BUILD_LABEL = "v38";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -508,7 +508,7 @@ export default function App() {
         playerName: playerName || clip.nickname,
         relatedPlayerIds,
       },
-      interruptFadeOut: true,
+      interruptFadeOut: false,
     });
   };
 

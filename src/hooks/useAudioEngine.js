@@ -446,6 +446,7 @@ export function useAudioEngine({ volume, fadeMs }) {
   const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
+  const shouldUseFastClipStart = (session) => session?.descriptor?.type === "clip";
 
   const getSongAudioContext = async () => {
     const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
@@ -901,13 +902,14 @@ export function useAudioEngine({ volume, fadeMs }) {
 
     const createConfiguredAudio = async () => {
       const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
+      const useFastStart = shouldUseFastClipStart(session);
       const nextAudio = createAudioElement(targetVolume);
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
       if (item.slot === "song") {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : targetVolume);
+        await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
       } else {
-        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : targetVolume);
+        setPlaybackLevel(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
       }
       return nextAudio;
     };
@@ -1057,7 +1059,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       } else {
         setPlaybackLevel(audio, targetVolume);
       }
-    } else if (fadeMs > 0) {
+    } else if (fadeMs > 0 && !shouldUseFastClipStart(session)) {
       const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
       const steps = 8;
       for (let index = 1; index <= steps; index += 1) {
