@@ -35,7 +35,7 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 18250,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 18250,
         "fadeOutEndMs": 18250
       },
@@ -66,15 +66,15 @@
         {
           "id": "d4a39ae5-2f58-4072-a149-8291fa38b2fd",
           "slot": "name",
-          "startMs": 2700,
-          "track": 1,
+          "startMs": 2800,
+          "track": 0,
           "clipId": ""
         },
         {
           "id": "8ef54765-ec47-4adc-823a-58481aa619d5",
           "slot": "song",
-          "startMs": 3900,
-          "track": 0,
+          "startMs": 2800,
+          "track": 1,
           "clipId": ""
         }
       ]
