@@ -1,10 +1,10 @@
-function builtInClip({ id, group, nickname, fileName, src, duration = null, mimeType = "audio/mpeg" }) {
+function builtInClip({ id, group, nickname, fileName, src, duration = null }) {
   return {
     id,
     group,
     nickname,
     fileName,
-    mimeType,
+    mimeType: "audio/mpeg",
     size: 0,
     duration,
     createdAt: 0,
@@ -53,47 +53,13 @@ const BUILT_IN_NAME_FILES = [
 ];
 
 const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
-const BUILT_IN_SONG_FILES = [
-  "alex-bonk-final.wav",
-  "benjamin-yunker-final.wav",
-  "billy-wanko-final.wav",
-  "camden-pagoda-final.wav",
-  "giovanni-turchi-final.wav",
-  "landon-hanrahan-final.wav",
-  "logan-hanrahan-final.wav",
-  "marty-happle-final.wav",
-  "matty-wanko-final.wav",
-  "nate-clay-final.wav",
-  "tristan-aquino-final.wav",
-];
+const BUILT_IN_SONG_FILES = [];
 
-const BUILT_IN_SONG_TITLES = {
-  "alex-bonk-final.wav": "Seven Nation Army",
-  "benjamin-yunker-final.wav": "humpty dance",
-  "billy-wanko-final.wav": "headstrong",
-  "camden-pagoda-final.wav": "toxicity",
-  "giovanni-turchi-final.wav": "brain stew",
-  "landon-hanrahan-final.wav": "Fireball",
-  "logan-hanrahan-final.wav": "all i do is win",
-  "marty-happle-final.wav": "Savior",
-  "matty-wanko-final.wav": "Everlong",
-  "nate-clay-final.wav": "cant stop",
-  "tristan-aquino-final.wav": "EoO",
-};
+const BUILT_IN_SONG_TITLES = {};
 
-const BUILT_IN_SONG_DURATIONS = {
-  "alex-bonk-final.wav": 18.25,
-  "benjamin-yunker-final.wav": 19,
-  "billy-wanko-final.wav": 11.925,
-  "camden-pagoda-final.wav": 17,
-  "giovanni-turchi-final.wav": 17.75,
-  "landon-hanrahan-final.wav": 13,
-  "logan-hanrahan-final.wav": 20.75,
-  "marty-happle-final.wav": 17.704,
-  "matty-wanko-final.wav": 26.841,
-  "nate-clay-final.wav": 19.25,
-  "tristan-aquino-final.wav": 18,
-};
+const BUILT_IN_SONG_SOURCE_FILES = {};
+
+const BUILT_IN_SONG_DURATIONS = {};
 
 const DEFAULT_ROSTER_ASSIGNMENTS = [
   { jerseyNumber: "9", positionLabel: "P" },
@@ -191,7 +157,7 @@ export const BUILT_IN_LIBRARIES = {
     }),
   ),
   songs: BUILT_IN_SONG_FILES.map((fileName) => {
-    const baseName = fileName.replace(/-(mobile|final)\.wav$/i, "");
+    const baseName = fileName.replace(/\.mp3$/i, "");
     const songId = baseName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -202,9 +168,8 @@ export const BUILT_IN_LIBRARIES = {
       group: "songs",
       nickname: BUILT_IN_SONG_TITLES[fileName] ?? baseName,
       fileName,
-      src: assetSrc("songs", fileName),
+      src: assetSrc("songs", BUILT_IN_SONG_SOURCE_FILES[fileName] ?? fileName),
       duration: BUILT_IN_SONG_DURATIONS[fileName] ?? null,
-      mimeType: "audio/wav",
     });
   }),
   effects: [
@@ -384,7 +349,7 @@ export const BUILT_IN_PLAYER_CLIPS = Object.fromEntries(
 
 export const BUILT_IN_SONGS = {
   default_song:
-    BUILT_IN_LIBRARIES.songs.find((clip) => clip.fileName === "alex-bonk-final.wav") ??
+    BUILT_IN_LIBRARIES.songs.find((clip) => clip.fileName === "Can't Stop Won't Stop - Stop Drop Roll.mp3") ??
     BUILT_IN_LIBRARIES.songs[0],
 };
 

@@ -62,8 +62,8 @@ function isMobileSongClip(clip = null) {
   const mimeType = String(clip.mimeType || "").toLowerCase();
 
   return (
-    fileName.endsWith(".wav") ||
-    src.endsWith(".wav") ||
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
     mimeType === "audio/wav"
   );
 }
@@ -486,8 +486,8 @@ export function getSongClipDurationMs(clip = null) {
   const src = String(clip.src || "").toLowerCase();
   const mimeType = String(clip.mimeType || "").toLowerCase();
   const isFinishedMobileSong =
-    fileName.endsWith(".wav") ||
-    src.endsWith(".wav") ||
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
     mimeType === "audio/wav";
 
   if (isFinishedMobileSong && Number.isFinite(clip.duration) && clip.duration > 0) {

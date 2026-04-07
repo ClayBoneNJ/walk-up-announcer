@@ -47,8 +47,8 @@ function isFinishedMobileSongClip(item) {
   const mimeType = String(item.mimeType || "").toLowerCase();
 
   return (
-    fileName.endsWith(".wav") ||
-    src.endsWith(".wav") ||
+    fileName.endsWith("-mobile.wav") ||
+    src.endsWith("-mobile.wav") ||
     mimeType === "audio/wav"
   );
 }
@@ -905,9 +905,9 @@ export function useAudioEngine({ volume, fadeMs }) {
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
       if (item.slot === "song") {
-        await attachAudioGainNode(nextAudio, targetVolume);
+        await attachAudioGainNode(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       } else {
-        setPlaybackLevel(nextAudio, targetVolume);
+        setPlaybackLevel(nextAudio, fadeMs > 0 ? 0 : targetVolume);
       }
       return nextAudio;
     };
@@ -1027,7 +1027,47 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     if (item.slot === "song") {
-      setPlaybackLevel(audio, Math.min(1, getTargetPlaybackLevel(volume, item)));
+      if (isFinishedMobileSongClip(item)) {
+        setPlaybackLevel(audio, Math.min(1, getTargetPlaybackLevel(volume, item)));
+        scheduleEntryTimeouts(session, entry);
+        return;
+      }
+
+      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
+      const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
+      const trimEndMs = Math.max(
+        trimStartMs + MIN_WALKUP_TRIM_MS,
+        Number(item.trimEndMs) || (trimStartMs + item.durationMs),
+      );
+      const fadeInEndMs = Math.min(
+        trimEndMs,
+        Math.max(trimStartMs, Number(item.fadeInEndMs) || Math.min(trimEndMs, trimStartMs + 800)),
+      );
+      const currentPositionMs = Math.max(trimStartMs, audio.currentTime * 1000);
+
+      if (fadeInEndMs > trimStartMs && currentPositionMs < fadeInEndMs) {
+        const fadeInDurationMs = Math.max(0, fadeInEndMs - currentPositionMs);
+        const startingVolume =
+          fadeInEndMs === trimStartMs
+            ? targetVolume
+            : targetVolume * ((currentPositionMs - trimStartMs) / Math.max(1, fadeInEndMs - trimStartMs));
+
+        setPlaybackLevel(audio, Math.max(0, Math.min(targetVolume, startingVolume)));
+        await fadeVolume(audio, session.controller.signal, getPlaybackLevel(audio), targetVolume, fadeInDurationMs);
+      } else {
+        setPlaybackLevel(audio, targetVolume);
+      }
+    } else if (fadeMs > 0) {
+      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
+      const steps = 8;
+      for (let index = 1; index <= steps; index += 1) {
+        if (session.controller.signal.aborted || session.paused) {
+          return;
+        }
+
+        setPlaybackLevel(audio, targetVolume * (index / steps));
+        await wait(fadeMs / steps, session.controller.signal).catch(() => {});
+      }
     } else {
       setPlaybackLevel(audio, Math.min(1, getTargetPlaybackLevel(volume, item)));
     }
