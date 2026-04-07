@@ -962,7 +962,12 @@ export function useAudioEngine({ volume, fadeMs }) {
       const activeAudio = entry.audio;
       const trimStartMs = Math.max(0, Number(item.trimStartMs) || 0);
       const seekSeconds = Math.max(0, (trimStartMs + seekMs) / 1000);
-      const readiness = await waitForAudioReady(activeAudio, session.controller.signal);
+      const shouldWaitForReady = seekSeconds > 0;
+      const readiness = shouldWaitForReady
+        ? await waitForAudioReady(activeAudio, session.controller.signal)
+        : activeAudio.readyState >= 1
+          ? "ready"
+          : "optimistic";
       recordDiagnosticEvent("audio.item.ready", {
         sessionId: session.id,
         itemId: item.id,
@@ -1087,7 +1092,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     items,
     descriptor,
     startOffsetMs = 0,
-    interruptFadeOut = true,
+    interruptFadeOut = false,
   }) => {
     requestIdRef.current += 1;
     const requestId = requestIdRef.current;
