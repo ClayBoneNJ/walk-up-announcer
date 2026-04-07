@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v36";
+const APP_BUILD_LABEL = "v37";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -261,7 +261,7 @@ export default function App() {
     playbackTimeMs,
     playbackTotalMs,
     playSequence,
-    primeSongSources,
+    primeAudioSources,
     stopAll,
     togglePause,
   } = useAudioEngine({
@@ -284,25 +284,31 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
-  const songSources = useMemo(
-    () =>
-      players
-        .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
-        .filter(Boolean),
-    [players],
-  );
+  const allAudioSources = useMemo(() => {
+    const playerSources = players.flatMap((player) => [
+      player.nameClip?.dataUrl ?? player.nameClip?.src ?? "",
+      player.nicknameClip?.dataUrl ?? player.nicknameClip?.src ?? "",
+      player.songClip?.dataUrl ?? player.songClip?.src ?? "",
+    ]);
+
+    const librarySources = Object.values(libraries).flatMap((clips) =>
+      (clips ?? []).map((clip) => clip.dataUrl ?? clip.src ?? ""),
+    );
+
+    return [...new Set([...playerSources, ...librarySources].filter(Boolean))];
+  }, [players, libraries]);
 
   useEffect(() => {
-    primeSongSources(songSources);
-  }, [songSources]);
+    primeAudioSources(allAudioSources);
+  }, [allAudioSources, primeAudioSources]);
 
   const handleArmAudio = async () => {
     setIsArmingAudio(true);
-    try {
-      await primeSongSources(songSources);
-    } finally {
-      setIsArmingAudio(false);
-    }
+      try {
+      await primeAudioSources(allAudioSources);
+      } finally {
+        setIsArmingAudio(false);
+      }
   };
 
   const updateState = (updater) => setAppState((current) => updater(current));

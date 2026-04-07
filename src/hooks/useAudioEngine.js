@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MIN_WALKUP_TRIM_MS, WALKUP_TRIM_MS } from "../lib/storage";
 import { recordDiagnosticEvent } from "../lib/diagnostics";
 
@@ -451,6 +451,7 @@ export function useAudioEngine({ volume, fadeMs }) {
   const requestIdRef = useRef(0);
   const songAudioContextRef = useRef(null);
   const songBufferCacheRef = useRef(new Map());
+  const preloadedAudioRef = useRef(new Map());
   const useScheduledMobileSongs = isMobileSafari();
   const [activePlayback, setActivePlayback] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
@@ -459,7 +460,7 @@ export function useAudioEngine({ volume, fadeMs }) {
   const [playbackTotalMs, setPlaybackTotalMs] = useState(0);
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
 
-  const getSongAudioContext = async () => {
+  const getSongAudioContext = useCallback(async () => {
     const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextCtor) {
       return null;
@@ -474,9 +475,9 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     return songAudioContextRef.current;
-  };
+  }, []);
 
-  const getDecodedSongBuffer = async (src) => {
+  const getDecodedSongBuffer = useCallback(async (src) => {
     if (!src) {
       throw new Error("Missing audio source.");
     }
@@ -509,9 +510,9 @@ export function useAudioEngine({ volume, fadeMs }) {
       songBufferCacheRef.current.delete(src);
       throw error;
     }
-  };
+  }, [getSongAudioContext]);
 
-  const primeSongSources = async (sources = []) => {
+  const primeSongSources = useCallback(async (sources = []) => {
     if (!useScheduledMobileSongs) {
       return;
     }
@@ -522,7 +523,55 @@ export function useAudioEngine({ volume, fadeMs }) {
         await getDecodedSongBuffer(src);
       }),
     );
-  };
+  }, [getDecodedSongBuffer, useScheduledMobileSongs]);
+
+  const primeAudioSources = useCallback(async (sources = []) => {
+    const uniqueSources = [...new Set(sources.filter(Boolean))];
+
+    const preloadPromises = uniqueSources.map((src) => {
+      const existing = preloadedAudioRef.current.get(src);
+      if (existing) {
+        return existing;
+      }
+
+      const preloadPromise = new Promise((resolve) => {
+        const audio = new Audio();
+        let settled = false;
+
+        const cleanup = () => {
+          audio.onloadedmetadata = null;
+          audio.onloadeddata = null;
+          audio.oncanplay = null;
+          audio.onerror = null;
+        };
+
+        const settle = () => {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          cleanup();
+          resolve();
+        };
+
+        audio.preload = "auto";
+        audio.src = src;
+        audio.onloadedmetadata = settle;
+        audio.onloadeddata = settle;
+        audio.oncanplay = settle;
+        audio.onerror = settle;
+        audio.load();
+        window.setTimeout(settle, 1200);
+      });
+
+      preloadedAudioRef.current.set(src, preloadPromise);
+      return preloadPromise;
+    });
+
+    await Promise.allSettled(preloadPromises);
+    await primeSongSources(uniqueSources);
+  }, [primeSongSources]);
 
   const stopProgressLoop = () => {
     if (progressFrameRef.current) {
@@ -1274,6 +1323,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     playbackTimeMs,
     playbackTotalMs,
     playSequence,
+    primeAudioSources,
     primeSongSources,
     stopAll,
     togglePause,
