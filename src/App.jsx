@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v mobile-song-sync-28";
+const APP_BUILD_LABEL = "v mobile-song-sync-29";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -157,6 +157,7 @@ export default function App() {
   const [isArmingAudio, setIsArmingAudio] = useState(false);
   const [editingPlayerId, setEditingPlayerId] = useState("");
   const [editingReturnTab, setEditingReturnTab] = useState("");
+  const stopPressAtRef = useRef(0);
   const [lineupCursorId, setLineupCursorId] = useState("");
   const [diagnosticTapCount, setDiagnosticTapCount] = useState(0);
   const diagnosticTapTimerRef = useRef(null);
@@ -511,6 +512,16 @@ export default function App() {
     });
   };
 
+  const handleFadeOutAudio = async () => {
+    const now = Date.now();
+    if (now - stopPressAtRef.current < 250) {
+      return;
+    }
+
+    stopPressAtRef.current = now;
+    await stopAll(true);
+  };
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(21,91,185,0.2),transparent_32%),linear-gradient(180deg,_#08111f_0%,_#050914_100%)] text-slate-100">
       <div className="mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-56 pt-4 sm:px-6 sm:pb-48 lg:px-8">
@@ -610,7 +621,7 @@ export default function App() {
               onPlayPlayer={playPlayerFromWalkups}
               onPlayCurrentBatter={playTrackedBatter}
               onReorderPlayers={reorderPlayers}
-              onStopAll={() => stopAll(true)}
+              onStopAll={handleFadeOutAudio}
               onEditPlayer={(playerId) => {
                 setEditingPlayerId(playerId);
                 setEditingReturnTab("walkups");
@@ -694,8 +705,9 @@ export default function App() {
       {activeTab !== "walkups" ? (
         <button
           type="button"
-          onClick={() => stopAll(true)}
-          className="fixed inset-x-3 bottom-[calc(5.1rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-12 max-w-[11rem] items-center justify-center gap-2 rounded-full border border-rose-300/40 bg-rose-500 px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.28)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:inset-x-auto sm:bottom-24 sm:right-4 sm:h-13 sm:max-w-none sm:px-6"
+          onPointerDown={handleFadeOutAudio}
+          onClick={handleFadeOutAudio}
+          className="fixed inset-x-3 bottom-[calc(5.1rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-12 max-w-[11rem] touch-manipulation items-center justify-center gap-2 rounded-full border border-rose-300/40 bg-rose-500 px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.28)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:inset-x-auto sm:bottom-24 sm:right-4 sm:h-13 sm:max-w-none sm:px-6"
           aria-label="Fade out audio"
           title="Fade out audio"
         >
@@ -931,8 +943,9 @@ function WalkupsView({
 
           <button
             type="button"
+            onPointerDown={onStopAll}
             onClick={onStopAll}
-            className="flex min-w-[4.75rem] items-center justify-center gap-2 rounded-[1rem] border border-rose-300/40 bg-[linear-gradient(145deg,rgba(244,63,94,0.96),rgba(190,24,93,0.88))] px-3 py-2 text-white shadow-[0_16px_28px_rgba(244,63,94,0.22)] transition hover:brightness-110 active:translate-y-[2px] active:scale-[0.98] sm:min-w-[6.25rem] sm:gap-2.5 sm:rounded-[1.7rem] sm:px-4 sm:py-3"
+            className="flex min-w-[4.75rem] touch-manipulation items-center justify-center gap-2 rounded-[1rem] border border-rose-300/40 bg-[linear-gradient(145deg,rgba(244,63,94,0.96),rgba(190,24,93,0.88))] px-3 py-2 text-white shadow-[0_16px_28px_rgba(244,63,94,0.22)] transition hover:brightness-110 active:translate-y-[2px] active:scale-[0.98] sm:min-w-[6.25rem] sm:gap-2.5 sm:rounded-[1.7rem] sm:px-4 sm:py-3"
             aria-label="Fade out audio"
             title="Fade out audio"
           >
