@@ -31,7 +31,7 @@
         "duration": 18.25,
         "createdAt": 0,
         "dataUrl": null,
-        "src": "/walk-up-announcer/assets/audio/songs/alex-bonk-mobile.wav",
+        "src": "/walk-up-announcer/assets/audio/songs/alex-bonk-mobile.wav?v=2",
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 18250,
