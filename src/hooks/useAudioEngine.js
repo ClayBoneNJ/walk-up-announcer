@@ -32,18 +32,6 @@ function wait(ms, signal) {
 const WALKUP_SONG_FADE_OUT_MS = 1800;
 const MIN_STOP_FADE_MS = 750;
 
-function isIgnorablePlaybackAbort(error) {
-  const message = String(error?.message ?? error ?? "").toLowerCase();
-  const name = String(error?.name ?? "").toLowerCase();
-
-  return (
-    name === "aborterror" ||
-    message.includes("playback cancelled") ||
-    message.includes("operation was aborted") ||
-    message.includes("the operation was aborted")
-  );
-}
-
 function getTargetPlaybackLevel(baseVolume, item = null) {
   const multiplier = Math.max(0, Number(item?.volumeMultiplier) || 1);
   return Math.max(0, Math.min(1.4, Number(baseVolume) * multiplier));
@@ -896,11 +884,6 @@ export function useAudioEngine({ volume, fadeMs }) {
         scheduleEntryTimeouts(session, entry);
         return;
       } catch (error) {
-        if (session.controller.signal.aborted || isIgnorablePlaybackAbort(error)) {
-          markItemComplete(session, item.id);
-          return;
-        }
-
         recordDiagnosticEvent("audio.item.play_failed", {
           sessionId: session.id,
           itemId: item.id,
@@ -994,11 +977,6 @@ export function useAudioEngine({ volume, fadeMs }) {
     try {
       await attemptPlayback("initial");
     } catch (error) {
-      if (session.controller.signal.aborted || isIgnorablePlaybackAbort(error)) {
-        finalizeEntry(entry, session);
-        return;
-      }
-
       if (item.slot === "song" && !session.controller.signal.aborted) {
         recordDiagnosticEvent("audio.item.retrying", {
           sessionId: session.id,
@@ -1019,11 +997,6 @@ export function useAudioEngine({ volume, fadeMs }) {
           bindEntryAudioHandlers();
           await attemptPlayback("retry");
         } catch (retryError) {
-          if (session.controller.signal.aborted || isIgnorablePlaybackAbort(retryError)) {
-            finalizeEntry(entry, session);
-            return;
-          }
-
           recordDiagnosticEvent("audio.item.play_failed", {
             sessionId: session.id,
             itemId: item.id,
