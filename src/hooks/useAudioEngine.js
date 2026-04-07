@@ -47,8 +47,8 @@ function isFinishedMobileSongClip(item) {
   const mimeType = String(item.mimeType || "").toLowerCase();
 
   return (
-    fileName.endsWith("-mobile.wav") ||
-    src.endsWith("-mobile.wav") ||
+    fileName.endsWith(".wav") ||
+    src.endsWith(".wav") ||
     mimeType === "audio/wav"
   );
 }

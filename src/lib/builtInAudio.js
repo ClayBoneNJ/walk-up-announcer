@@ -54,45 +54,45 @@ const BUILT_IN_NAME_FILES = [
 
 const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
 const BUILT_IN_SONG_FILES = [
-  "alex-bonk-mobile.wav",
-  "benjamin-yunker-mobile.wav",
-  "billy-wanko-mobile.wav",
-  "camden-pagoda-mobile.wav",
-  "giovanni-turchi-mobile.wav",
-  "landon-hanrahan-mobile.wav",
-  "logan-hanrahan-mobile.wav",
-  "marty-happle-mobile.wav",
-  "matty-wanko-mobile.wav",
-  "nate-clay-mobile.wav",
-  "tristan-aquino-mobile.wav",
+  "alex-bonk-final.wav",
+  "benjamin-yunker-final.wav",
+  "billy-wanko-final.wav",
+  "camden-pagoda-final.wav",
+  "giovanni-turchi-final.wav",
+  "landon-hanrahan-final.wav",
+  "logan-hanrahan-final.wav",
+  "marty-happle-final.wav",
+  "matty-wanko-final.wav",
+  "nate-clay-final.wav",
+  "tristan-aquino-final.wav",
 ];
 
 const BUILT_IN_SONG_TITLES = {
-  "alex-bonk-mobile.wav": "Seven Nation Army",
-  "benjamin-yunker-mobile.wav": "humpty dance",
-  "billy-wanko-mobile.wav": "headstrong",
-  "camden-pagoda-mobile.wav": "toxicity",
-  "giovanni-turchi-mobile.wav": "brain stew",
-  "landon-hanrahan-mobile.wav": "Fireball",
-  "logan-hanrahan-mobile.wav": "all i do is win",
-  "marty-happle-mobile.wav": "Savior",
-  "matty-wanko-mobile.wav": "Everlong",
-  "nate-clay-mobile.wav": "cant stop",
-  "tristan-aquino-mobile.wav": "EoO",
+  "alex-bonk-final.wav": "Seven Nation Army",
+  "benjamin-yunker-final.wav": "humpty dance",
+  "billy-wanko-final.wav": "headstrong",
+  "camden-pagoda-final.wav": "toxicity",
+  "giovanni-turchi-final.wav": "brain stew",
+  "landon-hanrahan-final.wav": "Fireball",
+  "logan-hanrahan-final.wav": "all i do is win",
+  "marty-happle-final.wav": "Savior",
+  "matty-wanko-final.wav": "Everlong",
+  "nate-clay-final.wav": "cant stop",
+  "tristan-aquino-final.wav": "EoO",
 };
 
 const BUILT_IN_SONG_DURATIONS = {
-  "alex-bonk-mobile.wav": 18.25,
-  "benjamin-yunker-mobile.wav": 19,
-  "billy-wanko-mobile.wav": 11.925,
-  "camden-pagoda-mobile.wav": 17,
-  "giovanni-turchi-mobile.wav": 17.75,
-  "landon-hanrahan-mobile.wav": 13,
-  "logan-hanrahan-mobile.wav": 20.75,
-  "marty-happle-mobile.wav": 17.704,
-  "matty-wanko-mobile.wav": 26.841,
-  "nate-clay-mobile.wav": 19.25,
-  "tristan-aquino-mobile.wav": 18,
+  "alex-bonk-final.wav": 18.25,
+  "benjamin-yunker-final.wav": 19,
+  "billy-wanko-final.wav": 11.925,
+  "camden-pagoda-final.wav": 17,
+  "giovanni-turchi-final.wav": 17.75,
+  "landon-hanrahan-final.wav": 13,
+  "logan-hanrahan-final.wav": 20.75,
+  "marty-happle-final.wav": 17.704,
+  "matty-wanko-final.wav": 26.841,
+  "nate-clay-final.wav": 19.25,
+  "tristan-aquino-final.wav": 18,
 };
 
 const DEFAULT_ROSTER_ASSIGNMENTS = [
@@ -191,7 +191,7 @@ export const BUILT_IN_LIBRARIES = {
     }),
   ),
   songs: BUILT_IN_SONG_FILES.map((fileName) => {
-    const baseName = fileName.replace(/-mobile\.wav$/i, "");
+    const baseName = fileName.replace(/-(mobile|final)\.wav$/i, "");
     const songId = baseName
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -384,7 +384,7 @@ export const BUILT_IN_PLAYER_CLIPS = Object.fromEntries(
 
 export const BUILT_IN_SONGS = {
   default_song:
-    BUILT_IN_LIBRARIES.songs.find((clip) => clip.fileName === "alex-bonk-mobile.wav") ??
+    BUILT_IN_LIBRARIES.songs.find((clip) => clip.fileName === "alex-bonk-final.wav") ??
     BUILT_IN_LIBRARIES.songs[0],
 };
 

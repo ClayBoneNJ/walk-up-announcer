@@ -503,7 +503,7 @@ export function PlayerManager({
           const objectUrl = URL.createObjectURL(wavBlob);
           const anchor = document.createElement("a");
           anchor.href = objectUrl;
-          anchor.download = `${slugifyFileLabel(player.name || clip.nickname || clip.fileName)}-mobile.wav`;
+          anchor.download = `${slugifyFileLabel(player.name || clip.nickname || clip.fileName)}-final.wav`;
           document.body.appendChild(anchor);
           anchor.click();
           anchor.remove();
@@ -1366,7 +1366,7 @@ function RosterModal({
       const objectUrl = URL.createObjectURL(wavBlob);
       const anchor = document.createElement("a");
       anchor.href = objectUrl;
-      anchor.download = `${slugifyFileLabel(draft.name || draft.songClip.nickname || draft.songClip.fileName)}-mobile.wav`;
+      anchor.download = `${slugifyFileLabel(draft.name || draft.songClip.nickname || draft.songClip.fileName)}-final.wav`;
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
