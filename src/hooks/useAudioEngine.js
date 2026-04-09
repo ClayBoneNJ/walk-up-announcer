@@ -901,16 +901,12 @@ export function useAudioEngine({ volume, fadeMs }) {
     }
 
     const createConfiguredAudio = async () => {
-      const targetVolume = Math.min(1, getTargetPlaybackLevel(volume, item));
+      const targetVolume = getTargetPlaybackLevel(volume, item);
       const useFastStart = shouldUseFastClipStart(session);
       const nextAudio = createAudioElement(targetVolume);
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
-      if (item.slot === "song") {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
-      } else {
-        setPlaybackLevel(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
-      }
+      await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
       return nextAudio;
     };
 
