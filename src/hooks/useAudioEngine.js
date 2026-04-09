@@ -907,7 +907,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       const nextAudio = createAudioElement(targetVolume);
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
-      const shouldUseGainNode = item.slot === "song" || useFastStart;
+      const shouldUseGainNode = item.slot === "song";
 
       if (shouldUseGainNode) {
         await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : rawTargetVolume);
