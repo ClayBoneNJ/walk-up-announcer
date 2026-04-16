@@ -309,7 +309,7 @@ export const BUILT_IN_LIBRARIES = {
     builtInClip({
       id: "effect-three-best-friends",
       group: "effects",
-      nickname: "Three Best Friends",
+      nickname: "3 Best Freinds",
       fileName: "three best friends.mp3",
       src: eventAssetSrc("crowd-hype", "three best friends.mp3"),
     }),

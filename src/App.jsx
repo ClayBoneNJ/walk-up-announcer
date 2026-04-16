@@ -1081,7 +1081,14 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
           {crowdHypeClips.map((clip) => {
             const isActive = activePlayback?.assetId === clip.id;
             const isSpecialCrowdHype = SPECIAL_CROWD_HYPE_IDS.has(clip.id);
-            const buttonClass = isSpecialCrowdHype
+            const isThreeBestFreinds = clip.id === "effect-three-best-friends";
+            const buttonClass = isThreeBestFreinds
+              ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
+                  isActive
+                    ? "border-violet-50 bg-[linear-gradient(145deg,rgba(237,233,254,0.98),rgba(168,85,247,0.9)_42%,rgba(76,29,149,0.98))] shadow-[0_0_0_1px_rgba(221,214,254,0.42),0_0_26px_rgba(168,85,247,0.4),0_16px_28px_rgba(109,40,217,0.32)] ring-2 ring-violet-200/90"
+                    : "border-violet-200/70 bg-[linear-gradient(145deg,rgba(167,139,250,0.58),rgba(124,58,237,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_12px_22px_rgba(124,58,237,0.24)] hover:border-violet-100/85"
+                }`
+              : isSpecialCrowdHype
               ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
                   isActive
                     ? "border-pink-50 bg-[linear-gradient(145deg,rgba(251,207,232,0.98),rgba(236,72,153,0.9)_42%,rgba(131,24,67,0.98))] shadow-[0_0_0_1px_rgba(251,207,232,0.42),0_0_26px_rgba(236,72,153,0.38),0_16px_28px_rgba(190,24,93,0.32)] ring-2 ring-pink-200/90"
