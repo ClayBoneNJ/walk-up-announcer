@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "publishedRevision": 1775821265000,
+  "publishedRevision": 1776365801096,
   "players": [
     {
       "id": "3db86e72-b7dd-46f6-9277-d63f354a8985",
@@ -35,7 +35,7 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 18250,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 18250,
         "fadeOutEndMs": 18250
       },
@@ -82,8 +82,8 @@
     {
       "id": "ea11f14b-f247-4303-92c7-3f686225c98f",
       "name": "Benjamin Yunker",
-      "jerseyNumber": "48",
-      "positionLabel": "",
+      "jerseyNumber": "24",
+      "positionLabel": "SS",
       "nameClip": {
         "id": "name-benjamin_yunker",
         "group": "names",
@@ -112,13 +112,13 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 19000,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 19000,
         "fadeOutEndMs": 19000
       },
       "announcementClipId": "announcement-up-next",
-      "numberClipId": "number-48",
-      "positionClipId": "",
+      "numberClipId": "number-24",
+      "positionClipId": "position-ss",
       "sequence": [
         "announcement",
         "number",
@@ -143,14 +143,14 @@
         {
           "id": "ed065d92-6fe5-436b-b191-d05d4d2fe991",
           "slot": "name",
-          "startMs": 2400,
+          "startMs": 2727,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "34ff05c2-e40b-4f55-bf14-c67f1cd1a517",
           "slot": "song",
-          "startMs": 4000,
+          "startMs": 4227,
           "track": 1,
           "clipId": ""
         }
@@ -189,7 +189,7 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 11925,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 11925,
         "fadeOutEndMs": 11925
       },
@@ -237,7 +237,7 @@
       "id": "97ac9e38-a2b2-4ca9-9572-818fc1c2db18",
       "name": "Camden Pagoda",
       "jerseyNumber": "33",
-      "positionLabel": "2B",
+      "positionLabel": "CF",
       "nameClip": {
         "id": "name-camden_pagoda",
         "group": "names",
@@ -266,13 +266,13 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 17000,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 17000,
         "fadeOutEndMs": 17000
       },
       "announcementClipId": "announcement-up-next",
       "numberClipId": "number-33",
-      "positionClipId": "position-2b",
+      "positionClipId": "position-cf",
       "sequence": [
         "announcement",
         "number",
@@ -314,7 +314,7 @@
       "id": "67ba4930-e5b9-4604-b770-8de2da3a4561",
       "name": "Giovanni Turchi",
       "jerseyNumber": "2",
-      "positionLabel": "3B",
+      "positionLabel": "2B",
       "nameClip": {
         "id": "name-giovanni_turchi",
         "group": "names",
@@ -343,13 +343,13 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 17750,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 17750,
         "fadeOutEndMs": 17750
       },
       "announcementClipId": "announcement-now-batting",
       "numberClipId": "number-2",
-      "positionClipId": "position-3b",
+      "positionClipId": "position-2b",
       "sequence": [
         "announcement",
         "song",
@@ -420,7 +420,7 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 13000,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 13000,
         "fadeOutEndMs": 13000
       },
@@ -498,7 +498,7 @@
         "volumeMultiplier": 1.25,
         "trimStartMs": 0,
         "trimEndMs": 20750,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 20750,
         "fadeOutEndMs": 20750
       },
@@ -545,7 +545,7 @@
     {
       "id": "09355e80-9835-444e-af36-c865ea32a180",
       "name": "Marty Happle",
-      "jerseyNumber": "28",
+      "jerseyNumber": "16",
       "positionLabel": "CF",
       "nameClip": {
         "id": "name-marty_happle",
@@ -575,12 +575,12 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 17704,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 17704,
         "fadeOutEndMs": 17704
       },
       "announcementClipId": "announcement-up-next",
-      "numberClipId": "number-28",
+      "numberClipId": "number-16",
       "positionClipId": "position-cf",
       "sequence": [
         "announcement",
@@ -606,14 +606,14 @@
         {
           "id": "fc79a3ef-7e88-465d-9e3e-3dcdf0f0a4ae",
           "slot": "name",
-          "startMs": 2633,
+          "startMs": 2800,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "b3ae7c02-2bee-4c2e-bc5e-086c87ee2e81",
           "slot": "song",
-          "startMs": 3700,
+          "startMs": 3467,
           "track": 1,
           "clipId": ""
         }
@@ -622,7 +622,7 @@
     {
       "id": "f56f75ab-cca6-4b24-98e3-f6672a68bbeb",
       "name": "Matty Wanko",
-      "jerseyNumber": "33",
+      "jerseyNumber": "4",
       "positionLabel": "P",
       "nameClip": {
         "id": "name-matty_wanko",
@@ -652,17 +652,17 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 26841,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 26841,
         "fadeOutEndMs": 26841
       },
       "announcementClipId": "announcement-now-batting",
-      "numberClipId": "number-33",
+      "numberClipId": "number-4",
       "positionClipId": "position-p",
       "sequence": [
         "announcement",
-        "song",
         "number",
+        "song",
         "name"
       ],
       "timeline": [
@@ -683,14 +683,14 @@
         {
           "id": "aed0387c-7766-4d5e-ba3b-7790cc5f0dce",
           "slot": "name",
-          "startMs": 3000,
+          "startMs": 2700,
           "track": 0,
           "clipId": ""
         },
         {
           "id": "b859a835-9338-42ad-8ee7-3c4ce0ba123b",
           "slot": "song",
-          "startMs": 800,
+          "startMs": 1600,
           "track": 1,
           "clipId": ""
         }
@@ -700,7 +700,7 @@
       "id": "12309b17-bf68-44e5-ae8e-17294314efb7",
       "name": "Nate Clay",
       "jerseyNumber": "13",
-      "positionLabel": "RF",
+      "positionLabel": "LF",
       "nameClip": {
         "id": "name-nate_clay",
         "group": "names",
@@ -729,13 +729,13 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 19250,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 19250,
         "fadeOutEndMs": 19250
       },
       "announcementClipId": "announcement-up-next",
       "numberClipId": "number-13",
-      "positionClipId": "position-rf",
+      "positionClipId": "position-lf",
       "sequence": [
         "announcement",
         "number",
@@ -777,7 +777,7 @@
       "id": "e2c5dce2-5e82-42b0-9bc1-b493c24cf495",
       "name": "Tristan Aquino",
       "jerseyNumber": "17",
-      "positionLabel": "C",
+      "positionLabel": "RF",
       "nameClip": {
         "id": "name-tristan_aquino",
         "group": "names",
@@ -806,13 +806,13 @@
         "builtIn": false,
         "trimStartMs": 0,
         "trimEndMs": 18000,
-        "fadeInEndMs": 0,
+        "fadeInEndMs": 800,
         "fadeOutStartMs": 18000,
         "fadeOutEndMs": 18000
       },
       "announcementClipId": "announcement-now-batting",
       "numberClipId": "number-17",
-      "positionClipId": "position-c",
+      "positionClipId": "position-rf",
       "sequence": [
         "announcement",
         "song",
@@ -1223,6 +1223,306 @@
       }
     ],
     "songs": [],
-    "effects": []
+    "effects": [
+      {
+        "id": "effect-he-gone",
+        "group": "effects",
+        "nickname": "He Gone",
+        "fileName": "he gone.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/he%20gone.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-hes-outta-there",
+        "group": "effects",
+        "nickname": "He's Outta There",
+        "fileName": "hes outta there.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/hes%20outta%20there.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-strike-3-hes-out",
+        "group": "effects",
+        "nickname": "Strike 3 He's Out",
+        "fileName": "strike 3 hes out.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/strike%203%20hes%20out.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-when-i-say",
+        "group": "effects",
+        "nickname": "When I Say",
+        "fileName": "when i say.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/when%20i%20say.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-here-we-go",
+        "group": "effects",
+        "nickname": "Here We Go",
+        "fileName": "Here We Go.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/Here%20We%20Go.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-organ-scale-chant",
+        "group": "effects",
+        "nickname": "Organ Scale Chant",
+        "fileName": "Organ Scale Chant.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/Organ%20Scale%20Chant.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-we-will-rock-you",
+        "group": "effects",
+        "nickname": "We Will Rock You",
+        "fileName": "we will rock you.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/we%20will%20rock%20you.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-bullfighter",
+        "group": "effects",
+        "nickname": "Bullfighter",
+        "fileName": "Bullfighter.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/Bullfighter.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-defence",
+        "group": "effects",
+        "nickname": "Defence",
+        "fileName": "defence.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/defence.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-whistle-bomb",
+        "group": "effects",
+        "nickname": "Whistle Bomb",
+        "fileName": "whistle bomb.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/whistle%20bomb.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-hes-safe",
+        "group": "effects",
+        "nickname": "He's Safe",
+        "fileName": "Hes SAFE!.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/Hes%20SAFE!.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-hasta-la-vista-baby",
+        "group": "effects",
+        "nickname": "Hasta La Vista, Baby",
+        "fileName": "hasta la vista baby.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/hasta%20la%20vista%20baby.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-bye-have-a-good-time",
+        "group": "effects",
+        "nickname": "Bye Have A Good Time",
+        "fileName": "bye have a good time.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/umpire-calls/bye%20have%20a%20good%20time.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-eye-of-the-tiger",
+        "group": "effects",
+        "nickname": "Eye Of The Tiger",
+        "fileName": "eye of the tiger.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/eye%20of%20the%20tiger.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-clap-yo-hands",
+        "group": "effects",
+        "nickname": "Clap Yo Hands",
+        "fileName": "clap yo hands.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/clap%20yo%20hands.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-gta-sound-effect",
+        "group": "effects",
+        "nickname": "GTA",
+        "fileName": "GTA Sound Effect.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/GTA%20Sound%20Effect.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-wow",
+        "group": "effects",
+        "nickname": "WOW!",
+        "fileName": "WOW!.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/WOW!.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-1up",
+        "group": "effects",
+        "nickname": "1UP",
+        "fileName": "1up.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/1up.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-boom-goes-the-dynamite",
+        "group": "effects",
+        "nickname": "Boom Goes The...",
+        "fileName": "boom goes the dynamite.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/boom%20goes%20the%20dynamite.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-three-best-friends",
+        "group": "effects",
+        "nickname": "Three Best Friends",
+        "fileName": "three best friends.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/crowd-hype/three%20best%20friends.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-bill-bill-bill",
+        "group": "effects",
+        "nickname": "BILL! BILL! BILL!",
+        "fileName": "BILL! BILL! BILL!.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/player-hype/BILL!%20BILL!%20BILL!.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-88-mph",
+        "group": "effects",
+        "nickname": "88 MPH",
+        "fileName": "88 mph.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/player-hype/88%20mph.mp3",
+        "builtIn": true
+      },
+      {
+        "id": "effect-my-homie-nate",
+        "group": "effects",
+        "nickname": "My Homie Nate",
+        "fileName": "my homie nate.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/events/player-hype/my%20homie%20nate.mp3",
+        "builtIn": true
+      }
+    ]
   }
 }

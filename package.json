@@ -1,6 +1,6 @@
 {
   "name": "walk-up-app",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Little League walk-up announcement soundboard and queue app",
   "scripts": {
     "dev": "vite",
