@@ -1157,6 +1157,19 @@
         "builtIn": true
       },
       {
+        "id": "number-24",
+        "group": "numbers",
+        "nickname": "#24",
+        "fileName": "24.mp3",
+        "mimeType": "audio/mpeg",
+        "size": 0,
+        "duration": null,
+        "createdAt": 0,
+        "dataUrl": null,
+        "src": "/walk-up-announcer/assets/audio/numbers/24.mp3",
+        "builtIn": true
+      },
+      {
         "id": "number-28",
         "group": "numbers",
         "nickname": "#28",

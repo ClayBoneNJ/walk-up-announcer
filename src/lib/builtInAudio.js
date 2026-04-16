@@ -52,7 +52,7 @@ const BUILT_IN_NAME_FILES = [
   "TRISTAN AQUINO.mp3",
 ];
 
-const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
+const BUILT_IN_NUMBER_FILES = ["2.mp3", "4.mp3", "9.mp3", "13.mp3", "16.mp3", "17.mp3", "23.mp3", "24.mp3", "28.mp3", "33.mp3", "48.mp3", "88.mp3"];
 const BUILT_IN_SONG_FILES = [];
 
 const BUILT_IN_SONG_TITLES = {};
