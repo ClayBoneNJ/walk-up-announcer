@@ -22,7 +22,7 @@ const announcementNowBatting = clip({
   group: "announcements",
   label: "Now Batting",
   src: "/assets/audio/announcements/now batting.mp3",
-  durationMs: 1000,
+  durationMs: 1313,
 });
 
 const announcementMakeSomeNoise = clip({
@@ -30,7 +30,7 @@ const announcementMakeSomeNoise = clip({
   group: "announcements",
   label: "Make Some Noise For",
   src: "/assets/audio/announcements/MAKE SOME NOISE.mp3",
-  durationMs: 1000,
+  durationMs: 2126,
 });
 
 const announcementComingToPlate = clip({
@@ -38,7 +38,7 @@ const announcementComingToPlate = clip({
   group: "announcements",
   label: "Coming To Plate",
   src: "/assets/audio/announcements/COMING TO THE PLAT.mp3",
-  durationMs: 1000,
+  durationMs: 1682,
 });
 
 const announcementLetsHearItFor = clip({
@@ -46,7 +46,7 @@ const announcementLetsHearItFor = clip({
   group: "announcements",
   label: "Let's Hear It For",
   src: "/assets/audio/announcements/LETS HEREE IT FOR.mp3",
-  durationMs: 1000,
+  durationMs: 1627,
 });
 
 const announcementUpNext = clip({
@@ -54,7 +54,7 @@ const announcementUpNext = clip({
   group: "announcements",
   label: "Up Next",
   src: "/assets/audio/announcements/UP NEXT.mp3",
-  durationMs: 1000,
+  durationMs: 1152,
 });
 
 const number23 = clip({

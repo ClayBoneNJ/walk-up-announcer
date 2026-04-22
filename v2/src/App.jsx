@@ -14,7 +14,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-24";
+const APP_BUILD_LABEL = "v2-alpha-25";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 
