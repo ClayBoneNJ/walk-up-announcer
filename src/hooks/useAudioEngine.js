@@ -445,6 +445,46 @@ export function useAudioEngine({ volume, fadeMs }) {
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
   const shouldUseFastClipStart = (session) => session?.descriptor?.type === "clip";
 
+  const createConfiguredAudio = async (item, session, initialSeekMs = 0) => {
+    const rawTargetVolume = getTargetPlaybackLevel(volume, item);
+    const targetVolume = Math.min(1, rawTargetVolume);
+    const useFastStart = shouldUseFastClipStart(session);
+    const nextAudio = createAudioElement(targetVolume);
+    nextAudio.src = item.dataUrl ?? item.src;
+    nextAudio.load();
+
+    setPlaybackLevel(
+      nextAudio,
+      fadeMs > 0 && !useFastStart && initialSeekMs <= 0 ? 0 : targetVolume,
+    );
+
+    return nextAudio;
+  };
+
+  const primePendingStarts = (session) => {
+    session.pendingStarts.forEach((pendingEntry) => {
+      if (pendingEntry.preparedAudio || pendingEntry.preparationPromise) {
+        return;
+      }
+
+      pendingEntry.preparationPromise = createConfiguredAudio(
+        pendingEntry.item,
+        session,
+        pendingEntry.seekMs,
+      )
+        .then((audio) => {
+          pendingEntry.preparedAudio = audio;
+          pendingEntry.preparationPromise = null;
+          return audio;
+        })
+        .catch(() => {
+          pendingEntry.preparedAudio = null;
+          pendingEntry.preparationPromise = null;
+          return null;
+        });
+    });
+  };
+
   const primeSongSources = async (sources = []) => {
     return Promise.resolve(sources);
   };
@@ -470,14 +510,16 @@ export function useAudioEngine({ volume, fadeMs }) {
       return;
     }
 
+    const pendingStarts = [...session.pendingStarts];
+
     recordDiagnosticEvent("audio.session.teardown", {
       sessionId: session.id,
       fadeOut,
       activeEntryCount: session.activeEntries.size,
-      pendingCount: session.pendingStarts.length,
+      pendingCount: pendingStarts.length,
     });
 
-    session.pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
+    pendingStarts.forEach((entry) => clearTimer(entry.timeoutId));
     session.pendingStarts = [];
 
     const stopController = new AbortController();
@@ -498,9 +540,9 @@ export function useAudioEngine({ volume, fadeMs }) {
     await Promise.all(
       activeEntries.map((entry) =>
         fadeOut ? fadeOutAndStopEntry(entry, stopController.signal, stopFadeMs) : Promise.resolve().then(() => {
-          if (entry.kind === "buffer") {
-            return destroyBufferEntry(entry);
-          }
+        if (entry.kind === "buffer") {
+          return destroyBufferEntry(entry);
+        }
 
           entry.audio.pause();
           entry.audio.currentTime = 0;
@@ -509,6 +551,19 @@ export function useAudioEngine({ volume, fadeMs }) {
           return disposeAudioNodes(entry.audio);
         }),
       ),
+    );
+
+    await Promise.all(
+      pendingStarts.map(async (pendingEntry) => {
+        clearTimer(pendingEntry.timeoutId);
+        if (pendingEntry.preparationPromise) {
+          await pendingEntry.preparationPromise.catch(() => null);
+        }
+        if (pendingEntry.preparedAudio) {
+          await destroyAudioElement(pendingEntry.preparedAudio).catch(() => null);
+          pendingEntry.preparedAudio = null;
+        }
+      }),
     );
 
     session.activeEntries.clear();
@@ -720,24 +775,16 @@ export function useAudioEngine({ volume, fadeMs }) {
       trimEndMs: item.trimEndMs ?? null,
     });
 
-    const createConfiguredAudio = async () => {
-      const rawTargetVolume = getTargetPlaybackLevel(volume, item);
-      const targetVolume = Math.min(1, rawTargetVolume);
-      const useFastStart = shouldUseFastClipStart(session);
-      const nextAudio = createAudioElement(targetVolume);
-      nextAudio.src = item.dataUrl ?? item.src;
-      nextAudio.load();
-      const shouldUseGainNode = false;
+    const pendingEntry = session.pendingStarts.find((entry) => entry.item.id === item.id) || null;
+    const preparedAudio = pendingEntry?.preparedAudio ?? null;
 
-      if (shouldUseGainNode) {
-        await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : rawTargetVolume);
-      } else {
-        setPlaybackLevel(nextAudio, fadeMs > 0 && !useFastStart ? 0 : targetVolume);
-      }
-      return nextAudio;
-    };
+    if (pendingEntry) {
+      pendingEntry.preparedAudio = null;
+    }
 
-    const audio = await createConfiguredAudio();
+    const audio =
+      preparedAudio ||
+      (await createConfiguredAudio(item, session, seekMs));
 
     const entry = {
       item,
@@ -818,7 +865,7 @@ export function useAudioEngine({ volume, fadeMs }) {
         await destroyAudioElement(entry.audio);
 
         try {
-          entry.audio = await createConfiguredAudio();
+          entry.audio = await createConfiguredAudio(item, session, seekMs);
           bindEntryAudioHandlers();
           await attemptPlayback("retry");
         } catch (retryError) {
@@ -988,6 +1035,8 @@ export function useAudioEngine({ volume, fadeMs }) {
         seekMs: Math.max(0, startOffsetMs - item.startMs),
         remainingMs: Math.max(0, item.startMs - startOffsetMs),
         timeoutId: null,
+        preparedAudio: null,
+        preparationPromise: null,
       })),
       activeEntries: new Map(),
       startedItemIds: new Set(),
@@ -1025,6 +1074,7 @@ export function useAudioEngine({ volume, fadeMs }) {
     setPlaybackProgress(totalDurationMs > 0 ? Math.max(0, Math.min(1, startOffsetMs / totalDurationMs)) : 0);
     sessionRef.current = session;
     startProgressLoop(session);
+    primePendingStarts(session);
 
     schedulePendingStarts(session);
 
