@@ -12,10 +12,11 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-13";
-const TIMELINE_LEFT_SCALE = 10;
-const TIMELINE_WIDTH_SCALE = 95;
-const TIMELINE_EVENT_GAP = 8;
+const APP_BUILD_LABEL = "v2-alpha-14";
+const TIMELINE_PX_PER_MS = 0.032;
+const TIMELINE_EVENT_GAP = 6;
+const TIMELINE_CANVAS_PADDING = 18;
+const TIMELINE_MIN_CANVAS_WIDTH = 520;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -30,8 +31,8 @@ function getDisplayEventsForTrack(sequence, track) {
 
   return trackEvents.map((event, index) => {
     const nextEvent = trackEvents[index + 1] ?? null;
-    const startLeft = Math.min(360, event.startMs / TIMELINE_LEFT_SCALE);
-    const naturalWidth = Math.max(68, event.clip.durationMs / TIMELINE_WIDTH_SCALE);
+    const startLeft = Math.round(TIMELINE_CANVAS_PADDING + (event.startMs * TIMELINE_PX_PER_MS));
+    const naturalWidth = Math.max(34, Math.round(event.clip.durationMs * TIMELINE_PX_PER_MS));
 
     if (!nextEvent) {
       return {
@@ -41,8 +42,8 @@ function getDisplayEventsForTrack(sequence, track) {
       };
     }
 
-    const nextLeft = Math.min(360, nextEvent.startMs / TIMELINE_LEFT_SCALE);
-    const maxWidthBeforeNext = Math.max(52, nextLeft - startLeft - TIMELINE_EVENT_GAP);
+    const nextLeft = Math.round(TIMELINE_CANVAS_PADDING + (nextEvent.startMs * TIMELINE_PX_PER_MS));
+    const maxWidthBeforeNext = Math.max(18, nextLeft - startLeft - TIMELINE_EVENT_GAP);
 
     return {
       ...event,
@@ -50,6 +51,18 @@ function getDisplayEventsForTrack(sequence, track) {
       displayWidth: Math.min(naturalWidth, maxWidthBeforeNext),
     };
   });
+}
+
+function getTimelineCanvasWidth(sequence) {
+  const sequenceEnd = sequence.reduce(
+    (furthestMs, event) => Math.max(furthestMs, event.startMs + event.clip.durationMs),
+    0,
+  );
+
+  return Math.max(
+    TIMELINE_MIN_CANVAS_WIDTH,
+    Math.round((sequenceEnd * TIMELINE_PX_PER_MS) + (TIMELINE_CANVAS_PADDING * 2)),
+  );
 }
 
 function getTimelineTextSizeClass(width) {
@@ -173,11 +186,16 @@ export default function App() {
             </div>
 
             <div className="player-grid">
-              {players.map((player) => (
-                <article
-                  key={player.id}
-                  className={`player-card ${activePlayerId === player.id ? "player-card-live" : ""}`}
-                >
+              {players.map((player) => {
+                const trackAEvents = getDisplayEventsForTrack(player.sequence, "A");
+                const trackBEvents = getDisplayEventsForTrack(player.sequence, "B");
+                const timelineCanvasWidth = getTimelineCanvasWidth(player.sequence);
+
+                return (
+                  <article
+                    key={player.id}
+                    className={`player-card ${activePlayerId === player.id ? "player-card-live" : ""}`}
+                  >
                   <div className="player-meta">
                     <div>
                       <div className="player-topline">
@@ -196,17 +214,20 @@ export default function App() {
                     </button>
                   </div>
 
-                  <div className="timeline-shell">
-                    <div className="timeline-lane">
-                      {getDisplayEventsForTrack(player.sequence, "A")
-                        .map((event) => (
+                    <div className="timeline-shell">
+                      <div className="timeline-lane">
+                        <div
+                          className="timeline-canvas"
+                          style={{ width: `${timelineCanvasWidth}px` }}
+                        >
+                          {trackAEvents.map((event) => (
                           <button
                             key={event.id}
                             type="button"
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${Math.min(1080, event.displayLeft)}px`,
+                              left: `${event.displayLeft}px`,
                               width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
@@ -215,18 +236,22 @@ export default function App() {
                             <small>{formatMs(event.startMs)}</small>
                           </button>
                         ))}
-                    </div>
+                        </div>
+                      </div>
 
-                    <div className="timeline-lane">
-                      {getDisplayEventsForTrack(player.sequence, "B")
-                        .map((event) => (
+                      <div className="timeline-lane">
+                        <div
+                          className="timeline-canvas"
+                          style={{ width: `${timelineCanvasWidth}px` }}
+                        >
+                          {trackBEvents.map((event) => (
                           <button
                             key={event.id}
                             type="button"
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${Math.min(1080, event.displayLeft)}px`,
+                              left: `${event.displayLeft}px`,
                               width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
@@ -235,10 +260,12 @@ export default function App() {
                             <small>{formatMs(event.startMs)}</small>
                           </button>
                         ))}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </article>
-              ))}
+                  </article>
+                );
+              })}
             </div>
           </section>
         ) : null}
