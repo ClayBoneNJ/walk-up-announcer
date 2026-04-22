@@ -12,7 +12,9 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-08";
+const APP_BUILD_LABEL = "v2-alpha-09";
+const TIMELINE_LEFT_SCALE = 55;
+const TIMELINE_WIDTH_SCALE = 90;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -165,8 +167,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)}`}
                             style={{
-                              left: `${Math.min(88, event.startMs / 90)}px`,
-                              width: `${Math.max(68, event.clip.durationMs / 120)}px`,
+                              left: `${Math.min(168, event.startMs / TIMELINE_LEFT_SCALE)}px`,
+                              width: `${Math.max(88, event.clip.durationMs / TIMELINE_WIDTH_SCALE)}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
@@ -186,8 +188,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)}`}
                             style={{
-                              left: `${Math.min(88, event.startMs / 90)}px`,
-                              width: `${Math.max(68, event.clip.durationMs / 120)}px`,
+                              left: `${Math.min(168, event.startMs / TIMELINE_LEFT_SCALE)}px`,
+                              width: `${Math.max(88, event.clip.durationMs / TIMELINE_WIDTH_SCALE)}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
