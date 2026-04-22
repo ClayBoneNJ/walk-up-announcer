@@ -12,7 +12,8 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-17";
+const APP_BUILD_LABEL = "v2-alpha-18";
+const TIMELINE_TOTAL_DURATION_MS = 20000;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -30,13 +31,6 @@ function getDisplayEventsForTrack(sequence, track, totalDurationMs) {
     displayLeft: (event.startMs / totalDurationMs) * 100,
     displayWidth: (event.clip.durationMs / totalDurationMs) * 100,
   }));
-}
-
-function getSequenceDurationMs(sequence) {
-  return sequence.reduce(
-    (furthestMs, event) => Math.max(furthestMs, event.startMs + event.clip.durationMs),
-    0,
-  );
 }
 
 function getTimelineTextSizeClass(width) {
@@ -161,9 +155,16 @@ export default function App() {
 
             <div className="player-grid">
               {players.map((player) => {
-                const sequenceDurationMs = getSequenceDurationMs(player.sequence);
-                const trackAEvents = getDisplayEventsForTrack(player.sequence, "A", sequenceDurationMs);
-                const trackBEvents = getDisplayEventsForTrack(player.sequence, "B", sequenceDurationMs);
+                const trackAEvents = getDisplayEventsForTrack(
+                  player.sequence,
+                  "A",
+                  TIMELINE_TOTAL_DURATION_MS,
+                );
+                const trackBEvents = getDisplayEventsForTrack(
+                  player.sequence,
+                  "B",
+                  TIMELINE_TOTAL_DURATION_MS,
+                );
 
                 return (
                   <article
