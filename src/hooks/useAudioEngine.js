@@ -437,9 +437,6 @@ export function useAudioEngine({ volume, fadeMs }) {
   const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
   const requestIdRef = useRef(0);
-  const songAudioContextRef = useRef(null);
-  const songBufferCacheRef = useRef(new Map());
-  const useScheduledMobileSongs = isMobileSafari();
   const [activePlayback, setActivePlayback] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackProgress, setPlaybackProgress] = useState(0);
@@ -448,69 +445,8 @@ export function useAudioEngine({ volume, fadeMs }) {
   const stopFadeMs = Math.max(MIN_STOP_FADE_MS, Number(fadeMs) || 0);
   const shouldUseFastClipStart = (session) => session?.descriptor?.type === "clip";
 
-  const getSongAudioContext = async () => {
-    const AudioContextCtor = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextCtor) {
-      return null;
-    }
-
-    if (!songAudioContextRef.current || songAudioContextRef.current.state === "closed") {
-      songAudioContextRef.current = new AudioContextCtor();
-    }
-
-    if (songAudioContextRef.current.state === "suspended") {
-      await songAudioContextRef.current.resume().catch(() => {});
-    }
-
-    return songAudioContextRef.current;
-  };
-
-  const getDecodedSongBuffer = async (src) => {
-    if (!src) {
-      throw new Error("Missing audio source.");
-    }
-
-    const cached = songBufferCacheRef.current.get(src);
-    if (cached) {
-      return cached;
-    }
-
-    const loadPromise = (async () => {
-      const context = await getSongAudioContext();
-      if (!context) {
-        throw new Error("Web Audio unavailable.");
-      }
-
-      const response = await fetch(src, { cache: "force-cache" });
-      if (!response.ok) {
-        throw new Error(`Unable to fetch audio source: ${response.status}`);
-      }
-
-      const buffer = await response.arrayBuffer();
-      return context.decodeAudioData(buffer.slice(0));
-    })();
-
-    songBufferCacheRef.current.set(src, loadPromise);
-
-    try {
-      return await loadPromise;
-    } catch (error) {
-      songBufferCacheRef.current.delete(src);
-      throw error;
-    }
-  };
-
   const primeSongSources = async (sources = []) => {
-    if (!useScheduledMobileSongs) {
-      return;
-    }
-
-    const uniqueSources = [...new Set(sources.filter(Boolean))];
-    await Promise.allSettled(
-      uniqueSources.map(async (src) => {
-        await getDecodedSongBuffer(src);
-      }),
-    );
+    return Promise.resolve(sources);
   };
 
   const stopProgressLoop = () => {
@@ -607,9 +543,6 @@ export function useAudioEngine({ volume, fadeMs }) {
     return () => {
       const session = sessionRef.current;
       if (!session) {
-        if (songAudioContextRef.current?.state && songAudioContextRef.current.state !== "closed") {
-          songAudioContextRef.current.close().catch(() => {});
-        }
         return;
       }
 
@@ -619,9 +552,6 @@ export function useAudioEngine({ volume, fadeMs }) {
         session.reject?.(new DOMException("Playback cancelled", "AbortError"));
       }
       teardownSession(session, false);
-      if (songAudioContextRef.current?.state && songAudioContextRef.current.state !== "closed") {
-        songAudioContextRef.current.close().catch(() => {});
-      }
     };
   }, []);
 
@@ -790,116 +720,6 @@ export function useAudioEngine({ volume, fadeMs }) {
       trimEndMs: item.trimEndMs ?? null,
     });
 
-    if (item.slot === "song" && useScheduledMobileSongs) {
-      try {
-        const context = await getSongAudioContext();
-        const audioBuffer = await getDecodedSongBuffer(item.dataUrl ?? item.src);
-
-        if (!context || session.controller.signal.aborted || session.paused) {
-          return;
-        }
-
-        const seekOffsetMs = Math.max(0, Number(seekMs) || 0);
-        const playStartDelayMs = Math.max(0, item.startMs - session.offsetMs);
-        const useFullClipDuration = isFinishedMobileSongClip(item);
-        const clipDurationMs = Math.max(
-          MIN_WALKUP_TRIM_MS,
-          useFullClipDuration
-            ? Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs)
-            : Math.min(
-                Number(item.durationMs) || MIN_WALKUP_TRIM_MS,
-                Math.max(0, Math.round(audioBuffer.duration * 1000) - seekOffsetMs),
-              ),
-        );
-        const sourceNode = context.createBufferSource();
-        const gainNode = context.createGain();
-        const targetVolume = getTargetPlaybackLevel(volume, item);
-        sourceNode.buffer = audioBuffer;
-        gainNode.gain.value = targetVolume;
-        sourceNode.connect(gainNode);
-        gainNode.connect(context.destination);
-
-        const startAtContextTime = context.currentTime + playStartDelayMs / 1000;
-        if (useFullClipDuration) {
-          sourceNode.start(startAtContextTime, seekOffsetMs / 1000);
-        } else {
-          sourceNode.start(startAtContextTime, seekOffsetMs / 1000, clipDurationMs / 1000);
-        }
-
-        const entry = {
-          kind: "buffer",
-          item,
-          context,
-          sourceNode,
-          gainNode,
-          endTimeoutId: null,
-          fadeTimeoutId: null,
-          audibleTimeoutId: null,
-          seekMs: seekOffsetMs,
-          startedAtContextTime: startAtContextTime,
-        };
-
-        session.activeEntries.set(item.id, entry);
-        session.startedItemIds.add(item.id);
-        sourceNode.onended = () => finalizeEntry(entry, session);
-
-        recordDiagnosticEvent("audio.item.ready", {
-          sessionId: session.id,
-          itemId: item.id,
-          slot: item.slot,
-          playerName: item.playerName || "",
-          clipName: item.nickname || "",
-          readiness: "buffered",
-          readyState: 4,
-          networkState: 1,
-          attempt: "scheduled",
-          preRollMs: 0,
-        });
-
-        entry.audibleTimeoutId = window.setTimeout(() => {
-          if (!session.activeEntries.has(item.id) || session.controller.signal.aborted) {
-            return;
-          }
-
-          setActivePlayback({
-            ...session.descriptor,
-            playerId: item.playerId ?? session.descriptor.playerId,
-            playerName: item.playerName ?? session.descriptor.playerName,
-            assetId: item.id,
-            assetLabel: item.nickname,
-            track: item.track,
-          });
-
-          recordDiagnosticEvent("audio.item.playing", {
-            sessionId: session.id,
-            itemId: item.id,
-            slot: item.slot,
-            playerName: item.playerName || "",
-            clipName: item.nickname || "",
-            currentTimeMs: seekOffsetMs,
-            attempt: "scheduled",
-            preRollMs: 0,
-          });
-        }, playStartDelayMs);
-
-        scheduleEntryTimeouts(session, entry);
-        return;
-      } catch (error) {
-        recordDiagnosticEvent("audio.item.play_failed", {
-          sessionId: session.id,
-          itemId: item.id,
-          slot: item.slot,
-          playerName: item.playerName || "",
-          clipName: item.nickname || "",
-          src: item.src || "",
-          attempt: "scheduled",
-          reason: error instanceof Error ? error.message : String(error || ""),
-        });
-        markItemComplete(session, item.id);
-        return;
-      }
-    }
-
     const createConfiguredAudio = async () => {
       const rawTargetVolume = getTargetPlaybackLevel(volume, item);
       const targetVolume = Math.min(1, rawTargetVolume);
@@ -907,7 +727,7 @@ export function useAudioEngine({ volume, fadeMs }) {
       const nextAudio = createAudioElement(targetVolume);
       nextAudio.src = item.dataUrl ?? item.src;
       nextAudio.load();
-      const shouldUseGainNode = item.slot === "song";
+      const shouldUseGainNode = false;
 
       if (shouldUseGainNode) {
         await attachAudioGainNode(nextAudio, fadeMs > 0 && !useFastStart ? 0 : rawTargetVolume);
@@ -1205,14 +1025,6 @@ export function useAudioEngine({ volume, fadeMs }) {
     setPlaybackProgress(totalDurationMs > 0 ? Math.max(0, Math.min(1, startOffsetMs / totalDurationMs)) : 0);
     sessionRef.current = session;
     startProgressLoop(session);
-
-    const scheduledSongStarts = session.pendingStarts.filter(
-      (entry) => useScheduledMobileSongs && entry.item.slot === "song",
-    );
-
-    for (const entry of scheduledSongStarts) {
-      await startItemPlayback(session, entry.item, entry.seekMs);
-    }
 
     schedulePendingStarts(session);
 
