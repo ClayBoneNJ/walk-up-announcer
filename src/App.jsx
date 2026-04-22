@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v46";
+const APP_BUILD_LABEL = "v47";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
