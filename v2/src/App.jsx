@@ -12,7 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-05";
+const APP_BUILD_LABEL = "v2-alpha-06";
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -56,8 +56,6 @@ export default function App() {
         </p>
 
         <div className="status-row">
-          <span className="status-pill">Web First</span>
-          <span className="status-pill">Offline After Preload</span>
           <span className="status-pill">2 Tracks + Manual Lane</span>
           <span className="status-pill">No Clip Editing</span>
         </div>
