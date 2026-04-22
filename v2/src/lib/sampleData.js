@@ -119,7 +119,7 @@ export const players = [
       event("landon-announcement", "A", 0, announcementNowBatting),
       event("landon-number", "A", 1200, number23),
       event("landon-name", "A", 2550, landonName),
-      event("landon-song", "B", 3950, landonSong),
+      event("landon-song", "B", 3400, landonSong),
     ],
   },
   {
@@ -131,7 +131,7 @@ export const players = [
       event("logan-announcement", "A", 0, announcementNowBatting),
       event("logan-number", "A", 1200, number88),
       event("logan-name", "A", 2550, loganName),
-      event("logan-song", "B", 4050, loganSong),
+      event("logan-song", "B", 3400, loganSong),
     ],
   },
 ];

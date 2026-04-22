@@ -12,7 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-18";
+const APP_BUILD_LABEL = "v2-alpha-19";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 
 function formatMs(ms) {
