@@ -276,6 +276,34 @@ button {
   min-height: 60px;
 }
 
+.timeline-lane-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.timeline-arrow-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  border-radius: 999px;
+  background: rgba(190, 24, 93, 0.16);
+  color: #ffe7f3;
+}
+
+.timeline-lane-readout {
+  color: rgba(236, 242, 250, 0.82);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .timeline-event {
   position: absolute;
   top: 8px;

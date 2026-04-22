@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import {
   AudioLines,
+  ChevronLeft,
+  ChevronRight,
   CirclePlay,
   Library,
   RotateCcw,
@@ -12,8 +14,9 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-19";
+const APP_BUILD_LABEL = "v2-alpha-20";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
+const SONG_NUDGE_MS = 250;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -47,6 +50,12 @@ function getTimelineTextSizeClass(width) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("walkups");
+  const [playerSequences, setPlayerSequences] = useState(() =>
+    players.map((player) => ({
+      ...player,
+      sequence: player.sequence.map((event) => ({ ...event })),
+    })),
+  );
   const warmSources = useMemo(
     () => [...new Set(clipLibrary.map((clip) => clip.src).filter(Boolean))],
     [],
@@ -63,6 +72,43 @@ export default function App() {
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
+  };
+
+  const nudgeSongStart = (playerId, direction) => {
+    setPlayerSequences((currentPlayers) =>
+      currentPlayers.map((player) => {
+        if (player.id !== playerId) {
+          return player;
+        }
+
+        const songEvent = player.sequence.find((event) => event.track === "B");
+
+        if (!songEvent) {
+          return player;
+        }
+
+        const maxSongStart = Math.max(
+          0,
+          TIMELINE_TOTAL_DURATION_MS - songEvent.clip.durationMs,
+        );
+        const nudgedSongStart = Math.min(
+          maxSongStart,
+          Math.max(0, songEvent.startMs + (direction * SONG_NUDGE_MS)),
+        );
+
+        return {
+          ...player,
+          sequence: player.sequence.map((event) =>
+            event.id === songEvent.id
+              ? {
+                  ...event,
+                  startMs: nudgedSongStart,
+                }
+              : event,
+          ),
+        };
+      }),
+    );
   };
 
   const activePlayerId =
@@ -154,7 +200,7 @@ export default function App() {
             </div>
 
             <div className="player-grid">
-              {players.map((player) => {
+              {playerSequences.map((player) => {
                 const trackAEvents = getDisplayEventsForTrack(
                   player.sequence,
                   "A",
@@ -165,6 +211,7 @@ export default function App() {
                   "B",
                   TIMELINE_TOTAL_DURATION_MS,
                 );
+                const songEvent = player.sequence.find((event) => event.track === "B");
 
                 return (
                   <article
@@ -212,6 +259,27 @@ export default function App() {
                       </div>
 
                       <div className="timeline-lane">
+                        <div className="timeline-lane-toolbar">
+                          <button
+                            type="button"
+                            onClick={() => nudgeSongStart(player.id, -1)}
+                            className="timeline-arrow-button"
+                            aria-label={`Move ${player.name} song earlier`}
+                          >
+                            <ChevronLeft className="button-icon" />
+                          </button>
+                          <span className="timeline-lane-readout">
+                            Song starts {formatMs(songEvent?.startMs || 0)}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => nudgeSongStart(player.id, 1)}
+                            className="timeline-arrow-button"
+                            aria-label={`Move ${player.name} song later`}
+                          >
+                            <ChevronRight className="button-icon" />
+                          </button>
+                        </div>
                         <div className="timeline-canvas">
                           {trackBEvents.map((event) => (
                           <button
@@ -269,7 +337,7 @@ export default function App() {
             </p>
 
             <div className="stack-list">
-              {players.map((player) => (
+              {playerSequences.map((player) => (
                 <div
                   key={player.id}
                   className="stack-row"
