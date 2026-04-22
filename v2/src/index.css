@@ -263,17 +263,16 @@ button {
 .timeline-lane {
   position: relative;
   min-height: 60px;
-  overflow-x: auto;
+  overflow: hidden;
   overflow-y: hidden;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
-  padding: 0;
-  scrollbar-width: thin;
+  padding: 8px 10px;
 }
 
 .timeline-canvas {
   position: relative;
-  min-width: 100%;
+  width: 100%;
   min-height: 60px;
 }
 

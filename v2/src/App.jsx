@@ -12,11 +12,9 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-14";
-const TIMELINE_PX_PER_MS = 0.032;
-const TIMELINE_EVENT_GAP = 6;
-const TIMELINE_CANVAS_PADDING = 18;
-const TIMELINE_MIN_CANVAS_WIDTH = 520;
+const APP_BUILD_LABEL = "v2-alpha-15";
+const TIMELINE_EVENT_GAP_PCT = 1.1;
+const TIMELINE_MIN_WIDTH_PCT = 5.2;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -26,13 +24,16 @@ function getTrackAccent(track) {
   return track === "B" ? "track-b" : "track-a";
 }
 
-function getDisplayEventsForTrack(sequence, track) {
+function getDisplayEventsForTrack(sequence, track, totalDurationMs) {
   const trackEvents = sequence.filter((event) => event.track === track);
 
   return trackEvents.map((event, index) => {
     const nextEvent = trackEvents[index + 1] ?? null;
-    const startLeft = Math.round(TIMELINE_CANVAS_PADDING + (event.startMs * TIMELINE_PX_PER_MS));
-    const naturalWidth = Math.max(34, Math.round(event.clip.durationMs * TIMELINE_PX_PER_MS));
+    const startLeft = (event.startMs / totalDurationMs) * 100;
+    const naturalWidth = Math.max(
+      TIMELINE_MIN_WIDTH_PCT,
+      (event.clip.durationMs / totalDurationMs) * 100,
+    );
 
     if (!nextEvent) {
       return {
@@ -42,8 +43,11 @@ function getDisplayEventsForTrack(sequence, track) {
       };
     }
 
-    const nextLeft = Math.round(TIMELINE_CANVAS_PADDING + (nextEvent.startMs * TIMELINE_PX_PER_MS));
-    const maxWidthBeforeNext = Math.max(18, nextLeft - startLeft - TIMELINE_EVENT_GAP);
+    const nextLeft = (nextEvent.startMs / totalDurationMs) * 100;
+    const maxWidthBeforeNext = Math.max(
+      TIMELINE_MIN_WIDTH_PCT,
+      nextLeft - startLeft - TIMELINE_EVENT_GAP_PCT,
+    );
 
     return {
       ...event,
@@ -53,24 +57,19 @@ function getDisplayEventsForTrack(sequence, track) {
   });
 }
 
-function getTimelineCanvasWidth(sequence) {
-  const sequenceEnd = sequence.reduce(
+function getSequenceDurationMs(sequence) {
+  return sequence.reduce(
     (furthestMs, event) => Math.max(furthestMs, event.startMs + event.clip.durationMs),
     0,
-  );
-
-  return Math.max(
-    TIMELINE_MIN_CANVAS_WIDTH,
-    Math.round((sequenceEnd * TIMELINE_PX_PER_MS) + (TIMELINE_CANVAS_PADDING * 2)),
   );
 }
 
 function getTimelineTextSizeClass(width) {
-  if (width <= 82) {
+  if (width <= 7.5) {
     return "timeline-event-xs";
   }
 
-  if (width <= 108) {
+  if (width <= 12) {
     return "timeline-event-sm";
   }
 
@@ -187,9 +186,9 @@ export default function App() {
 
             <div className="player-grid">
               {players.map((player) => {
-                const trackAEvents = getDisplayEventsForTrack(player.sequence, "A");
-                const trackBEvents = getDisplayEventsForTrack(player.sequence, "B");
-                const timelineCanvasWidth = getTimelineCanvasWidth(player.sequence);
+                const sequenceDurationMs = getSequenceDurationMs(player.sequence);
+                const trackAEvents = getDisplayEventsForTrack(player.sequence, "A", sequenceDurationMs);
+                const trackBEvents = getDisplayEventsForTrack(player.sequence, "B", sequenceDurationMs);
 
                 return (
                   <article
@@ -216,10 +215,7 @@ export default function App() {
 
                     <div className="timeline-shell">
                       <div className="timeline-lane">
-                        <div
-                          className="timeline-canvas"
-                          style={{ width: `${timelineCanvasWidth}px` }}
-                        >
+                        <div className="timeline-canvas">
                           {trackAEvents.map((event) => (
                           <button
                             key={event.id}
@@ -227,8 +223,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${event.displayLeft}px`,
-                              width: `${event.displayWidth}px`,
+                              left: `${event.displayLeft}%`,
+                              width: `${event.displayWidth}%`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
@@ -240,10 +236,7 @@ export default function App() {
                       </div>
 
                       <div className="timeline-lane">
-                        <div
-                          className="timeline-canvas"
-                          style={{ width: `${timelineCanvasWidth}px` }}
-                        >
+                        <div className="timeline-canvas">
                           {trackBEvents.map((event) => (
                           <button
                             key={event.id}
@@ -251,8 +244,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${event.displayLeft}px`,
-                              width: `${event.displayWidth}px`,
+                              left: `${event.displayLeft}%`,
+                              width: `${event.displayWidth}%`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
