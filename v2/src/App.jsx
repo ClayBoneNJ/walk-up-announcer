@@ -12,9 +12,9 @@ import {
   Waves,
 } from "lucide-react";
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
-import { clipLibrary, players, screenTabs } from "./lib/sampleData";
+import { announcementOptions, clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-20";
+const APP_BUILD_LABEL = "v2-alpha-21";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 
@@ -72,6 +72,34 @@ export default function App() {
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
+  };
+
+  const updateAnnouncement = (playerId, announcementId) => {
+    const nextAnnouncement = announcementOptions.find((clip) => clip.id === announcementId);
+
+    if (!nextAnnouncement) {
+      return;
+    }
+
+    setPlayerSequences((currentPlayers) =>
+      currentPlayers.map((player) => {
+        if (player.id !== playerId) {
+          return player;
+        }
+
+        return {
+          ...player,
+          sequence: player.sequence.map((event) =>
+            event.track === "A" && event.startMs === 0
+              ? {
+                  ...event,
+                  clip: nextAnnouncement,
+                }
+              : event,
+          ),
+        };
+      }),
+    );
   };
 
   const nudgeSongStart = (playerId, direction) => {
@@ -235,6 +263,29 @@ export default function App() {
                       Play Walkup
                     </button>
                   </div>
+
+                    <div className="player-config-row">
+                      <label
+                        className="player-config-field"
+                        htmlFor={`announcement-${player.id}`}
+                      >
+                        <span>Announcement</span>
+                        <select
+                          id={`announcement-${player.id}`}
+                          value={player.sequence.find((event) => event.track === "A" && event.startMs === 0)?.clip.id || ""}
+                          onChange={(event) => updateAnnouncement(player.id, event.target.value)}
+                        >
+                          {announcementOptions.map((clip) => (
+                            <option
+                              key={clip.id}
+                              value={clip.id}
+                            >
+                              {clip.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
 
                     <div className="timeline-shell">
                       <div className="timeline-lane">

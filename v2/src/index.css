@@ -247,6 +247,32 @@ button {
   align-items: start;
 }
 
+.player-config-row {
+  margin-top: 12px;
+}
+
+.player-config-field {
+  display: grid;
+  gap: 6px;
+}
+
+.player-config-field span {
+  color: #8dc6ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.player-config-field select {
+  min-height: 40px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f7fb;
+  padding: 0 12px;
+}
+
 .player-card h3,
 .clip-group h3 {
   margin: 8px 0 0;

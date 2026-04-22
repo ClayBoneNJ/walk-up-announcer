@@ -25,6 +25,38 @@ const announcementNowBatting = clip({
   durationMs: 1000,
 });
 
+const announcementMakeSomeNoise = clip({
+  id: "announcement-make-some-noise",
+  group: "announcements",
+  label: "Make Some Noise For",
+  src: "/assets/audio/announcements/MAKE SOME NOISE.mp3",
+  durationMs: 1000,
+});
+
+const announcementComingToPlate = clip({
+  id: "announcement-coming-to-plate",
+  group: "announcements",
+  label: "Coming To Plate",
+  src: "/assets/audio/announcements/COMING TO THE PLAT.mp3",
+  durationMs: 1000,
+});
+
+const announcementLetsHearItFor = clip({
+  id: "announcement-lets-hear-it-for",
+  group: "announcements",
+  label: "Let's Hear It For",
+  src: "/assets/audio/announcements/LETS HEREE IT FOR.mp3",
+  durationMs: 1000,
+});
+
+const announcementUpNext = clip({
+  id: "announcement-up-next",
+  group: "announcements",
+  label: "Up Next",
+  src: "/assets/audio/announcements/UP NEXT.mp3",
+  durationMs: 1000,
+});
+
 const number23 = clip({
   id: "number-23",
   group: "numbers",
@@ -91,6 +123,10 @@ const crowdHereWeGo = clip({
 
 export const clipLibrary = [
   announcementNowBatting,
+  announcementMakeSomeNoise,
+  announcementComingToPlate,
+  announcementLetsHearItFor,
+  announcementUpNext,
   number23,
   number88,
   landonName,
@@ -141,4 +177,12 @@ export const screenTabs = [
   { id: "freestyle", label: "Freestyle", icon: AudioLines },
   { id: "crowd", label: "Crowd", icon: Sparkles },
   { id: "roster", label: "Roster/Edit", icon: Library },
+];
+
+export const announcementOptions = [
+  announcementNowBatting,
+  announcementMakeSomeNoise,
+  announcementComingToPlate,
+  announcementLetsHearItFor,
+  announcementUpNext,
 ];
