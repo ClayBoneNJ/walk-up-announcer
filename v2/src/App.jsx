@@ -1,50 +1,58 @@
+import { useMemo, useState } from "react";
 import {
   AudioLines,
   CirclePlay,
   Library,
+  RotateCcw,
   Sparkles,
+  Square,
   Users,
   Waves,
 } from "lucide-react";
+import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
+import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-01";
+const APP_BUILD_LABEL = "v2-alpha-02";
 
-const screens = [
-  {
-    id: "walkups",
-    label: "Walkups",
-    icon: Users,
-    description: "Per-player walkup sequences built from timed soundboard events.",
-  },
-  {
-    id: "freestyle",
-    label: "Freestyle",
-    icon: Waves,
-    description: "Team voice clips and songs, all playable as one-tap buttons.",
-  },
-  {
-    id: "crowd",
-    label: "Crowd",
-    icon: Sparkles,
-    description: "Crowd hype, umpire calls, and game-day interrupt effects.",
-  },
-  {
-    id: "roster",
-    label: "Roster/Edit",
-    icon: Library,
-    description: "Players, clip assignment, preload status, and sequence defaults.",
-  },
-];
+function formatMs(ms) {
+  return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
+}
+
+function getTrackAccent(track) {
+  return track === "B" ? "track-b" : "track-a";
+}
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState("walkups");
+  const warmSources = useMemo(
+    () => [...new Set(clipLibrary.map((clip) => clip.src).filter(Boolean))],
+    [],
+  );
+  const {
+    activePlayback,
+    audioReadyState,
+    primeSources,
+    resetEngine,
+    playClipNow,
+    playSequence,
+    fadeOutAndStopAll,
+  } = usePlaybackEngine();
+
+  const handleArmAudio = async () => {
+    await primeSources(warmSources);
+  };
+
+  const activePlayerId =
+    activePlayback?.type === "sequence" ? activePlayback.playerId : activePlayback?.playerId || "";
+
   return (
     <div className="app-shell">
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
         <p>
-          Clean-slate architecture focused on fast mobile playback, soundboard-first
-          control, and simple walkup sequencing.
+          Soundboard-first, mobile-first, and sequence-aware. Every live action is a button
+          trigger, and every player walkup is just timed soundboard events across two tracks.
         </p>
 
         <div className="status-row">
@@ -53,92 +61,253 @@ export default function App() {
           <span className="status-pill">2 Tracks + Manual Lane</span>
           <span className="status-pill">No Clip Editing</span>
         </div>
+
+        <div className="control-row">
+          <button
+            type="button"
+            onClick={handleArmAudio}
+            className="primary-action"
+          >
+            <Waves className="button-icon" />
+            Arm Audio
+          </button>
+          <button
+            type="button"
+            onClick={resetEngine}
+            className="secondary-action"
+          >
+            <RotateCcw className="button-icon" />
+            Reset Audio
+          </button>
+          <button
+            type="button"
+            onClick={fadeOutAndStopAll}
+            className="danger-action"
+          >
+            <Square className="button-icon" />
+            Fade All
+          </button>
+        </div>
+
+        <div className="ready-row">
+          <span className={`ready-pill ${audioReadyState.offline ? "ready-pill-on" : ""}`}>
+            {audioReadyState.offline ? "Offline Ready" : "Offline Loading"}
+          </span>
+          <span className={`ready-pill ${audioReadyState.armed ? "ready-pill-on" : ""}`}>
+            {audioReadyState.armed ? "Audio Armed" : "Tap Arm Audio"}
+          </span>
+          <span className={`ready-pill ${activePlayback ? "ready-pill-live" : ""}`}>
+            {activePlayback
+              ? activePlayback.type === "sequence"
+                ? `Live Sequence: ${activePlayback.playerName}`
+                : `Live Clip: ${activePlayback.clipName}`
+              : "Idle"}
+          </span>
+        </div>
       </header>
 
+      <nav className="tab-bar">
+        {screenTabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`tab-button ${activeTab === tab.id ? "tab-button-active" : ""}`}
+            >
+              <Icon className="tab-icon" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
       <main className="content-grid">
-        <section className="panel">
-          <div className="panel-kicker">Core Screens</div>
-          <div className="screen-grid">
-            {screens.map((screen) => {
-              const Icon = screen.icon;
+        {activeTab === "walkups" ? (
+          <section className="panel">
+            <div className="panel-header">
+              <div>
+                <div className="panel-kicker">Walkups</div>
+                <h2>Player Sequences</h2>
+                <p>
+                  Voice clips live on Track A. Songs start on Track B when you want the overlap
+                  to kick in.
+                </p>
+              </div>
+            </div>
 
-              return (
+            <div className="player-grid">
+              {players.map((player) => (
                 <article
-                  key={screen.id}
-                  className="screen-card"
+                  key={player.id}
+                  className={`player-card ${activePlayerId === player.id ? "player-card-live" : ""}`}
                 >
-                  <div className="screen-icon-wrap">
-                    <Icon className="screen-icon" />
+                  <div className="player-meta">
+                    <div>
+                      <div className="player-topline">
+                        #{player.jerseyNumber} • {player.role}
+                      </div>
+                      <h3>{player.name}</h3>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => playSequence(player)}
+                      className="primary-action compact"
+                    >
+                      <CirclePlay className="button-icon" />
+                      Play Walkup
+                    </button>
                   </div>
-                  <h2>{screen.label}</h2>
-                  <p>{screen.description}</p>
+
+                  <div className="timeline-shell">
+                    <div className="timeline-label">Track A</div>
+                    <div className="timeline-lane">
+                      {player.sequence
+                        .filter((event) => event.track === "A")
+                        .map((event) => (
+                          <button
+                            key={event.id}
+                            type="button"
+                            onClick={() => playClipNow(event.clip, player)}
+                            className={`timeline-event ${getTrackAccent(event.track)}`}
+                            style={{
+                              left: `${Math.min(88, event.startMs / 90)}px`,
+                              width: `${Math.max(68, event.clip.durationMs / 120)}px`,
+                            }}
+                            title={`${event.clip.label} at ${formatMs(event.startMs)}`}
+                          >
+                            <span>{event.clip.label}</span>
+                            <small>{formatMs(event.startMs)}</small>
+                          </button>
+                        ))}
+                    </div>
+
+                    <div className="timeline-label">Track B</div>
+                    <div className="timeline-lane">
+                      {player.sequence
+                        .filter((event) => event.track === "B")
+                        .map((event) => (
+                          <button
+                            key={event.id}
+                            type="button"
+                            onClick={() => playClipNow(event.clip, player)}
+                            className={`timeline-event ${getTrackAccent(event.track)}`}
+                            style={{
+                              left: `${Math.min(88, event.startMs / 90)}px`,
+                              width: `${Math.max(68, event.clip.durationMs / 120)}px`,
+                            }}
+                            title={`${event.clip.label} at ${formatMs(event.startMs)}`}
+                          >
+                            <span>{event.clip.label}</span>
+                            <small>{formatMs(event.startMs)}</small>
+                          </button>
+                        ))}
+                    </div>
+                  </div>
                 </article>
-              );
-            })}
-          </div>
-        </section>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
-        <section className="panel two-col">
-          <div>
-            <div className="panel-kicker">Playback Rules</div>
-            <ul className="rule-list">
-              <li>Every playable thing is a soundboard clip.</li>
-              <li>Sequences only schedule timed button fires.</li>
-              <li>Manual taps fade all and play the requested clip.</li>
-              <li>Crowd clips also fade all and take over cleanly.</li>
-              <li>Voice stack is mostly fixed; song timing is the main overlap lane.</li>
-            </ul>
-          </div>
+        {activeTab === "freestyle" ? (
+          <ClipBoard
+            title="Freestyle"
+            description="Team voice clips and songs. Every tap fades all, then fires the selected clip."
+            groups={["announcements", "numbers", "names", "songs"]}
+            activePlayback={activePlayback}
+            onPlayClip={(clip) => playClipNow(clip)}
+          />
+        ) : null}
 
-          <div>
-            <div className="panel-kicker">First Build Priorities</div>
-            <ul className="rule-list">
-              <li>Reliable preload and offline-ready state.</li>
-              <li>Snappy iPad/iPhone playback.</li>
-              <li>Simple player sequence editor with track A and track B.</li>
-              <li>Visible Arm Audio, Reset Audio, and Fade All controls.</li>
-              <li>Minimal background work during game-day use.</li>
-            </ul>
-          </div>
-        </section>
+        {activeTab === "crowd" ? (
+          <ClipBoard
+            title="Crowd"
+            description="Crowd hype and interruptive game-day moments."
+            groups={["crowd"]}
+            activePlayback={activePlayback}
+            onPlayClip={(clip) => playClipNow(clip)}
+          />
+        ) : null}
 
-        <section className="panel">
-          <div className="panel-kicker">Architecture Direction</div>
-          <div className="stack-list">
-            <div className="stack-row">
-              <strong>Clip Library</strong>
-              <span>Announcements, names, numbers, positions, songs, crowd effects</span>
-            </div>
-            <div className="stack-row">
-              <strong>Roster</strong>
-              <span>Players and assigned clips</span>
-            </div>
-            <div className="stack-row">
-              <strong>Sequences</strong>
-              <span>Per-player timed trigger events on two tracks</span>
-            </div>
-            <div className="stack-row">
-              <strong>Playback Engine</strong>
-              <span>Unified runtime for every clip type</span>
-            </div>
-            <div className="stack-row">
-              <strong>Preload Manager</strong>
-              <span>Load once, then run offline and stay ready</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="panel callout">
-          <CirclePlay className="callout-icon" />
-          <div>
-            <div className="panel-kicker">Starting Point</div>
+        {activeTab === "roster" ? (
+          <section className="panel">
+            <div className="panel-kicker">Roster / Edit</div>
+            <h2>First Slice Data Model</h2>
             <p>
-              This scaffold is intentionally small. The goal is to begin from the new
-              rules, not drag old behavior forward by accident.
+              This first pass focuses on a clean player + clip + timed-event model before we
+              build the full editor.
             </p>
-          </div>
-        </section>
+
+            <div className="stack-list">
+              {players.map((player) => (
+                <div
+                  key={player.id}
+                  className="stack-row"
+                >
+                  <strong>{player.name}</strong>
+                  <span>
+                    {player.sequence.length} events • song overlap starts at{" "}
+                    {formatMs(player.sequence.find((event) => event.track === "B")?.startMs || 0)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </main>
     </div>
+  );
+}
+
+function ClipBoard({ title, description, groups, activePlayback, onPlayClip }) {
+  const groupedClips = groups.flatMap((groupId) => {
+    const titleCase = groupId === "crowd" ? "Crowd Effects" : groupId[0].toUpperCase() + groupId.slice(1);
+    return [
+      {
+        id: groupId,
+        title: titleCase,
+        clips: clipLibrary.filter((clip) => clip.group === groupId),
+      },
+    ];
+  });
+
+  return (
+    <section className="panel">
+      <div className="panel-kicker">{title}</div>
+      <h2>{title} Soundboard</h2>
+      <p>{description}</p>
+
+      <div className="clip-group-grid">
+        {groupedClips.map((group) => (
+          <section
+            key={group.id}
+            className="clip-group"
+          >
+            <h3>{group.title}</h3>
+
+            <div className="clip-grid">
+              {group.clips.map((clip) => {
+                const live = activePlayback?.clipId === clip.id;
+                return (
+                  <button
+                    key={clip.id}
+                    type="button"
+                    onClick={() => onPlayClip(clip)}
+                    className={`clip-card ${live ? "clip-card-live" : ""}`}
+                  >
+                    <div className="clip-card-topline">{clip.playerName || clip.group}</div>
+                    <strong>{clip.label}</strong>
+                    <span>{formatMs(clip.durationMs)}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </section>
   );
 }

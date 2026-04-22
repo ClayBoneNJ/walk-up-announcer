@@ -29,15 +29,22 @@ select {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 .app-shell {
   margin: 0 auto;
-  max-width: 1180px;
-  padding: 20px 16px 48px;
+  max-width: 1280px;
+  padding: 18px 14px 40px;
 }
 
 .hero-card,
 .panel,
-.screen-card {
+.player-card,
+.clip-card,
+.clip-group,
+.tab-button {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(10, 16, 28, 0.78);
   backdrop-filter: blur(18px);
@@ -46,11 +53,14 @@ select {
 
 .hero-card {
   border-radius: 28px;
-  padding: 24px;
+  padding: 22px;
 }
 
 .hero-topline,
-.panel-kicker {
+.panel-kicker,
+.player-topline,
+.clip-card-topline,
+.timeline-label {
   color: #8dc6ff;
   font-size: 11px;
   font-weight: 700;
@@ -58,30 +68,39 @@ select {
   text-transform: uppercase;
 }
 
-.hero-card h1 {
+.hero-card h1,
+.panel h2 {
   margin: 12px 0 10px;
-  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-size: clamp(1.9rem, 5vw, 3.5rem);
   line-height: 0.95;
   text-transform: uppercase;
 }
 
+.panel h2 {
+  font-size: clamp(1.25rem, 3vw, 2rem);
+}
+
 .hero-card p,
-.screen-card p,
 .panel p,
+.player-card p,
 .stack-row span,
-.rule-list li {
+.clip-card span,
+.timeline-event small {
   color: rgba(236, 242, 250, 0.82);
   line-height: 1.5;
 }
 
-.status-row {
+.status-row,
+.control-row,
+.ready-row {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 18px;
+  margin-top: 16px;
 }
 
-.status-pill {
+.status-pill,
+.ready-pill {
   border: 1px solid rgba(123, 211, 255, 0.25);
   border-radius: 999px;
   background: rgba(72, 169, 255, 0.12);
@@ -90,6 +109,95 @@ select {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.ready-pill-on {
+  border-color: rgba(107, 227, 172, 0.45);
+  background: rgba(16, 185, 129, 0.16);
+  color: #d7ffee;
+}
+
+.ready-pill-live {
+  border-color: rgba(250, 204, 21, 0.38);
+  background: rgba(250, 204, 21, 0.14);
+  color: #fff2ba;
+}
+
+.primary-action,
+.secondary-action,
+.danger-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  border-radius: 999px;
+  padding: 0 16px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: transform 120ms ease, opacity 120ms ease, border-color 120ms ease;
+}
+
+.primary-action:hover,
+.secondary-action:hover,
+.danger-action:hover,
+.tab-button:hover,
+.clip-card:hover,
+.timeline-event:hover {
+  transform: translateY(-1px);
+}
+
+.primary-action {
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  background: linear-gradient(145deg, rgba(56, 189, 248, 0.3), rgba(14, 116, 144, 0.24));
+  color: #effbff;
+}
+
+.secondary-action {
+  border: 1px solid rgba(196, 181, 253, 0.3);
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.2), rgba(76, 29, 149, 0.22));
+  color: #f2ecff;
+}
+
+.danger-action {
+  border: 1px solid rgba(252, 165, 165, 0.34);
+  background: linear-gradient(145deg, rgba(248, 113, 113, 0.24), rgba(153, 27, 27, 0.22));
+  color: #fff1f1;
+}
+
+.compact {
+  min-height: 42px;
+  padding: 0 14px;
+  font-size: 0.78rem;
+}
+
+.button-icon,
+.tab-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.tab-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.tab-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  border-radius: 18px;
+  color: #d7e6fb;
+}
+
+.tab-button-active {
+  border-color: rgba(125, 211, 252, 0.36);
+  background: rgba(72, 169, 255, 0.16);
 }
 
 .content-grid {
@@ -103,52 +211,119 @@ select {
   padding: 20px;
 }
 
-.screen-grid {
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: start;
+}
+
+.player-grid,
+.clip-group-grid,
+.clip-grid {
   display: grid;
   gap: 14px;
-  margin-top: 16px;
 }
 
-.screen-card {
+.player-grid,
+.clip-group-grid {
+  margin-top: 18px;
+}
+
+.player-card,
+.clip-group {
   border-radius: 22px;
-  padding: 18px;
+  padding: 16px;
 }
 
-.screen-card h2 {
-  margin: 12px 0 8px;
-  font-size: 1.1rem;
+.player-card-live {
+  border-color: rgba(125, 211, 252, 0.36);
+  box-shadow: 0 18px 50px rgba(33, 109, 222, 0.22);
+}
+
+.player-meta {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.player-card h3,
+.clip-group h3 {
+  margin: 8px 0 0;
+  font-size: 1.25rem;
   text-transform: uppercase;
 }
 
-.screen-icon-wrap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(109, 192, 255, 0.22), rgba(49, 101, 220, 0.18));
-}
-
-.screen-icon,
-.callout-icon {
-  width: 22px;
-  height: 22px;
-  color: #bde2ff;
-}
-
-.two-col {
+.timeline-shell {
   display: grid;
-  gap: 18px;
+  gap: 8px;
+  margin-top: 16px;
 }
 
-.rule-list {
-  margin: 16px 0 0;
-  padding-left: 18px;
+.timeline-lane {
+  position: relative;
+  min-height: 68px;
+  overflow-x: auto;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 10px;
 }
 
-.rule-list li + li {
-  margin-top: 8px;
+.timeline-event {
+  position: absolute;
+  top: 10px;
+  display: grid;
+  gap: 2px;
+  align-content: center;
+  min-height: 48px;
+  border: 0;
+  border-radius: 14px;
+  padding: 8px 10px;
+  text-align: left;
+  color: white;
+}
+
+.timeline-event span {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.track-a {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.58), rgba(29, 78, 216, 0.32));
+}
+
+.track-b {
+  background: linear-gradient(145deg, rgba(244, 114, 182, 0.58), rgba(190, 24, 93, 0.32));
+}
+
+.clip-group h3 {
+  margin-bottom: 12px;
+}
+
+.clip-grid {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.clip-card {
+  display: grid;
+  gap: 8px;
+  min-height: 110px;
+  border-radius: 18px;
+  padding: 14px;
+  text-align: left;
+  color: #f4f7fb;
+}
+
+.clip-card-live {
+  border-color: rgba(250, 204, 21, 0.34);
+  background: rgba(250, 204, 21, 0.11);
+}
+
+.clip-card strong {
+  font-size: 1rem;
+  text-transform: uppercase;
 }
 
 .stack-list {
@@ -170,23 +345,33 @@ select {
   letter-spacing: 0.06em;
 }
 
-.callout {
-  display: flex;
-  gap: 14px;
-  align-items: flex-start;
-}
-
 @media (min-width: 720px) {
   .app-shell {
     padding-left: 24px;
     padding-right: 24px;
   }
 
-  .screen-grid {
+  .player-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .two-col {
+  .clip-group-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 719px) {
+  .tab-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .player-meta {
+    flex-direction: column;
+  }
+
+  .primary-action,
+  .secondary-action,
+  .danger-action {
+    width: 100%;
   }
 }
