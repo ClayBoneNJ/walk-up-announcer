@@ -12,10 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-16";
-const TIMELINE_EVENT_GAP_PCT = 1.8;
-const TIMELINE_MIN_WIDTH_PCT = 4.8;
-const TIMELINE_EVENT_TRIM_PCT = 0.45;
+const APP_BUILD_LABEL = "v2-alpha-17";
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -28,37 +25,11 @@ function getTrackAccent(track) {
 function getDisplayEventsForTrack(sequence, track, totalDurationMs) {
   const trackEvents = sequence.filter((event) => event.track === track);
 
-  return trackEvents.map((event, index) => {
-    const nextEvent = trackEvents[index + 1] ?? null;
-    const startLeft = (event.startMs / totalDurationMs) * 100;
-    const naturalWidth = Math.max(
-      TIMELINE_MIN_WIDTH_PCT,
-      (event.clip.durationMs / totalDurationMs) * 100,
-    );
-
-    if (!nextEvent) {
-      return {
-        ...event,
-        displayLeft: startLeft,
-        displayWidth: Math.max(TIMELINE_MIN_WIDTH_PCT, naturalWidth - TIMELINE_EVENT_TRIM_PCT),
-      };
-    }
-
-    const nextLeft = (nextEvent.startMs / totalDurationMs) * 100;
-    const maxWidthBeforeNext = Math.max(
-      TIMELINE_MIN_WIDTH_PCT,
-      nextLeft - startLeft - TIMELINE_EVENT_GAP_PCT,
-    );
-
-    return {
-      ...event,
-      displayLeft: startLeft,
-      displayWidth: Math.max(
-        TIMELINE_MIN_WIDTH_PCT,
-        Math.min(naturalWidth - TIMELINE_EVENT_TRIM_PCT, maxWidthBeforeNext),
-      ),
-    };
-  });
+  return trackEvents.map((event) => ({
+    ...event,
+    displayLeft: (event.startMs / totalDurationMs) * 100,
+    displayWidth: (event.clip.durationMs / totalDurationMs) * 100,
+  }));
 }
 
 function getSequenceDurationMs(sequence) {

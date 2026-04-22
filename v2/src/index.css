@@ -285,15 +285,17 @@ button {
   min-height: 42px;
   border: 0;
   border-radius: 14px;
-  padding: 6px 10px;
+  padding: 4px 6px;
   text-align: left;
   color: white;
+  overflow: hidden;
 }
 
 .timeline-event span {
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
+  overflow: hidden;
 }
 
 .timeline-event-md span {
@@ -315,13 +317,13 @@ button {
 }
 
 .timeline-event-xs span {
-  font-size: 0.54rem;
+  font-size: 0.48rem;
   line-height: 1.02;
   letter-spacing: 0.01em;
 }
 
 .timeline-event-xs small {
-  font-size: 0.68rem;
+  font-size: 0.6rem;
 }
 
 .track-a {
