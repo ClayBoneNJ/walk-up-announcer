@@ -14,7 +14,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-23";
+const APP_BUILD_LABEL = "v2-alpha-24";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 
@@ -105,7 +105,7 @@ export default function App() {
                   ...event,
                   clip: nextAnnouncement,
                 }
-              : event.track === "A"
+              : event.startMs > 0
                 ? {
                     ...event,
                     startMs: Math.max(0, event.startMs + startShiftMs),
