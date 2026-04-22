@@ -14,7 +14,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-22";
+const APP_BUILD_LABEL = "v2-alpha-23";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 
@@ -87,6 +87,16 @@ export default function App() {
           return player;
         }
 
+        const currentAnnouncement = player.sequence.find(
+          (event) => event.track === "A" && event.startMs === 0,
+        );
+
+        if (!currentAnnouncement) {
+          return player;
+        }
+
+        const startShiftMs = nextAnnouncement.durationMs - currentAnnouncement.clip.durationMs;
+
         return {
           ...player,
           sequence: player.sequence.map((event) =>
@@ -95,6 +105,11 @@ export default function App() {
                   ...event,
                   clip: nextAnnouncement,
                 }
+              : event.track === "A"
+                ? {
+                    ...event,
+                    startMs: Math.max(0, event.startMs + startShiftMs),
+                  }
               : event,
           ),
         };
