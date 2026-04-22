@@ -12,7 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-07";
+const APP_BUILD_LABEL = "v2-alpha-08";
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -54,11 +54,6 @@ export default function App() {
           Soundboard-first, mobile-first, and sequence-aware. Every live action is a button
           trigger, and every player walkup is just timed soundboard events across two tracks.
         </p>
-
-        <div className="status-row">
-          <span className="status-pill">2 Tracks + Manual Lane</span>
-          <span className="status-pill">No Clip Editing</span>
-        </div>
 
         <div className="control-row">
           <button
