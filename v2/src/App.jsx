@@ -12,7 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-06";
+const APP_BUILD_LABEL = "v2-alpha-07";
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -160,7 +160,6 @@ export default function App() {
                   </div>
 
                   <div className="timeline-shell">
-                    <div className="timeline-label">Track A</div>
                     <div className="timeline-lane">
                       {player.sequence
                         .filter((event) => event.track === "A")
@@ -182,7 +181,6 @@ export default function App() {
                         ))}
                     </div>
 
-                    <div className="timeline-label">Track B</div>
                     <div className="timeline-lane">
                       {player.sequence
                         .filter((event) => event.track === "B")
