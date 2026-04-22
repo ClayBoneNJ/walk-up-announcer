@@ -12,8 +12,8 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-11";
-const TIMELINE_LEFT_SCALE = 24;
+const APP_BUILD_LABEL = "v2-alpha-12";
+const TIMELINE_LEFT_SCALE = 8;
 const TIMELINE_WIDTH_SCALE = 120;
 const TIMELINE_EVENT_GAP = 8;
 
@@ -50,6 +50,18 @@ function getDisplayEventsForTrack(sequence, track) {
       displayWidth: Math.min(naturalWidth, maxWidthBeforeNext),
     };
   });
+}
+
+function getTimelineTextSizeClass(width) {
+  if (width <= 82) {
+    return "timeline-event-xs";
+  }
+
+  if (width <= 108) {
+    return "timeline-event-sm";
+  }
+
+  return "timeline-event-md";
 }
 
 export default function App() {
@@ -192,9 +204,9 @@ export default function App() {
                             key={event.id}
                             type="button"
                             onClick={() => playClipNow(event.clip, player)}
-                            className={`timeline-event ${getTrackAccent(event.track)}`}
+                            className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${event.displayLeft}px`,
+                              left: `${Math.min(1080, event.displayLeft)}px`,
                               width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
@@ -212,9 +224,9 @@ export default function App() {
                             key={event.id}
                             type="button"
                             onClick={() => playClipNow(event.clip, player)}
-                            className={`timeline-event ${getTrackAccent(event.track)}`}
+                            className={`timeline-event ${getTrackAccent(event.track)} ${getTimelineTextSizeClass(event.displayWidth)}`}
                             style={{
-                              left: `${event.displayLeft}px`,
+                              left: `${Math.min(1080, event.displayLeft)}px`,
                               width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}

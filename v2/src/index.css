@@ -268,6 +268,7 @@ button {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.03);
   padding: 8px 10px;
+  scrollbar-width: thin;
 }
 
 .timeline-event {
@@ -288,6 +289,34 @@ button {
   font-size: 0.72rem;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.timeline-event-md span {
+  font-size: 0.72rem;
+  line-height: 1.05;
+}
+
+.timeline-event-md small {
+  font-size: 0.88rem;
+}
+
+.timeline-event-sm span {
+  font-size: 0.62rem;
+  line-height: 1.05;
+}
+
+.timeline-event-sm small {
+  font-size: 0.75rem;
+}
+
+.timeline-event-xs span {
+  font-size: 0.54rem;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+}
+
+.timeline-event-xs small {
+  font-size: 0.68rem;
 }
 
 .track-a {
