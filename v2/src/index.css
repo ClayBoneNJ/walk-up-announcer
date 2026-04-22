@@ -1,0 +1,192 @@
+:root {
+  color-scheme: dark;
+  font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+  background:
+    radial-gradient(circle at top, rgba(51, 120, 214, 0.22), transparent 28%),
+    linear-gradient(180deg, #08101c 0%, #050913 100%);
+  color: #f4f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  margin: 0 auto;
+  max-width: 1180px;
+  padding: 20px 16px 48px;
+}
+
+.hero-card,
+.panel,
+.screen-card {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 16, 28, 0.78);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.hero-card {
+  border-radius: 28px;
+  padding: 24px;
+}
+
+.hero-topline,
+.panel-kicker {
+  color: #8dc6ff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hero-card h1 {
+  margin: 12px 0 10px;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+.hero-card p,
+.screen-card p,
+.panel p,
+.stack-row span,
+.rule-list li {
+  color: rgba(236, 242, 250, 0.82);
+  line-height: 1.5;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.status-pill {
+  border: 1px solid rgba(123, 211, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(72, 169, 255, 0.12);
+  padding: 9px 13px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.content-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.panel {
+  border-radius: 24px;
+  padding: 20px;
+}
+
+.screen-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.screen-card {
+  border-radius: 22px;
+  padding: 18px;
+}
+
+.screen-card h2 {
+  margin: 12px 0 8px;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+
+.screen-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(109, 192, 255, 0.22), rgba(49, 101, 220, 0.18));
+}
+
+.screen-icon,
+.callout-icon {
+  width: 22px;
+  height: 22px;
+  color: #bde2ff;
+}
+
+.two-col {
+  display: grid;
+  gap: 18px;
+}
+
+.rule-list {
+  margin: 16px 0 0;
+  padding-left: 18px;
+}
+
+.rule-list li + li {
+  margin-top: 8px;
+}
+
+.stack-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.stack-row {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.stack-row strong {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.callout {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+@media (min-width: 720px) {
+  .app-shell {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  .screen-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .two-col {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
