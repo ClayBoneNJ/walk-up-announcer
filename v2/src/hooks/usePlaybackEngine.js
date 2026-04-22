@@ -1,14 +1,38 @@
 import { useMemo, useRef, useState } from "react";
 
-function wait(ms) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
+const STOP_FADE_MS = 480;
 
 function createAudio(src) {
   const audio = new Audio(src);
   audio.preload = "auto";
   audio.playsInline = true;
   return audio;
+}
+
+function fadeAudioOut(audio, durationMs = STOP_FADE_MS) {
+  return new Promise((resolve) => {
+    if (!audio) {
+      resolve();
+      return;
+    }
+
+    const startingVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
+    const fadeStart = performance.now();
+
+    const tick = (now) => {
+      const progress = Math.max(0, Math.min(1, (now - fadeStart) / Math.max(1, durationMs)));
+      audio.volume = startingVolume * (1 - progress);
+
+      if (progress >= 1) {
+        resolve();
+        return;
+      }
+
+      window.requestAnimationFrame(tick);
+    };
+
+    window.requestAnimationFrame(tick);
+  });
 }
 
 export function usePlaybackEngine() {
@@ -37,14 +61,7 @@ export function usePlaybackEngine() {
     await Promise.all(
       activeAudios.map(async (audio) => {
         try {
-          const steps = 6;
-          const startingVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
-
-          for (let index = steps - 1; index >= 0; index -= 1) {
-            audio.volume = startingVolume * (index / steps);
-            await wait(28);
-          }
-
+          await fadeAudioOut(audio);
           audio.pause();
           audio.currentTime = 0;
           audio.removeAttribute("src");
