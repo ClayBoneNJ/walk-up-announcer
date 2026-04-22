@@ -256,21 +256,37 @@ button {
   gap: 6px;
 }
 
+.announcement-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.announcement-option-button {
+  min-height: 36px;
+  border: 1px solid rgba(125, 211, 252, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d7e6fb;
+  padding: 0 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.announcement-option-button-active {
+  border-color: rgba(125, 211, 252, 0.4);
+  background: rgba(72, 169, 255, 0.18);
+  color: #effbff;
+}
+
 .player-config-field span {
   color: #8dc6ff;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-}
-
-.player-config-field select {
-  min-height: 40px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  color: #f4f7fb;
-  padding: 0 12px;
 }
 
 .player-card h3,

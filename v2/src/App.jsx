@@ -14,7 +14,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-21";
+const APP_BUILD_LABEL = "v2-alpha-22";
 const TIMELINE_TOTAL_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 
@@ -265,26 +265,31 @@ export default function App() {
                   </div>
 
                     <div className="player-config-row">
-                      <label
-                        className="player-config-field"
-                        htmlFor={`announcement-${player.id}`}
-                      >
+                      <div className="player-config-field">
                         <span>Announcement</span>
-                        <select
-                          id={`announcement-${player.id}`}
-                          value={player.sequence.find((event) => event.track === "A" && event.startMs === 0)?.clip.id || ""}
-                          onChange={(event) => updateAnnouncement(player.id, event.target.value)}
+                        <div
+                          className="announcement-button-row"
+                          role="group"
+                          aria-label={`${player.name} announcement`}
                         >
-                          {announcementOptions.map((clip) => (
-                            <option
-                              key={clip.id}
-                              value={clip.id}
-                            >
-                              {clip.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                          {announcementOptions.map((clip) => {
+                            const selected =
+                              player.sequence.find((event) => event.track === "A" && event.startMs === 0)?.clip.id ===
+                              clip.id;
+
+                            return (
+                              <button
+                                key={clip.id}
+                                type="button"
+                                onClick={() => updateAnnouncement(player.id, clip.id)}
+                                className={`announcement-option-button ${selected ? "announcement-option-button-active" : ""}`}
+                              >
+                                {clip.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="timeline-shell">
