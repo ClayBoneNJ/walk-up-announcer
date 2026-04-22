@@ -437,6 +437,7 @@ export function useAudioEngine({ volume, fadeMs }) {
   const sessionRef = useRef(null);
   const progressFrameRef = useRef(null);
   const requestIdRef = useRef(0);
+  const sourceWarmPromisesRef = useRef(new Map());
   const [activePlayback, setActivePlayback] = useState(null);
   const [isPaused, setIsPaused] = useState(false);
   const [playbackProgress, setPlaybackProgress] = useState(0);
@@ -485,8 +486,51 @@ export function useAudioEngine({ volume, fadeMs }) {
     });
   };
 
+  const warmSourceForPlayback = async (src) => {
+    if (!src) {
+      return;
+    }
+
+    const existing = sourceWarmPromisesRef.current.get(src);
+    if (existing) {
+      return existing;
+    }
+
+    const loadPromise = (async () => {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 4000);
+
+      try {
+        const response = await fetch(src, {
+          cache: "force-cache",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Unable to warm audio source: ${response.status}`);
+        }
+
+        await response.arrayBuffer();
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+    })();
+
+    sourceWarmPromisesRef.current.set(src, loadPromise);
+
+    try {
+      await loadPromise;
+    } catch (error) {
+      sourceWarmPromisesRef.current.delete(src);
+      throw error;
+    }
+  };
+
   const primeSongSources = async (sources = []) => {
-    return Promise.resolve(sources);
+    const uniqueSources = [...new Set(sources.filter(Boolean))];
+    await Promise.allSettled(
+      uniqueSources.map((src) => warmSourceForPlayback(src)),
+    );
   };
 
   const stopProgressLoop = () => {

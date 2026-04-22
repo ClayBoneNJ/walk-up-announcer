@@ -35,7 +35,7 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v49";
+const APP_BUILD_LABEL = "v50";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
@@ -284,22 +284,25 @@ export default function App() {
     () => getFreestyleGroups(players, libraries),
     [players, libraries],
   );
-  const songSources = useMemo(
-    () =>
-      players
-        .map((player) => player.songClip?.dataUrl ?? player.songClip?.src ?? "")
-        .filter(Boolean),
-    [players],
-  );
+  const playbackWarmSources = useMemo(() => {
+    const sequenceSources = players.flatMap((player) =>
+      resolvePlayerSequence(player, libraries).map((item) => item.dataUrl ?? item.src ?? ""),
+    );
+    const librarySources = Object.values(libraries).flatMap((clips) =>
+      clips.map((clip) => clip.dataUrl ?? clip.src ?? ""),
+    );
+
+    return [...new Set([...sequenceSources, ...librarySources].filter(Boolean))];
+  }, [players, libraries]);
 
   useEffect(() => {
-    primeSongSources(songSources);
-  }, [songSources]);
+    primeSongSources(playbackWarmSources);
+  }, [playbackWarmSources]);
 
   const handleArmAudio = async () => {
     setIsArmingAudio(true);
     try {
-      await primeSongSources(songSources);
+      await primeSongSources(playbackWarmSources);
     } finally {
       setIsArmingAudio(false);
     }
