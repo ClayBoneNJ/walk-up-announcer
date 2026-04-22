@@ -12,9 +12,9 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-12";
-const TIMELINE_LEFT_SCALE = 8;
-const TIMELINE_WIDTH_SCALE = 120;
+const APP_BUILD_LABEL = "v2-alpha-13";
+const TIMELINE_LEFT_SCALE = 10;
+const TIMELINE_WIDTH_SCALE = 95;
 const TIMELINE_EVENT_GAP = 8;
 
 function formatMs(ms) {
