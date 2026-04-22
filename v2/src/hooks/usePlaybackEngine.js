@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 
-const STOP_FADE_MS = 480;
+const STOP_FADE_MS = 700;
 
 function createAudio(src) {
   const audio = new Audio(src);

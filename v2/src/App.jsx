@@ -12,7 +12,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-04";
+const APP_BUILD_LABEL = "v2-alpha-05";
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
