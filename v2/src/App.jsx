@@ -12,9 +12,10 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-15";
-const TIMELINE_EVENT_GAP_PCT = 1.1;
-const TIMELINE_MIN_WIDTH_PCT = 5.2;
+const APP_BUILD_LABEL = "v2-alpha-16";
+const TIMELINE_EVENT_GAP_PCT = 1.8;
+const TIMELINE_MIN_WIDTH_PCT = 4.8;
+const TIMELINE_EVENT_TRIM_PCT = 0.45;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -39,7 +40,7 @@ function getDisplayEventsForTrack(sequence, track, totalDurationMs) {
       return {
         ...event,
         displayLeft: startLeft,
-        displayWidth: naturalWidth,
+        displayWidth: Math.max(TIMELINE_MIN_WIDTH_PCT, naturalWidth - TIMELINE_EVENT_TRIM_PCT),
       };
     }
 
@@ -52,7 +53,10 @@ function getDisplayEventsForTrack(sequence, track, totalDurationMs) {
     return {
       ...event,
       displayLeft: startLeft,
-      displayWidth: Math.min(naturalWidth, maxWidthBeforeNext),
+      displayWidth: Math.max(
+        TIMELINE_MIN_WIDTH_PCT,
+        Math.min(naturalWidth - TIMELINE_EVENT_TRIM_PCT, maxWidthBeforeNext),
+      ),
     };
   });
 }
