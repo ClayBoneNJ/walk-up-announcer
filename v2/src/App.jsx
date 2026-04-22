@@ -12,9 +12,10 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { clipLibrary, players, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-10";
+const APP_BUILD_LABEL = "v2-alpha-11";
 const TIMELINE_LEFT_SCALE = 24;
 const TIMELINE_WIDTH_SCALE = 120;
+const TIMELINE_EVENT_GAP = 8;
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -22,6 +23,33 @@ function formatMs(ms) {
 
 function getTrackAccent(track) {
   return track === "B" ? "track-b" : "track-a";
+}
+
+function getDisplayEventsForTrack(sequence, track) {
+  const trackEvents = sequence.filter((event) => event.track === track);
+
+  return trackEvents.map((event, index) => {
+    const nextEvent = trackEvents[index + 1] ?? null;
+    const startLeft = Math.min(360, event.startMs / TIMELINE_LEFT_SCALE);
+    const naturalWidth = Math.max(68, event.clip.durationMs / TIMELINE_WIDTH_SCALE);
+
+    if (!nextEvent) {
+      return {
+        ...event,
+        displayLeft: startLeft,
+        displayWidth: naturalWidth,
+      };
+    }
+
+    const nextLeft = Math.min(360, nextEvent.startMs / TIMELINE_LEFT_SCALE);
+    const maxWidthBeforeNext = Math.max(52, nextLeft - startLeft - TIMELINE_EVENT_GAP);
+
+    return {
+      ...event,
+      displayLeft: startLeft,
+      displayWidth: Math.min(naturalWidth, maxWidthBeforeNext),
+    };
+  });
 }
 
 export default function App() {
@@ -158,8 +186,7 @@ export default function App() {
 
                   <div className="timeline-shell">
                     <div className="timeline-lane">
-                      {player.sequence
-                        .filter((event) => event.track === "A")
+                      {getDisplayEventsForTrack(player.sequence, "A")
                         .map((event) => (
                           <button
                             key={event.id}
@@ -167,8 +194,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)}`}
                             style={{
-                              left: `${Math.min(360, event.startMs / TIMELINE_LEFT_SCALE)}px`,
-                              width: `${Math.max(74, event.clip.durationMs / TIMELINE_WIDTH_SCALE)}px`,
+                              left: `${event.displayLeft}px`,
+                              width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
@@ -179,8 +206,7 @@ export default function App() {
                     </div>
 
                     <div className="timeline-lane">
-                      {player.sequence
-                        .filter((event) => event.track === "B")
+                      {getDisplayEventsForTrack(player.sequence, "B")
                         .map((event) => (
                           <button
                             key={event.id}
@@ -188,8 +214,8 @@ export default function App() {
                             onClick={() => playClipNow(event.clip, player)}
                             className={`timeline-event ${getTrackAccent(event.track)}`}
                             style={{
-                              left: `${Math.min(360, event.startMs / TIMELINE_LEFT_SCALE)}px`,
-                              width: `${Math.max(74, event.clip.durationMs / TIMELINE_WIDTH_SCALE)}px`,
+                              left: `${event.displayLeft}px`,
+                              width: `${event.displayWidth}px`,
                             }}
                             title={`${event.clip.label} at ${formatMs(event.startMs)}`}
                           >
