@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v34";
+const APP_BUILD_LABEL = "v35";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -59,12 +59,22 @@ function serializePlayerSequences(playerSequences) {
 
 function hydrateSavedPlayerSequences(savedPlayers) {
   const basePlayers = createInitialPlayerSequences();
+  const basePlayerMap = new Map(basePlayers.map((player) => [player.id, player]));
   const savedPlayerMap = new Map(
     Array.isArray(savedPlayers) ? savedPlayers.map((player) => [player.id, player]) : [],
   );
+  const orderedPlayerIds = [
+    ...savedPlayerMap.keys(),
+    ...basePlayers.map((player) => player.id).filter((playerId) => !savedPlayerMap.has(playerId)),
+  ];
 
-  return basePlayers.map((player) => {
+  return orderedPlayerIds.map((playerId) => {
+    const player = basePlayerMap.get(playerId);
     const savedPlayer = savedPlayerMap.get(player.id);
+
+    if (!player) {
+      return null;
+    }
 
     if (!savedPlayer) {
       return player;
@@ -94,7 +104,7 @@ function hydrateSavedPlayerSequences(savedPlayers) {
         };
       }),
     };
-  });
+  }).filter(Boolean);
 }
 
 function loadSavedPlayerSequences() {
