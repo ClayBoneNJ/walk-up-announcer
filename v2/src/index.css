@@ -258,120 +258,6 @@ button {
   align-items: start;
 }
 
-.batting-order-shell {
-  display: grid;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 12px;
-  border: 1px solid rgba(125, 211, 252, 0.14);
-  border-radius: 20px;
-  background: rgba(11, 19, 34, 0.72);
-}
-
-.batting-order-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.batting-order-hint {
-  color: rgba(217, 232, 248, 0.76);
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.batting-order-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.batting-order-pill {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 0 12px;
-  border: 1px solid rgba(125, 211, 252, 0.16);
-  border-radius: 999px;
-  background: linear-gradient(145deg, rgba(32, 52, 83, 0.92), rgba(11, 18, 34, 0.96));
-  color: #f6fbff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transition: transform 120ms ease, border-color 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
-}
-
-.batting-order-pill-editing {
-  border-color: rgba(125, 211, 252, 0.28);
-  padding-right: 8px;
-}
-
-.batting-order-pill-index,
-.batting-order-pill-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 24px;
-  min-height: 24px;
-  padding: 0 7px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.batting-order-pill-index {
-  background: rgba(125, 211, 252, 0.16);
-  color: #9fddff;
-}
-
-.batting-order-pill-number {
-  background: rgba(250, 204, 21, 0.14);
-  color: #fde68a;
-}
-
-.batting-order-pill-name {
-  overflow: hidden;
-  max-width: 18ch;
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.batting-order-pill-controls {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-left: 2px;
-}
-
-.batting-order-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(125, 211, 252, 0.24);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #eaf7ff;
-  transition: transform 120ms ease, border-color 120ms ease, opacity 120ms ease;
-}
-
-.batting-order-arrow:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: rgba(125, 211, 252, 0.44);
-}
-
-.batting-order-arrow:disabled {
-  opacity: 0.3;
-}
-
 .player-grid,
 .clip-group-grid,
 .clip-grid {
@@ -523,6 +409,34 @@ button {
   gap: 8px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.player-order-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.player-order-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #eaf7ff;
+  transition: transform 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+.player-order-arrow:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.44);
+}
+
+.player-order-arrow:disabled {
+  opacity: 0.3;
 }
 
 .player-status-pill {
@@ -1115,41 +1029,19 @@ button {
     align-items: stretch;
   }
 
-  .batting-order-shell {
-    padding: 10px;
-  }
-
-  .batting-order-pills {
-    gap: 6px;
-  }
-
-  .batting-order-pill {
-    min-height: 36px;
-    padding: 0 10px;
-    gap: 7px;
-  }
-
-  .batting-order-pill-editing {
-    padding-right: 7px;
-  }
-
-  .batting-order-pill-name {
-    max-width: 11ch;
-    font-size: 0.74rem;
-  }
-
-  .batting-order-pill-controls {
-    gap: 3px;
-  }
-
-  .batting-order-arrow {
-    width: 26px;
-    height: 26px;
-  }
-
   .player-actions {
     width: 100%;
     justify-content: stretch;
+  }
+
+  .player-order-controls {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .player-order-arrow {
+    width: 30px;
+    height: 30px;
   }
 
   .primary-action,

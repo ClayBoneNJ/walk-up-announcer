@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v31";
+const APP_BUILD_LABEL = "v32";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
@@ -592,56 +592,8 @@ export default function App() {
               </button>
             </div>
 
-            <div className="batting-order-shell">
-              <div className="batting-order-header">
-                <span className="panel-kicker">Batting Order</span>
-                <span className="batting-order-hint">
-                  {isEditingBattingOrder ? "Tap the arrows on each pill, then tap Done Order." : "Tap Edit Batting Order to rearrange."}
-                </span>
-              </div>
-
-              <div className="batting-order-pills">
-                {playerSequences.map((player, index) => {
-                  return (
-                    <div
-                      key={player.id}
-                      className={`batting-order-pill ${isEditingBattingOrder ? "batting-order-pill-editing" : ""}`}
-                      aria-label={`Batting order ${index + 1}: ${player.name}`}
-                    >
-                      <span className="batting-order-pill-index">{index + 1}</span>
-                      <span className="batting-order-pill-number">#{player.jerseyNumber}</span>
-                      <span className="batting-order-pill-name">{player.name}</span>
-
-                      {isEditingBattingOrder ? (
-                        <span className="batting-order-pill-controls">
-                          <button
-                            type="button"
-                            onClick={() => movePlayerInOrder(player.id, -1)}
-                            className="batting-order-arrow"
-                            aria-label={`Move ${player.name} up in batting order`}
-                            disabled={index === 0}
-                          >
-                            <ChevronUp className="button-icon" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => movePlayerInOrder(player.id, 1)}
-                            className="batting-order-arrow"
-                            aria-label={`Move ${player.name} down in batting order`}
-                            disabled={index === playerSequences.length - 1}
-                          >
-                            <ChevronDown className="button-icon" />
-                          </button>
-                        </span>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="player-grid">
-              {playerSequences.map((player) => {
+              {playerSequences.map((player, index) => {
                 const trackAEvents = getDisplayEventsForTrack(
                   player.sequence,
                   "A",
@@ -703,6 +655,28 @@ export default function App() {
                     </div>
 
                     <div className="player-actions">
+                      {isEditingBattingOrder ? (
+                        <span className="player-order-controls">
+                          <button
+                            type="button"
+                            onClick={() => movePlayerInOrder(player.id, -1)}
+                            className="player-order-arrow"
+                            aria-label={`Move ${player.name} up in batting order`}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="button-icon" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePlayerInOrder(player.id, 1)}
+                            className="player-order-arrow"
+                            aria-label={`Move ${player.name} down in batting order`}
+                            disabled={index === playerSequences.length - 1}
+                          >
+                            <ChevronDown className="button-icon" />
+                          </button>
+                        </span>
+                      ) : null}
                       {activePlayerId === player.id ? <span className="player-status-pill">Current</span> : null}
 
                       <button
