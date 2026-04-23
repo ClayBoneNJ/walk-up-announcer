@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v30";
+const APP_BUILD_LABEL = "v31";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
@@ -159,15 +159,15 @@ function getPositionClip(positionLabel) {
   return positionOptions.find((clip) => clip.label === positionLabel) ?? null;
 }
 
-function reorderPlayersById(playerList, draggedPlayerId, targetPlayerId) {
-  if (!draggedPlayerId || !targetPlayerId || draggedPlayerId === targetPlayerId) {
+function movePlayerByDirection(playerList, playerId, direction) {
+  if (!playerId || !direction) {
     return playerList;
   }
 
-  const fromIndex = playerList.findIndex((player) => player.id === draggedPlayerId);
-  const toIndex = playerList.findIndex((player) => player.id === targetPlayerId);
+  const fromIndex = playerList.findIndex((player) => player.id === playerId);
+  const toIndex = fromIndex + direction;
 
-  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+  if (fromIndex < 0 || toIndex < 0 || toIndex >= playerList.length) {
     return playerList;
   }
 
@@ -181,8 +181,6 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("walkups");
   const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
   const [isEditingBattingOrder, setIsEditingBattingOrder] = useState(false);
-  const [draggingPlayerId, setDraggingPlayerId] = useState("");
-  const [dragOverPlayerId, setDragOverPlayerId] = useState("");
   const [collapsedPlayers, setCollapsedPlayers] = useState(() =>
     Object.fromEntries(players.map((player) => [player.id, true])),
   );
@@ -282,24 +280,19 @@ export default function App() {
   const handleBattingOrderToggle = () => {
     if (isEditingBattingOrder) {
       persistPlayerSequences(playerSequences);
-      setDraggingPlayerId("");
-      setDragOverPlayerId("");
     }
 
     setIsEditingBattingOrder((current) => !current);
   };
 
-  const handleBattingOrderDrop = (targetPlayerId) => {
-    if (!isEditingBattingOrder || !draggingPlayerId || draggingPlayerId === targetPlayerId) {
-      setDragOverPlayerId("");
+  const movePlayerInOrder = (playerId, direction) => {
+    if (!isEditingBattingOrder) {
       return;
     }
 
     setPlayerSequences((currentPlayers) =>
-      reorderPlayersById(currentPlayers, draggingPlayerId, targetPlayerId),
+      movePlayerByDirection(currentPlayers, playerId, direction),
     );
-    setDragOverPlayerId("");
-    setDraggingPlayerId("");
   };
 
   const updateAnnouncement = (playerId, announcementId) => {
@@ -603,52 +596,45 @@ export default function App() {
               <div className="batting-order-header">
                 <span className="panel-kicker">Batting Order</span>
                 <span className="batting-order-hint">
-                  {isEditingBattingOrder ? "Drag pills to rearrange, then tap Done Order." : "Tap Edit Batting Order to rearrange."}
+                  {isEditingBattingOrder ? "Tap the arrows on each pill, then tap Done Order." : "Tap Edit Batting Order to rearrange."}
                 </span>
               </div>
 
               <div className="batting-order-pills">
                 {playerSequences.map((player, index) => {
-                  const isDragged = draggingPlayerId === player.id;
-                  const isDropTarget = dragOverPlayerId === player.id;
-
                   return (
-                    <button
+                    <div
                       key={player.id}
-                      type="button"
-                      draggable={isEditingBattingOrder}
-                      onDragStart={() => {
-                        if (!isEditingBattingOrder) {
-                          return;
-                        }
-
-                        setDraggingPlayerId(player.id);
-                      }}
-                      onDragEnd={() => {
-                        setDraggingPlayerId("");
-                        setDragOverPlayerId("");
-                      }}
-                      onDragOver={(event) => {
-                        if (!isEditingBattingOrder || draggingPlayerId === player.id) {
-                          return;
-                        }
-
-                        event.preventDefault();
-                        if (dragOverPlayerId !== player.id) {
-                          setDragOverPlayerId(player.id);
-                        }
-                      }}
-                      onDrop={(event) => {
-                        event.preventDefault();
-                        handleBattingOrderDrop(player.id);
-                      }}
-                      className={`batting-order-pill ${isEditingBattingOrder ? "batting-order-pill-editing" : ""} ${isDragged ? "batting-order-pill-dragging" : ""} ${isDropTarget ? "batting-order-pill-target" : ""}`}
+                      className={`batting-order-pill ${isEditingBattingOrder ? "batting-order-pill-editing" : ""}`}
                       aria-label={`Batting order ${index + 1}: ${player.name}`}
                     >
                       <span className="batting-order-pill-index">{index + 1}</span>
                       <span className="batting-order-pill-number">#{player.jerseyNumber}</span>
                       <span className="batting-order-pill-name">{player.name}</span>
-                    </button>
+
+                      {isEditingBattingOrder ? (
+                        <span className="batting-order-pill-controls">
+                          <button
+                            type="button"
+                            onClick={() => movePlayerInOrder(player.id, -1)}
+                            className="batting-order-arrow"
+                            aria-label={`Move ${player.name} up in batting order`}
+                            disabled={index === 0}
+                          >
+                            <ChevronUp className="button-icon" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePlayerInOrder(player.id, 1)}
+                            className="batting-order-arrow"
+                            aria-label={`Move ${player.name} down in batting order`}
+                            disabled={index === playerSequences.length - 1}
+                          >
+                            <ChevronDown className="button-icon" />
+                          </button>
+                        </span>
+                      ) : null}
+                    </div>
                   );
                 })}
               </div>

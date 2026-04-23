@@ -304,18 +304,8 @@ button {
 }
 
 .batting-order-pill-editing {
-  cursor: grab;
   border-color: rgba(125, 211, 252, 0.28);
-}
-
-.batting-order-pill-dragging {
-  opacity: 0.45;
-  transform: scale(0.97);
-}
-
-.batting-order-pill-target {
-  border-color: rgba(250, 204, 21, 0.64);
-  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.2);
+  padding-right: 8px;
 }
 
 .batting-order-pill-index,
@@ -351,6 +341,35 @@ button {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+.batting-order-pill-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+}
+
+.batting-order-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(125, 211, 252, 0.24);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #eaf7ff;
+  transition: transform 120ms ease, border-color 120ms ease, opacity 120ms ease;
+}
+
+.batting-order-arrow:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(125, 211, 252, 0.44);
+}
+
+.batting-order-arrow:disabled {
+  opacity: 0.3;
 }
 
 .player-grid,
@@ -1110,9 +1129,22 @@ button {
     gap: 7px;
   }
 
+  .batting-order-pill-editing {
+    padding-right: 7px;
+  }
+
   .batting-order-pill-name {
-    max-width: 14ch;
+    max-width: 11ch;
     font-size: 0.74rem;
+  }
+
+  .batting-order-pill-controls {
+    gap: 3px;
+  }
+
+  .batting-order-arrow {
+    width: 26px;
+    height: 26px;
   }
 
   .player-actions {
