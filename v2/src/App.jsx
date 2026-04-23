@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v33";
+const APP_BUILD_LABEL = "v34";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -291,11 +291,11 @@ export default function App() {
     );
   };
 
-  const handleBattingOrderToggle = () => {
-    if (isEditingBattingOrder) {
-      persistPlayerSequences(playerSequences);
-    }
+  useEffect(() => {
+    persistPlayerSequences(playerSequences);
+  }, [playerSequences]);
 
+  const handleBattingOrderToggle = () => {
     setIsEditingBattingOrder((current) => !current);
   };
 
