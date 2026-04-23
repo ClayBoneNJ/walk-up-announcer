@@ -35,6 +35,19 @@ function fadeAudioOut(audio, durationMs = STOP_FADE_MS) {
   });
 }
 
+function stopAudioNow(audio) {
+  if (!audio) {
+    return;
+  }
+
+  audio.onended = null;
+  audio.onerror = null;
+  audio.pause();
+  audio.currentTime = 0;
+  audio.removeAttribute("src");
+  audio.load();
+}
+
 export function usePlaybackEngine() {
   const warmCacheRef = useRef(new Map());
   const activeAudiosRef = useRef([]);
@@ -51,7 +64,7 @@ export function usePlaybackEngine() {
     sequenceTimeoutsRef.current = [];
   };
 
-  const fadeOutAndStopAll = async () => {
+  const fadeOutAndStopAll = async ({ fadeOut = true } = {}) => {
     playbackGenerationRef.current += 1;
     clearSequenceTimeouts();
 
@@ -61,11 +74,11 @@ export function usePlaybackEngine() {
     await Promise.all(
       activeAudios.map(async (audio) => {
         try {
-          await fadeAudioOut(audio);
-          audio.pause();
-          audio.currentTime = 0;
-          audio.removeAttribute("src");
-          audio.load();
+          if (fadeOut) {
+            await fadeAudioOut(audio);
+          }
+
+          stopAudioNow(audio);
         } catch {}
       }),
     );
@@ -102,8 +115,8 @@ export function usePlaybackEngine() {
     });
   };
 
-  const playClipNow = async (clip, player = null) => {
-    await fadeOutAndStopAll();
+  const playClipNow = async (clip, player = null, { fadeOutPrevious = true } = {}) => {
+    await fadeOutAndStopAll({ fadeOut: fadeOutPrevious });
 
     const audio = createAudio(clip.src);
     activeAudiosRef.current = [audio];
@@ -113,6 +126,11 @@ export function usePlaybackEngine() {
       clipName: clip.label,
       playerId: player?.id || clip.playerId || "",
       playerName: player?.name || clip.playerName || "",
+      relatedPlayerIds: Array.isArray(clip.playerIds)
+        ? clip.playerIds.filter(Boolean)
+        : player?.id || clip.playerId
+          ? [player?.id || clip.playerId]
+          : [],
     });
 
     audio.onended = () => {

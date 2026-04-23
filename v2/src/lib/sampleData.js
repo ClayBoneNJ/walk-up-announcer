@@ -5,7 +5,11 @@ import {
   Users,
 } from "lucide-react";
 
-function clip({ id, group, label, src, durationMs, playerId = "", playerName = "" }) {
+function assetSrc(folder, fileName) {
+  return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}`;
+}
+
+function clip({ id, group, label, src, durationMs, playerId = "", playerName = "", ...extra }) {
   return {
     id,
     group,
@@ -14,14 +18,34 @@ function clip({ id, group, label, src, durationMs, playerId = "", playerName = "
     durationMs,
     playerId,
     playerName,
+    ...extra,
   };
+}
+
+function slugify(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function eventClip(group, fileName, durationMs = 6000) {
+  const label = fileName.replace(/\.(mp3|wav)$/i, "");
+  return clip({
+    id: `${group}-${slugify(label)}`,
+    group,
+    label,
+    src: assetSrc(`events/${group}`, fileName),
+    durationMs,
+  });
 }
 
 const announcementNowBatting = clip({
   id: "announcement-now-batting",
   group: "announcements",
   label: "Now Batting",
-  src: "/assets/audio/announcements/now batting.mp3",
+  src: assetSrc("announcements", "now batting.mp3"),
   durationMs: 1313,
 });
 
@@ -29,7 +53,7 @@ const announcementMakeSomeNoise = clip({
   id: "announcement-make-some-noise",
   group: "announcements",
   label: "Make Some Noise For",
-  src: "/assets/audio/announcements/MAKE SOME NOISE.mp3",
+  src: assetSrc("announcements", "MAKE SOME NOISE.mp3"),
   durationMs: 2126,
 });
 
@@ -37,7 +61,7 @@ const announcementComingToPlate = clip({
   id: "announcement-coming-to-plate",
   group: "announcements",
   label: "Coming To Plate",
-  src: "/assets/audio/announcements/COMING TO THE PLAT.mp3",
+  src: assetSrc("announcements", "COMING TO THE PLAT.mp3"),
   durationMs: 1682,
 });
 
@@ -45,7 +69,7 @@ const announcementLetsHearItFor = clip({
   id: "announcement-lets-hear-it-for",
   group: "announcements",
   label: "Let's Hear It For",
-  src: "/assets/audio/announcements/LETS HEREE IT FOR.mp3",
+  src: assetSrc("announcements", "LETS HEREE IT FOR.mp3"),
   durationMs: 1627,
 });
 
@@ -53,73 +77,292 @@ const announcementUpNext = clip({
   id: "announcement-up-next",
   group: "announcements",
   label: "Up Next",
-  src: "/assets/audio/announcements/UP NEXT.mp3",
+  src: assetSrc("announcements", "UP NEXT.mp3"),
   durationMs: 1152,
 });
 
-const number23 = clip({
-  id: "number-23",
-  group: "numbers",
-  label: "#23",
-  src: "/assets/audio/numbers/23.mp3",
+const positionPitcher = clip({
+  id: "position-p",
+  group: "positions",
+  label: "P",
+  src: assetSrc("positions", "PITCHER.mp3"),
   durationMs: 1000,
 });
 
-const number88 = clip({
-  id: "number-88",
-  group: "numbers",
-  label: "#88",
-  src: "/assets/audio/numbers/88.mp3",
+const positionCatcher = clip({
+  id: "position-c",
+  group: "positions",
+  label: "C",
+  src: assetSrc("positions", "CATCHER.mp3"),
   durationMs: 1000,
 });
 
-const landonName = clip({
-  id: "name-landon",
-  group: "names",
-  label: "Landon Hanrahan",
-  src: "/assets/audio/names/LANDON HANRAHAN.mp3",
-  durationMs: 1300,
-  playerId: "landon",
-  playerName: "Landon Hanrahan",
+const positionFirstBase = clip({
+  id: "position-1b",
+  group: "positions",
+  label: "1B",
+  src: assetSrc("positions", "FIRST BASEMEN.mp3"),
+  durationMs: 1000,
 });
 
-const loganName = clip({
-  id: "name-logan",
-  group: "names",
-  label: "Logan Hanrahan",
-  src: "/assets/audio/names/LOGAN HANRAHAN.mp3",
-  durationMs: 1300,
-  playerId: "logan",
-  playerName: "Logan Hanrahan",
+const positionSecondBase = clip({
+  id: "position-2b",
+  group: "positions",
+  label: "2B",
+  src: assetSrc("positions", "SECOND BASEMEN.mp3"),
+  durationMs: 1000,
 });
 
-const landonSong = clip({
-  id: "song-landon",
-  group: "songs",
-  label: "All I Do Is Win",
-  src: "/assets/audio/songs/landon-hanrahan-mobile.wav",
-  durationMs: 13000,
-  playerId: "landon",
-  playerName: "Landon Hanrahan",
+const positionThirdBase = clip({
+  id: "position-3b",
+  group: "positions",
+  label: "3B",
+  src: assetSrc("positions", "THIRD BASEMEN.mp3"),
+  durationMs: 1000,
 });
 
-const loganSong = clip({
-  id: "song-logan",
-  group: "songs",
-  label: "Fireball",
-  src: "/assets/audio/songs/logan-hanrahan-mobile.wav",
-  durationMs: 13000,
-  playerId: "logan",
-  playerName: "Logan Hanrahan",
+const positionShortStop = clip({
+  id: "position-ss",
+  group: "positions",
+  label: "SS",
+  src: assetSrc("positions", "SHORT STOP.mp3"),
+  durationMs: 1000,
 });
+
+const positionLeftField = clip({
+  id: "position-lf",
+  group: "positions",
+  label: "LF",
+  src: assetSrc("positions", "LEFT FIELDER.mp3"),
+  durationMs: 1000,
+});
+
+const positionCenterField = clip({
+  id: "position-cf",
+  group: "positions",
+  label: "CF",
+  src: assetSrc("positions", "CENTER FIELDER.mp3"),
+  durationMs: 1000,
+});
+
+const positionRightField = clip({
+  id: "position-rf",
+  group: "positions",
+  label: "RF",
+  src: assetSrc("positions", "RIGHT FIELDER.mp3"),
+  durationMs: 1000,
+});
+
+const basePositionClips = [
+  positionPitcher,
+  positionCatcher,
+  positionFirstBase,
+  positionSecondBase,
+  positionThirdBase,
+  positionShortStop,
+  positionLeftField,
+  positionCenterField,
+  positionRightField,
+];
+
+const teamPlayerData = [
+  {
+    id: "alex",
+    name: "Alex Bonk",
+    jerseyNumber: "9",
+    position: "",
+    role: "Walkup",
+    songLabel: "Centuries",
+    songFileName: "alex-bonk-mobile.wav",
+    songDurationMs: 18250,
+  },
+  {
+    id: "benjamin",
+    name: "Benjamin Yunker",
+    jerseyNumber: "24",
+    position: "SS",
+    role: "Walkup",
+    songLabel: "Humpty Dance",
+    songFileName: "benjamin-yunker-mobile.wav",
+    songDurationMs: 19000,
+  },
+  {
+    id: "billy",
+    name: "Billy Wanko",
+    jerseyNumber: "28",
+    position: "3B",
+    role: "Walkup",
+    songLabel: "Headstrong",
+    songFileName: "billy-wanko-mobile.wav",
+    songDurationMs: 11925,
+  },
+  {
+    id: "camden",
+    name: "Camden Pagoda",
+    jerseyNumber: "33",
+    position: "CF",
+    role: "Walkup",
+    songLabel: "Toxicity",
+    songFileName: "camden-pagoda-mobile.wav",
+    songDurationMs: 17000,
+  },
+  {
+    id: "giovanni",
+    name: "Giovanni Turchi",
+    jerseyNumber: "2",
+    position: "2B",
+    role: "Walkup",
+    songLabel: "Hypnotize",
+    songFileName: "giovanni-turchi-mobile.wav",
+    songDurationMs: 17750,
+  },
+  {
+    id: "landon",
+    name: "Landon Hanrahan",
+    jerseyNumber: "23",
+    position: "C",
+    role: "Walkup",
+    songLabel: "Fireball",
+    songFileName: "landon-hanrahan-mobile.wav",
+    songDurationMs: 13000,
+  },
+  {
+    id: "logan",
+    name: "Logan Hanrahan",
+    jerseyNumber: "88",
+    position: "1B",
+    role: "Walkup",
+    songLabel: "All I Do Is Win",
+    songFileName: "logan-hanrahan-mobile.wav",
+    songDurationMs: 20750,
+  },
+  {
+    id: "marty",
+    name: "Marty Happle",
+    jerseyNumber: "16",
+    position: "CF",
+    role: "Walkup",
+    songLabel: "Savior",
+    songFileName: "marty-happle-mobile.wav",
+    songDurationMs: 17704,
+  },
+  {
+    id: "matty",
+    name: "Matty Wanko",
+    jerseyNumber: "4",
+    position: "P",
+    role: "Walkup",
+    songLabel: "Everlong",
+    songFileName: "matty-wanko-mobile.wav",
+    songDurationMs: 26841,
+  },
+  {
+    id: "nate",
+    name: "Nate Clay",
+    jerseyNumber: "13",
+    position: "LF",
+    role: "Walkup",
+    songLabel: "Cant Stop",
+    songFileName: "nate-clay-mobile.wav",
+    songDurationMs: 19250,
+  },
+  {
+    id: "tristan",
+    name: "Tristan Aquino",
+    jerseyNumber: "17",
+    position: "RF",
+    role: "Walkup",
+    songLabel: "EoO",
+    songFileName: "tristan-aquino-mobile.wav",
+    songDurationMs: 18000,
+  },
+];
+
+const numberClips = ["2", "4", "9", "13", "16", "17", "23", "24", "28", "33", "48", "88"].map((number) =>
+  clip({
+    id: `number-${number}`,
+    group: "numbers",
+    label: `#${number}`,
+    src: assetSrc("numbers", `${number}.mp3`),
+    durationMs: 1000,
+    playerIds: teamPlayerData.filter((player) => player.jerseyNumber === number).map((player) => player.id),
+    playerNames: teamPlayerData.filter((player) => player.jerseyNumber === number).map((player) => player.name),
+  }),
+);
+
+const positionClips = basePositionClips.map((positionClip) => ({
+  ...positionClip,
+  playerIds: teamPlayerData.filter((player) => player.position === positionClip.label).map((player) => player.id),
+  playerNames: teamPlayerData.filter((player) => player.position === positionClip.label).map((player) => player.name),
+}));
+
+const nameClips = teamPlayerData.map((player) =>
+  clip({
+    id: `name-${player.id}`,
+    group: "names",
+    label: player.name,
+    src: assetSrc("names", `${player.name.toUpperCase()}.mp3`),
+    durationMs: 1300,
+    playerId: player.id,
+    playerName: player.name,
+  }),
+);
+
+const songClips = teamPlayerData.map((player) =>
+  clip({
+    id: `song-${player.id}`,
+    group: "songs",
+    label: player.songLabel,
+    src: assetSrc("songs", player.songFileName),
+    durationMs: player.songDurationMs,
+    playerId: player.id,
+    playerName: player.name,
+  }),
+);
+
+const numberClipByValue = Object.fromEntries(numberClips.map((numberClip) => [numberClip.label.slice(1), numberClip]));
+const nameClipByPlayerId = Object.fromEntries(nameClips.map((nameClip) => [nameClip.playerId, nameClip]));
+const songClipByPlayerId = Object.fromEntries(songClips.map((songClip) => [songClip.playerId, songClip]));
 
 const crowdHereWeGo = clip({
   id: "crowd-here-we-go",
   group: "crowd",
   label: "Here We Go",
-  src: "/assets/audio/events/crowd-hype/Here We Go.mp3",
+  src: assetSrc("events/crowd-hype", "Here We Go.mp3"),
   durationMs: 6000,
 });
+
+const umpireCallClips = [
+  "he gone.mp3",
+  "hes outta there.mp3",
+  "strike 3 hes out.mp3",
+  "Hes SAFE!.mp3",
+  "hasta la vista baby.mp3",
+  "bye have a good time.mp3",
+].map((fileName) => eventClip("umpire-calls", fileName, 5500));
+
+const playerHypeClips = [
+  "BILL! BILL! BILL!.mp3",
+  "88 mph.mp3",
+  "my homie nate.mp3",
+].map((fileName) => eventClip("player-hype", fileName, 4500));
+
+const crowdHypeClips = [
+  "when i say.mp3",
+  "Here We Go.mp3",
+  "Organ Scale Chant.mp3",
+  "we will rock you.mp3",
+  "Bullfighter.mp3",
+  "defence.mp3",
+  "whistle bomb.mp3",
+  "eye of the tiger.mp3",
+  "clap yo hands.mp3",
+  "GTA Sound Effect.mp3",
+  "WOW!.mp3",
+  "1up.mp3",
+  "boom goes the dynamite.mp3",
+  "three best friends.mp3",
+].map((fileName) => eventClip("crowd-hype", fileName, 6500));
 
 export const clipLibrary = [
   announcementNowBatting,
@@ -127,13 +370,14 @@ export const clipLibrary = [
   announcementComingToPlate,
   announcementLetsHearItFor,
   announcementUpNext,
-  number23,
-  number88,
-  landonName,
-  loganName,
-  landonSong,
-  loganSong,
+  ...numberClips,
+  ...positionClips,
+  ...nameClips,
+  ...songClips,
   crowdHereWeGo,
+  ...umpireCallClips,
+  ...playerHypeClips,
+  ...crowdHypeClips,
 ];
 
 function event(id, track, startMs, clip) {
@@ -145,32 +389,20 @@ function event(id, track, startMs, clip) {
   };
 }
 
-export const players = [
-  {
-    id: "landon",
-    name: "Landon Hanrahan",
-    jerseyNumber: "23",
-    role: "Walkup A",
-    sequence: [
-      event("landon-announcement", "A", 0, announcementNowBatting),
-      event("landon-number", "A", 1200, number23),
-      event("landon-name", "A", 2550, landonName),
-      event("landon-song", "B", 3400, landonSong),
-    ],
-  },
-  {
-    id: "logan",
-    name: "Logan Hanrahan",
-    jerseyNumber: "88",
-    role: "Walkup B",
-    sequence: [
-      event("logan-announcement", "A", 0, announcementNowBatting),
-      event("logan-number", "A", 1200, number88),
-      event("logan-name", "A", 2550, loganName),
-      event("logan-song", "B", 3400, loganSong),
-    ],
-  },
-];
+export const players = teamPlayerData.map((player) => ({
+  id: player.id,
+  name: player.name,
+  jerseyNumber: player.jerseyNumber,
+  role: player.role,
+  position: player.position,
+  usePositionClip: Boolean(player.position),
+  sequence: [
+    event(`${player.id}-announcement`, "A", 0, announcementNowBatting),
+    event(`${player.id}-number`, "A", 1250, numberClipByValue[player.jerseyNumber]),
+    event(`${player.id}-name`, "A", 2600, nameClipByPlayerId[player.id]),
+    event(`${player.id}-song`, "B", 3600, songClipByPlayerId[player.id]),
+  ],
+}));
 
 export const screenTabs = [
   { id: "walkups", label: "Walkups", icon: Users },
@@ -185,4 +417,8 @@ export const announcementOptions = [
   announcementComingToPlate,
   announcementLetsHearItFor,
   announcementUpNext,
+];
+
+export const positionOptions = [
+  ...positionClips,
 ];
