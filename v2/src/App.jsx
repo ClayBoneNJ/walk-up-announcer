@@ -17,21 +17,26 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v28";
+const APP_BUILD_LABEL = "v29";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 const V1_POSITION_BY_JERSEY = {
+  9: "P",
   23: "SS",
   88: "LF",
 };
 const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
 
+function getDefaultPosition(player) {
+  return player.position || V1_POSITION_BY_JERSEY[player.jerseyNumber] || "";
+}
+
 function createInitialPlayerSequences() {
   return players.map((player) => ({
     ...player,
-    position: player.position ?? V1_POSITION_BY_JERSEY[player.jerseyNumber] ?? "",
+    position: getDefaultPosition(player),
     usePositionClip: player.usePositionClip ?? false,
     sequence: player.sequence.map((event) => ({ ...event })),
   }));
@@ -70,7 +75,7 @@ function hydrateSavedPlayerSequences(savedPlayers) {
 
     return {
       ...player,
-      position: savedPlayer.position ?? player.position,
+      position: savedPlayer.position || player.position,
       usePositionClip: savedPlayer.usePositionClip ?? player.usePositionClip ?? false,
       sequence: player.sequence.map((event) => {
         const savedEvent = savedSequenceMap.get(event.id);
@@ -411,8 +416,9 @@ export default function App() {
           return player;
         }
 
+        const nextPosition = player.position || getDefaultPosition(player);
         const currentCalloutEvent = getTrackACalloutEvent(player.sequence);
-        const nextPositionClip = getPositionClip(player.position);
+        const nextPositionClip = getPositionClip(nextPosition);
         const nextNumberClip = clipLibrary.find(
           (clip) => clip.group === "numbers" && clip.label === `#${player.jerseyNumber}`,
         );
@@ -421,6 +427,7 @@ export default function App() {
         if (!currentCalloutEvent || !replacementClip) {
           return {
             ...player,
+            position: nextPosition,
             usePositionClip,
           };
         }
@@ -431,6 +438,7 @@ export default function App() {
 
         return {
           ...player,
+          position: nextPosition,
           usePositionClip,
           sequence: player.sequence.map((event) =>
             event.id === currentCalloutEvent.id
