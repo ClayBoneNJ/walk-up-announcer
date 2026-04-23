@@ -17,14 +17,98 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v27";
+const APP_BUILD_LABEL = "v28";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
+const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 const V1_POSITION_BY_JERSEY = {
   23: "SS",
   88: "LF",
 };
+const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
+
+function createInitialPlayerSequences() {
+  return players.map((player) => ({
+    ...player,
+    position: player.position ?? V1_POSITION_BY_JERSEY[player.jerseyNumber] ?? "",
+    usePositionClip: player.usePositionClip ?? false,
+    sequence: player.sequence.map((event) => ({ ...event })),
+  }));
+}
+
+function serializePlayerSequences(playerSequences) {
+  return playerSequences.map((player) => ({
+    id: player.id,
+    position: player.position ?? "",
+    usePositionClip: player.usePositionClip ?? false,
+    sequence: player.sequence.map((event) => ({
+      id: event.id,
+      track: event.track,
+      startMs: event.startMs,
+      clipId: event.clip?.id ?? "",
+    })),
+  }));
+}
+
+function hydrateSavedPlayerSequences(savedPlayers) {
+  const basePlayers = createInitialPlayerSequences();
+  const savedPlayerMap = new Map(
+    Array.isArray(savedPlayers) ? savedPlayers.map((player) => [player.id, player]) : [],
+  );
+
+  return basePlayers.map((player) => {
+    const savedPlayer = savedPlayerMap.get(player.id);
+
+    if (!savedPlayer) {
+      return player;
+    }
+
+    const savedSequenceMap = new Map(
+      Array.isArray(savedPlayer.sequence) ? savedPlayer.sequence.map((event) => [event.id, event]) : [],
+    );
+
+    return {
+      ...player,
+      position: savedPlayer.position ?? player.position,
+      usePositionClip: savedPlayer.usePositionClip ?? player.usePositionClip ?? false,
+      sequence: player.sequence.map((event) => {
+        const savedEvent = savedSequenceMap.get(event.id);
+        const savedClip = savedEvent?.clipId ? clipById.get(savedEvent.clipId) : null;
+
+        if (!savedEvent) {
+          return event;
+        }
+
+        return {
+          ...event,
+          track: savedEvent.track ?? event.track,
+          startMs: typeof savedEvent.startMs === "number" ? savedEvent.startMs : event.startMs,
+          clip: savedClip ?? event.clip,
+        };
+      }),
+    };
+  });
+}
+
+function loadSavedPlayerSequences() {
+  if (typeof window === "undefined") {
+    return createInitialPlayerSequences();
+  }
+
+  try {
+    const raw = window.localStorage.getItem(PLAYER_SEQUENCES_STORAGE_KEY);
+
+    if (!raw) {
+      return createInitialPlayerSequences();
+    }
+
+    const parsed = JSON.parse(raw);
+    return hydrateSavedPlayerSequences(parsed);
+  } catch {
+    return createInitialPlayerSequences();
+  }
+}
 
 function formatMs(ms) {
   return `${(ms / 1000).toFixed(ms % 1000 === 0 ? 0 : 1)}s`;
@@ -72,14 +156,7 @@ function getPositionClip(positionLabel) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("walkups");
-  const [playerSequences, setPlayerSequences] = useState(() =>
-    players.map((player) => ({
-      ...player,
-      position: player.position ?? V1_POSITION_BY_JERSEY[player.jerseyNumber] ?? "",
-      usePositionClip: player.usePositionClip ?? false,
-      sequence: player.sequence.map((event) => ({ ...event })),
-    })),
-  );
+  const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
   const [collapsedPlayers, setCollapsedPlayers] = useState(() =>
     Object.fromEntries(players.map((player) => [player.id, true])),
   );
@@ -163,6 +240,17 @@ export default function App() {
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
+  };
+
+  const persistPlayerSequences = (nextPlayerSequences) => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      PLAYER_SEQUENCES_STORAGE_KEY,
+      JSON.stringify(serializePlayerSequences(nextPlayerSequences)),
+    );
   };
 
   const updateAnnouncement = (playerId, announcementId) => {
@@ -525,12 +613,16 @@ export default function App() {
                       </button>
                       <button
                         type="button"
-                        onClick={() =>
+                        onClick={() => {
+                          if (!isCollapsed) {
+                            persistPlayerSequences(playerSequences);
+                          }
+
                           setCollapsedPlayers((current) => ({
                             ...current,
                             [player.id]: !isCollapsed,
-                          }))
-                        }
+                          }));
+                        }}
                         className="player-edit-button"
                         aria-label={`${isCollapsed ? "Expand" : "Collapse"} ${player.name} sequence editor`}
                       >
