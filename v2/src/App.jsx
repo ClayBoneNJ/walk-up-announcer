@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v2-alpha-26";
+const APP_BUILD_LABEL = "v27";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];

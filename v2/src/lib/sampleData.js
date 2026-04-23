@@ -395,7 +395,7 @@ export const players = teamPlayerData.map((player) => ({
   jerseyNumber: player.jerseyNumber,
   role: player.role,
   position: player.position,
-  usePositionClip: Boolean(player.position),
+  usePositionClip: false,
   sequence: [
     event(`${player.id}-announcement`, "A", 0, announcementNowBatting),
     event(`${player.id}-number`, "A", 1250, numberClipByValue[player.jerseyNumber]),
