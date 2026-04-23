@@ -17,9 +17,10 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v32";
+const APP_BUILD_LABEL = "v33";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
+const ORDER_MOVE_ANIMATION_MS = 320;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 const V1_POSITION_BY_JERSEY = {
@@ -181,6 +182,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("walkups");
   const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
   const [isEditingBattingOrder, setIsEditingBattingOrder] = useState(false);
+  const [orderMovementCue, setOrderMovementCue] = useState(null);
   const [collapsedPlayers, setCollapsedPlayers] = useState(() =>
     Object.fromEntries(players.map((player) => [player.id, true])),
   );
@@ -266,6 +268,18 @@ export default function App() {
     await primeSources(warmSources);
   };
 
+  useEffect(() => {
+    if (!orderMovementCue) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setOrderMovementCue(null);
+    }, ORDER_MOVE_ANIMATION_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [orderMovementCue]);
+
   const persistPlayerSequences = (nextPlayerSequences) => {
     if (typeof window === "undefined") {
       return;
@@ -290,6 +304,10 @@ export default function App() {
       return;
     }
 
+    setOrderMovementCue({
+      playerId,
+      direction: direction < 0 ? "up" : "down",
+    });
     setPlayerSequences((currentPlayers) =>
       movePlayerByDirection(currentPlayers, playerId, direction),
     );
@@ -613,11 +631,17 @@ export default function App() {
                   null;
                 const songEvent = player.sequence.find((event) => event.track === "B");
                 const isCollapsed = collapsedPlayers[player.id] ?? false;
+                const moveCueClass =
+                  orderMovementCue?.playerId === player.id
+                    ? orderMovementCue.direction === "up"
+                      ? "player-card-order-up"
+                      : "player-card-order-down"
+                    : "";
 
                 return (
                   <article
                     key={player.id}
-                    className={`player-card ${isCollapsed ? "player-card-collapsed" : "player-card-expanded"} ${activePlayerId === player.id ? "player-card-live" : ""}`}
+                    className={`player-card ${isCollapsed ? "player-card-collapsed" : "player-card-expanded"} ${activePlayerId === player.id ? "player-card-live" : ""} ${moveCueClass}`}
                   >
                   <div className="player-meta">
                     <div className="player-identity">

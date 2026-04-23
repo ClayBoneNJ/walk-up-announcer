@@ -304,6 +304,48 @@ button {
     rgba(8, 14, 31, 0.92);
 }
 
+.player-card-order-up {
+  animation: player-order-bump-up 320ms ease;
+}
+
+.player-card-order-down {
+  animation: player-order-bump-down 320ms ease;
+}
+
+@keyframes player-order-bump-up {
+  0% {
+    transform: translateY(10px) scale(0.992);
+    box-shadow: 0 0 0 rgba(72, 169, 255, 0);
+  }
+
+  45% {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 14px 34px rgba(72, 169, 255, 0.22);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 rgba(72, 169, 255, 0);
+  }
+}
+
+@keyframes player-order-bump-down {
+  0% {
+    transform: translateY(-10px) scale(0.992);
+    box-shadow: 0 0 0 rgba(72, 169, 255, 0);
+  }
+
+  45% {
+    transform: translateY(5px) scale(1.01);
+    box-shadow: 0 14px 34px rgba(72, 169, 255, 0.22);
+  }
+
+  100% {
+    transform: translateY(0) scale(1);
+    box-shadow: 0 0 0 rgba(72, 169, 255, 0);
+  }
+}
+
 .player-meta {
   display: flex;
   gap: 14px;
