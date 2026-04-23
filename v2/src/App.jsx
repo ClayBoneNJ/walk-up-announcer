@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v29";
+const APP_BUILD_LABEL = "v30";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
@@ -159,9 +159,30 @@ function getPositionClip(positionLabel) {
   return positionOptions.find((clip) => clip.label === positionLabel) ?? null;
 }
 
+function reorderPlayersById(playerList, draggedPlayerId, targetPlayerId) {
+  if (!draggedPlayerId || !targetPlayerId || draggedPlayerId === targetPlayerId) {
+    return playerList;
+  }
+
+  const fromIndex = playerList.findIndex((player) => player.id === draggedPlayerId);
+  const toIndex = playerList.findIndex((player) => player.id === targetPlayerId);
+
+  if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+    return playerList;
+  }
+
+  const nextPlayers = [...playerList];
+  const [movedPlayer] = nextPlayers.splice(fromIndex, 1);
+  nextPlayers.splice(toIndex, 0, movedPlayer);
+  return nextPlayers;
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState("walkups");
   const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
+  const [isEditingBattingOrder, setIsEditingBattingOrder] = useState(false);
+  const [draggingPlayerId, setDraggingPlayerId] = useState("");
+  const [dragOverPlayerId, setDragOverPlayerId] = useState("");
   const [collapsedPlayers, setCollapsedPlayers] = useState(() =>
     Object.fromEntries(players.map((player) => [player.id, true])),
   );
@@ -256,6 +277,29 @@ export default function App() {
       PLAYER_SEQUENCES_STORAGE_KEY,
       JSON.stringify(serializePlayerSequences(nextPlayerSequences)),
     );
+  };
+
+  const handleBattingOrderToggle = () => {
+    if (isEditingBattingOrder) {
+      persistPlayerSequences(playerSequences);
+      setDraggingPlayerId("");
+      setDragOverPlayerId("");
+    }
+
+    setIsEditingBattingOrder((current) => !current);
+  };
+
+  const handleBattingOrderDrop = (targetPlayerId) => {
+    if (!isEditingBattingOrder || !draggingPlayerId || draggingPlayerId === targetPlayerId) {
+      setDragOverPlayerId("");
+      return;
+    }
+
+    setPlayerSequences((currentPlayers) =>
+      reorderPlayersById(currentPlayers, draggingPlayerId, targetPlayerId),
+    );
+    setDragOverPlayerId("");
+    setDraggingPlayerId("");
   };
 
   const updateAnnouncement = (playerId, announcementId) => {
@@ -543,6 +587,70 @@ export default function App() {
                   Voice clips live on Track A. Songs start on Track B when you want the overlap
                   to kick in.
                 </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleBattingOrderToggle}
+                className={`player-edit-button ${isEditingBattingOrder ? "player-edit-button-active" : ""}`}
+              >
+                <Library className="button-icon" />
+                <span>{isEditingBattingOrder ? "Done Order" : "Edit Batting Order"}</span>
+              </button>
+            </div>
+
+            <div className="batting-order-shell">
+              <div className="batting-order-header">
+                <span className="panel-kicker">Batting Order</span>
+                <span className="batting-order-hint">
+                  {isEditingBattingOrder ? "Drag pills to rearrange, then tap Done Order." : "Tap Edit Batting Order to rearrange."}
+                </span>
+              </div>
+
+              <div className="batting-order-pills">
+                {playerSequences.map((player, index) => {
+                  const isDragged = draggingPlayerId === player.id;
+                  const isDropTarget = dragOverPlayerId === player.id;
+
+                  return (
+                    <button
+                      key={player.id}
+                      type="button"
+                      draggable={isEditingBattingOrder}
+                      onDragStart={() => {
+                        if (!isEditingBattingOrder) {
+                          return;
+                        }
+
+                        setDraggingPlayerId(player.id);
+                      }}
+                      onDragEnd={() => {
+                        setDraggingPlayerId("");
+                        setDragOverPlayerId("");
+                      }}
+                      onDragOver={(event) => {
+                        if (!isEditingBattingOrder || draggingPlayerId === player.id) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        if (dragOverPlayerId !== player.id) {
+                          setDragOverPlayerId(player.id);
+                        }
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        handleBattingOrderDrop(player.id);
+                      }}
+                      className={`batting-order-pill ${isEditingBattingOrder ? "batting-order-pill-editing" : ""} ${isDragged ? "batting-order-pill-dragging" : ""} ${isDropTarget ? "batting-order-pill-target" : ""}`}
+                      aria-label={`Batting order ${index + 1}: ${player.name}`}
+                    >
+                      <span className="batting-order-pill-index">{index + 1}</span>
+                      <span className="batting-order-pill-number">#{player.jerseyNumber}</span>
+                      <span className="batting-order-pill-name">{player.name}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
