@@ -50,6 +50,7 @@ function stopAudioNow(audio) {
 
 export function usePlaybackEngine() {
   const warmCacheRef = useRef(new Map());
+  const objectUrlCacheRef = useRef(new Map());
   const activeAudiosRef = useRef([]);
   const sequenceTimeoutsRef = useRef([]);
   const playbackGenerationRef = useRef(0);
@@ -62,6 +63,28 @@ export function usePlaybackEngine() {
   const clearSequenceTimeouts = () => {
     sequenceTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
     sequenceTimeoutsRef.current = [];
+  };
+
+  const getPlayableSrc = async (src) => {
+    if (!src) {
+      return src;
+    }
+
+    if (objectUrlCacheRef.current.has(src)) {
+      return objectUrlCacheRef.current.get(src);
+    }
+
+    const cachedPromise = warmCacheRef.current.get(src);
+
+    if (!cachedPromise) {
+      return src;
+    }
+
+    try {
+      return await cachedPromise;
+    } catch {
+      return src;
+    }
   };
 
   const fadeOutAndStopAll = async ({ fadeOut = true } = {}) => {
@@ -100,9 +123,19 @@ export function usePlaybackEngine() {
             if (!response.ok) {
               throw new Error(`Unable to preload ${src}`);
             }
-            return response.arrayBuffer();
+            return response.blob();
           })
-          .then(() => true);
+          .then((blob) => {
+            const previousObjectUrl = objectUrlCacheRef.current.get(src);
+
+            if (previousObjectUrl) {
+              URL.revokeObjectURL(previousObjectUrl);
+            }
+
+            const objectUrl = URL.createObjectURL(blob);
+            objectUrlCacheRef.current.set(src, objectUrl);
+            return objectUrl;
+          });
 
         warmCacheRef.current.set(src, loadPromise);
         return loadPromise;
@@ -118,7 +151,8 @@ export function usePlaybackEngine() {
   const playClipNow = async (clip, player = null, { fadeOutPrevious = true } = {}) => {
     await fadeOutAndStopAll({ fadeOut: fadeOutPrevious });
 
-    const audio = createAudio(clip.src);
+    const playableSrc = await getPlayableSrc(clip.src);
+    const audio = createAudio(playableSrc);
     activeAudiosRef.current = [audio];
     setActivePlayback({
       type: "clip",
@@ -143,6 +177,7 @@ export function usePlaybackEngine() {
 
   const playSequence = async (player) => {
     await fadeOutAndStopAll();
+    await primeSources(player.sequence.map((event) => event.clip?.src));
 
     const generation = playbackGenerationRef.current;
     setActivePlayback({
@@ -159,7 +194,13 @@ export function usePlaybackEngine() {
           return;
         }
 
-        const audio = createAudio(event.clip.src);
+        const playableSrc = await getPlayableSrc(event.clip.src);
+
+        if (generation !== playbackGenerationRef.current) {
+          return;
+        }
+
+        const audio = createAudio(playableSrc);
         activeAudiosRef.current = [...activeAudiosRef.current, audio];
         setActivePlayback({
           type: "sequence",
@@ -184,6 +225,8 @@ export function usePlaybackEngine() {
   };
 
   const resetEngine = async () => {
+    objectUrlCacheRef.current.forEach((objectUrl) => URL.revokeObjectURL(objectUrl));
+    objectUrlCacheRef.current.clear();
     warmCacheRef.current.clear();
     await fadeOutAndStopAll();
     setAudioReadyState({
