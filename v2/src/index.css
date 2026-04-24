@@ -98,6 +98,15 @@ button {
   margin-top: 16px;
 }
 
+.control-row {
+  align-items: center;
+}
+
+.control-row .primary-action,
+.control-row .secondary-action {
+  flex: 1 1 0;
+}
+
 .status-pill,
 .ready-pill {
   flex: 0 0 auto;

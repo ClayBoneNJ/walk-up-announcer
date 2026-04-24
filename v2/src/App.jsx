@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v40";
+const APP_BUILD_LABEL = "v41";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -548,14 +548,6 @@ export default function App() {
           >
             <RotateCcw className="button-icon" />
             Reset Audio
-          </button>
-          <button
-            type="button"
-            onClick={() => fadeOutAndStopAll()}
-            className="danger-action"
-          >
-            <Square className="button-icon" />
-            Fade All
           </button>
         </div>
 
