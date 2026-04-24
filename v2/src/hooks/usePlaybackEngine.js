@@ -2,58 +2,26 @@ import { useMemo, useRef, useState } from "react";
 
 const STOP_FADE_MS = 700;
 
-function createAudioController(src, audioContext = null) {
+function createAudio(src) {
   const audio = new Audio(src);
   audio.preload = "auto";
   audio.playsInline = true;
-
-  if (!audioContext) {
-    return {
-      audio,
-      gainNode: null,
-      sourceNode: null,
-    };
-  }
-
-  const gainNode = audioContext.createGain();
-  gainNode.gain.value = 1;
-  const sourceNode = audioContext.createMediaElementSource(audio);
-  sourceNode.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-
-  return {
-    audio,
-    gainNode,
-    sourceNode,
-  };
+  return audio;
 }
 
-function fadeAudioOut(audioController, durationMs = STOP_FADE_MS) {
+function fadeAudioOut(audio, durationMs = STOP_FADE_MS) {
   return new Promise((resolve) => {
-    const audio = audioController?.audio;
-    const gainNode = audioController?.gainNode;
-
     if (!audio) {
       resolve();
       return;
     }
 
-    const startingVolume = gainNode
-      ? gainNode.gain.value
-      : Number.isFinite(audio.volume)
-        ? audio.volume
-        : 1;
+    const startingVolume = Number.isFinite(audio.volume) ? audio.volume : 1;
     const fadeStart = performance.now();
 
     const tick = (now) => {
       const progress = Math.max(0, Math.min(1, (now - fadeStart) / Math.max(1, durationMs)));
-      const nextLevel = startingVolume * (1 - progress);
-
-      if (gainNode) {
-        gainNode.gain.value = nextLevel;
-      } else {
-        audio.volume = nextLevel;
-      }
+      audio.volume = startingVolume * (1 - progress);
 
       if (progress >= 1) {
         resolve();
@@ -67,9 +35,7 @@ function fadeAudioOut(audioController, durationMs = STOP_FADE_MS) {
   });
 }
 
-function stopAudioNow(audioController) {
-  const audio = audioController?.audio;
-
+function stopAudioNow(audio) {
   if (!audio) {
     return;
   }
@@ -80,18 +46,9 @@ function stopAudioNow(audioController) {
   audio.currentTime = 0;
   audio.removeAttribute("src");
   audio.load();
-
-  try {
-    audioController?.sourceNode?.disconnect();
-  } catch {}
-
-  try {
-    audioController?.gainNode?.disconnect();
-  } catch {}
 }
 
 export function usePlaybackEngine() {
-  const audioContextRef = useRef(null);
   const warmCacheRef = useRef(new Map());
   const objectUrlCacheRef = useRef(new Map());
   const activeAudiosRef = useRef([]);
@@ -102,44 +59,10 @@ export function usePlaybackEngine() {
     offline: false,
     armed: false,
   });
-  const prefersPlainAudioRef = useRef(false);
 
   const clearSequenceTimeouts = () => {
     sequenceTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
     sequenceTimeoutsRef.current = [];
-  };
-
-  const ensureAudioContext = async () => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    if (!prefersPlainAudioRef.current) {
-      const userAgent = window.navigator?.userAgent ?? "";
-      prefersPlainAudioRef.current = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
-    }
-
-    if (prefersPlainAudioRef.current) {
-      return null;
-    }
-
-    const ContextCtor = window.AudioContext || window.webkitAudioContext;
-
-    if (!ContextCtor) {
-      return null;
-    }
-
-    if (!audioContextRef.current) {
-      audioContextRef.current = new ContextCtor();
-    }
-
-    if (audioContextRef.current.state === "suspended") {
-      try {
-        await audioContextRef.current.resume();
-      } catch {}
-    }
-
-    return audioContextRef.current;
   };
 
   const getPlayableSrc = async (src) => {
@@ -187,8 +110,6 @@ export function usePlaybackEngine() {
   };
 
   const primeSources = async (sources = []) => {
-    await ensureAudioContext();
-
     const uniqueSources = [...new Set(sources.filter(Boolean))];
 
     await Promise.allSettled(
@@ -231,10 +152,8 @@ export function usePlaybackEngine() {
     await fadeOutAndStopAll({ fadeOut: fadeOutPrevious });
 
     const playableSrc = await getPlayableSrc(clip.src);
-    const audioContext = await ensureAudioContext();
-    const audioController = createAudioController(playableSrc, audioContext);
-    const audio = audioController.audio;
-    activeAudiosRef.current = [audioController];
+    const audio = createAudio(playableSrc);
+    activeAudiosRef.current = [audio];
     setActivePlayback({
       type: "clip",
       clipId: clip.id,
@@ -249,7 +168,7 @@ export function usePlaybackEngine() {
     });
 
     audio.onended = () => {
-      activeAudiosRef.current = activeAudiosRef.current.filter((entry) => entry !== audioController);
+      activeAudiosRef.current = activeAudiosRef.current.filter((entry) => entry !== audio);
       setActivePlayback(null);
     };
 
@@ -281,15 +200,8 @@ export function usePlaybackEngine() {
           return;
         }
 
-        const audioContext = await ensureAudioContext();
-
-        if (generation !== playbackGenerationRef.current) {
-          return;
-        }
-
-        const audioController = createAudioController(playableSrc, audioContext);
-        const audio = audioController.audio;
-        activeAudiosRef.current = [...activeAudiosRef.current, audioController];
+        const audio = createAudio(playableSrc);
+        activeAudiosRef.current = [...activeAudiosRef.current, audio];
         setActivePlayback({
           type: "sequence",
           playerId: player.id,
@@ -299,7 +211,7 @@ export function usePlaybackEngine() {
         });
 
         audio.onended = () => {
-          activeAudiosRef.current = activeAudiosRef.current.filter((entry) => entry !== audioController);
+          activeAudiosRef.current = activeAudiosRef.current.filter((entry) => entry !== audio);
           if (!activeAudiosRef.current.length) {
             setActivePlayback(null);
           }
@@ -317,12 +229,6 @@ export function usePlaybackEngine() {
     objectUrlCacheRef.current.clear();
     warmCacheRef.current.clear();
     await fadeOutAndStopAll();
-    if (audioContextRef.current) {
-      try {
-        await audioContextRef.current.close();
-      } catch {}
-      audioContextRef.current = null;
-    }
     setAudioReadyState({
       offline: false,
       armed: false,
