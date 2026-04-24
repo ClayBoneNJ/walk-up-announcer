@@ -102,6 +102,7 @@ export function usePlaybackEngine() {
     offline: false,
     armed: false,
   });
+  const prefersPlainAudioRef = useRef(false);
 
   const clearSequenceTimeouts = () => {
     sequenceTimeoutsRef.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
@@ -110,6 +111,15 @@ export function usePlaybackEngine() {
 
   const ensureAudioContext = async () => {
     if (typeof window === "undefined") {
+      return null;
+    }
+
+    if (!prefersPlainAudioRef.current) {
+      const userAgent = window.navigator?.userAgent ?? "";
+      prefersPlainAudioRef.current = /Android|iPhone|iPad|iPod|Mobile/i.test(userAgent);
+    }
+
+    if (prefersPlainAudioRef.current) {
       return null;
     }
 
