@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v38";
+const APP_BUILD_LABEL = "v39";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -531,10 +531,6 @@ export default function App() {
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
-        <p>
-          Soundboard-first, mobile-first, and sequence-aware. Every live action is a button
-          trigger, and every player walkup is just timed soundboard events across two tracks.
-        </p>
 
         <div className="control-row">
           <button
