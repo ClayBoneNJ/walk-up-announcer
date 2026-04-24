@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v39";
+const APP_BUILD_LABEL = "v40";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -596,10 +596,6 @@ export default function App() {
               <div>
                 <div className="panel-kicker">Walkups</div>
                 <h2>Player Sequences</h2>
-                <p>
-                  Voice clips live on Track A. Songs start on Track B when you want the overlap
-                  to kick in.
-                </p>
               </div>
 
               <button
