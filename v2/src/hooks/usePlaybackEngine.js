@@ -2,6 +2,27 @@ import { useMemo, useRef, useState } from "react";
 
 const STOP_FADE_MS = 700;
 
+function waitForAudioReady(audio) {
+  return new Promise((resolve) => {
+    if (!audio || audio.readyState >= 2) {
+      resolve();
+      return;
+    }
+
+    const handleReady = () => {
+      audio.removeEventListener("canplay", handleReady);
+      audio.removeEventListener("loadeddata", handleReady);
+      audio.removeEventListener("error", handleReady);
+      resolve();
+    };
+
+    audio.addEventListener("canplay", handleReady, { once: true });
+    audio.addEventListener("loadeddata", handleReady, { once: true });
+    audio.addEventListener("error", handleReady, { once: true });
+    audio.load();
+  });
+}
+
 function createAudioController(src, audioContext = null) {
   const audio = new Audio(src);
   audio.preload = "auto";
@@ -243,6 +264,7 @@ export function usePlaybackEngine() {
       setActivePlayback(null);
     };
 
+    await waitForAudioReady(audio);
     await audio.play().catch(() => null);
   };
 
@@ -295,6 +317,7 @@ export function usePlaybackEngine() {
           }
         };
 
+        await waitForAudioReady(audio);
         await audio.play().catch(() => null);
       }, event.startMs);
 
