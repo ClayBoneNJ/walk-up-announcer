@@ -297,11 +297,15 @@ button {
 }
 
 .player-card-live {
-  border-color: rgba(74, 222, 128, 0.5);
-  box-shadow: 0 14px 40px rgba(16, 185, 129, 0.14);
+  border-color: rgba(255, 255, 255, 0.88);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.18),
+    0 16px 44px rgba(34, 211, 238, 0.22),
+    0 0 32px rgba(250, 204, 21, 0.2);
   background:
-    linear-gradient(90deg, rgba(42, 158, 128, 0.34), rgba(11, 16, 34, 0) 38%),
-    rgba(8, 14, 31, 0.92);
+    radial-gradient(circle at 12% 14%, rgba(255, 255, 255, 0.14), transparent 22%),
+    linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(34, 211, 238, 0.12) 38%, rgba(11, 16, 34, 0.2) 60%),
+    rgba(8, 14, 31, 0.98);
 }
 
 .player-card-order-up {
@@ -479,20 +483,6 @@ button {
 
 .player-order-arrow:disabled {
   opacity: 0.3;
-}
-
-.player-status-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 32px;
-  padding: 0 12px;
-  border-radius: 999px;
-  background: rgba(36, 136, 108, 0.34);
-  color: #c8fff0;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .player-edit-button {
