@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v37";
+const APP_BUILD_LABEL = "v38";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -571,11 +571,7 @@ export default function App() {
             {audioReadyState.armed ? "Audio Armed" : "Tap Arm Audio"}
           </span>
           <span className={`ready-pill ${activePlayback ? "ready-pill-live" : ""}`}>
-            {activePlayback
-              ? activePlayback.type === "sequence"
-                ? `Live Sequence: ${activePlayback.playerName}`
-                : `Live Clip: ${activePlayback.clipName}`
-              : "Idle"}
+            {activePlayback ? "Playing" : "Idle"}
           </span>
         </div>
       </header>
