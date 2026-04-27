@@ -58,6 +58,7 @@ export function usePlaybackEngine() {
   const [audioReadyState, setAudioReadyState] = useState({
     offline: false,
     armed: false,
+    loading: false,
   });
 
   const clearSequenceTimeouts = () => {
@@ -112,6 +113,11 @@ export function usePlaybackEngine() {
   const primeSources = async (sources = []) => {
     const uniqueSources = [...new Set(sources.filter(Boolean))];
 
+    setAudioReadyState((current) => ({
+      ...current,
+      loading: true,
+    }));
+
     await Promise.allSettled(
       uniqueSources.map(async (src) => {
         if (warmCacheRef.current.has(src)) {
@@ -145,6 +151,7 @@ export function usePlaybackEngine() {
     setAudioReadyState({
       offline: true,
       armed: true,
+      loading: false,
     });
   };
 
@@ -232,6 +239,7 @@ export function usePlaybackEngine() {
     setAudioReadyState({
       offline: false,
       armed: false,
+      loading: false,
     });
   };
 

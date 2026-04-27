@@ -17,7 +17,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v45";
+const APP_BUILD_LABEL = "v46";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -536,10 +536,17 @@ export default function App() {
           <button
             type="button"
             onClick={handleArmAudio}
-            className="primary-action"
+            disabled={audioReadyState.loading}
+            className={`primary-action ${
+              audioReadyState.armed
+                ? "primary-action-ready"
+                : audioReadyState.loading
+                  ? "primary-action-loading"
+                  : "primary-action-warning"
+            }`}
           >
             <Waves className="button-icon" />
-            Arm Audio
+            {audioReadyState.armed ? "Audio Ready" : audioReadyState.loading ? "Arming Audio" : "Arm Audio"}
           </button>
           <button
             type="button"
@@ -551,17 +558,6 @@ export default function App() {
           </button>
         </div>
 
-        <div className="ready-row">
-          <span className={`ready-pill ${audioReadyState.offline ? "ready-pill-on" : ""}`}>
-            {audioReadyState.offline ? "Offline Ready" : "Offline Loading"}
-          </span>
-          <span className={`ready-pill ${audioReadyState.armed ? "ready-pill-on" : ""}`}>
-            {audioReadyState.armed ? "Audio Armed" : "Tap Arm Audio"}
-          </span>
-          <span className={`ready-pill ${activePlayback ? "ready-pill-live" : ""}`}>
-            {activePlayback ? "Playing" : "Idle"}
-          </span>
-        </div>
       </header>
 
       <nav className="tab-bar">
