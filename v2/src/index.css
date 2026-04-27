@@ -1068,22 +1068,21 @@ button {
   }
 
   .player-meta {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
     gap: 8px;
   }
 
   .player-actions {
-    flex: 0 0 auto;
-    width: auto;
+    width: 100%;
     gap: 6px;
-    justify-content: flex-end;
-    flex-wrap: nowrap;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .player-order-controls {
-    width: auto;
+    width: 100%;
     justify-content: flex-end;
   }
 
@@ -1123,18 +1122,14 @@ button {
   }
 
   .player-name-row {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 5px;
     min-width: 0;
   }
 
   .player-card h3 {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.95rem;
+    width: 100%;
+    font-size: 1rem;
     line-height: 1;
   }
 
@@ -1173,6 +1168,15 @@ button {
     font-size: 0.66rem;
     letter-spacing: 0.08em;
     white-space: nowrap;
+  }
+
+  .player-card .primary-action.compact {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .player-card .player-edit-button {
+    flex: 0 0 auto;
   }
 
   .player-card .primary-action.compact {
