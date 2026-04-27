@@ -35,27 +35,27 @@ const TABS = [
   { id: "setup", label: "Roster", shortLabel: "Roster", icon: Settings2 },
 ];
 
-const APP_BUILD_LABEL = "v50";
+const APP_BUILD_LABEL = "v51";
 
 const FREESTYLE_GROUP_STYLES = {
   announcements: {
     button:
-      "border-emerald-200/55 bg-[linear-gradient(145deg,rgba(52,211,153,0.42),rgba(5,150,105,0.3)_42%,rgba(15,23,42,0.96))] shadow-[0_10px_22px_rgba(16,185,129,0.22)] hover:border-emerald-100/80",
+      "border-emerald-200/65 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.22),transparent_24%),linear-gradient(145deg,rgba(110,231,183,0.62),rgba(5,150,105,0.42)_48%,rgba(6,78,59,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_10px_24px_rgba(16,185,129,0.3)] hover:border-emerald-100/85",
     chip: "border-emerald-100/45 bg-emerald-200/20 text-emerald-50",
   },
   positions: {
     button:
-      "border-pink-200/55 bg-[linear-gradient(145deg,rgba(244,114,182,0.4),rgba(219,39,119,0.28)_42%,rgba(15,23,42,0.96))] shadow-[0_10px_22px_rgba(236,72,153,0.2)] hover:border-pink-100/80",
+      "border-pink-200/65 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.2),transparent_24%),linear-gradient(145deg,rgba(244,114,182,0.58),rgba(190,24,93,0.42)_48%,rgba(76,5,45,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(236,72,153,0.28)] hover:border-pink-100/85",
     chip: "border-pink-100/45 bg-pink-200/18 text-pink-50",
   },
   numbers: {
     button:
-      "border-yellow-200/60 bg-[linear-gradient(145deg,rgba(250,204,21,0.42),rgba(202,138,4,0.3)_42%,rgba(15,23,42,0.96))] shadow-[0_10px_22px_rgba(234,179,8,0.22)] hover:border-yellow-100/82",
+      "border-yellow-200/70 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.24),transparent_24%),linear-gradient(145deg,rgba(250,204,21,0.64),rgba(161,98,7,0.46)_48%,rgba(63,45,6,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_10px_24px_rgba(234,179,8,0.3)] hover:border-yellow-100/85",
     chip: "border-yellow-100/45 bg-yellow-200/22 text-yellow-50",
   },
   names: {
     button:
-      "border-violet-200/55 bg-[linear-gradient(145deg,rgba(167,139,250,0.4),rgba(124,58,237,0.28)_42%,rgba(15,23,42,0.96))] shadow-[0_10px_22px_rgba(139,92,246,0.22)] hover:border-violet-100/82",
+      "border-violet-200/65 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.2),transparent_24%),linear-gradient(145deg,rgba(167,139,250,0.58),rgba(109,40,217,0.44)_48%,rgba(46,16,101,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(139,92,246,0.3)] hover:border-violet-100/85",
     chip: "border-violet-100/45 bg-violet-200/20 text-violet-50",
   },
   nicknames: {
@@ -65,8 +65,27 @@ const FREESTYLE_GROUP_STYLES = {
   },
   songs: {
     button:
-      "border-red-200/60 bg-[linear-gradient(145deg,rgba(248,113,113,0.44),rgba(220,38,38,0.3)_42%,rgba(15,23,42,0.96))] shadow-[0_10px_22px_rgba(239,68,68,0.24)] hover:border-red-100/85",
+      "border-red-200/70 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.22),transparent_24%),linear-gradient(145deg,rgba(248,113,113,0.62),rgba(185,28,28,0.46)_48%,rgba(69,10,10,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_10px_24px_rgba(239,68,68,0.32)] hover:border-red-100/85",
     chip: "border-red-100/48 bg-red-200/22 text-red-50",
+  },
+};
+
+const SOUNDBOARD_GROUP_STYLES = {
+  umpire: {
+    button:
+      "border-amber-200/70 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.24),transparent_24%),linear-gradient(145deg,rgba(250,204,21,0.64),rgba(161,98,7,0.46)_48%,rgba(63,45,6,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_10px_24px_rgba(234,179,8,0.3)] hover:border-amber-100/85",
+  },
+  player: {
+    button:
+      "border-lime-200/70 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.22),transparent_24%),linear-gradient(145deg,rgba(163,230,53,0.62),rgba(77,124,15,0.44)_48%,rgba(26,46,5,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(132,204,22,0.28)] hover:border-lime-100/85",
+  },
+  crowd: {
+    button:
+      "border-cyan-200/70 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.22),transparent_24%),linear-gradient(145deg,rgba(34,211,238,0.58),rgba(8,145,178,0.42)_48%,rgba(22,78,99,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_10px_24px_rgba(34,211,238,0.26)] hover:border-cyan-100/85",
+  },
+  specialCrowd: {
+    button:
+      "border-orange-100/80 bg-[radial-gradient(circle_at_18%_12%,rgba(255,255,255,0.26),transparent_24%),linear-gradient(145deg,rgba(253,186,116,0.86),rgba(249,115,22,0.76)_42%,rgba(225,29,72,0.62)_72%,rgba(76,5,25,0.98))] shadow-[inset_0_1px_0_rgba(255,255,255,0.24),0_12px_28px_rgba(249,115,22,0.34)] hover:border-white/95",
   },
 };
 
@@ -113,8 +132,36 @@ function getFreestyleEntries(groups) {
   ];
 }
 
+function getFreestyleSections(groups) {
+  const entries = getFreestyleEntries(groups);
+  const sectionMeta = [
+    { id: "announcements", title: "Vox" },
+    { id: "numbers", title: "Number" },
+    { id: "positions", title: "Position" },
+    { id: "names", title: "Name" },
+    { id: "songs", title: "Songs" },
+  ];
+
+  return sectionMeta
+    .map((section) => ({
+      ...section,
+      clips: entries.filter((clip) => clip.groupId === section.id),
+    }))
+    .filter((section) => section.clips.length > 0);
+}
+
 function getFreestyleClipLabel(clip) {
   const nickname = String(clip.nickname || "").trim();
+
+  if (clip.groupId === "songs") {
+    const normalized = nickname.toLowerCase();
+    if (normalized === "all i do is win") {
+      return "Fireball";
+    }
+    if (normalized === "fireball") {
+      return "All I Do Is Win";
+    }
+  }
 
   if (clip.groupId === "announcements") {
     const normalized = nickname.toLowerCase();
@@ -148,6 +195,17 @@ function getFreestyleClipAccent(clip) {
   }
 
   return "";
+}
+
+function getFreestyleBankCounts(groups) {
+  return [
+    { id: "announcements", label: "Vox", count: groups.announcements?.length ?? 0 },
+    { id: "numbers", label: "Nums", count: groups.numbers?.length ?? 0 },
+    { id: "positions", label: "Pos", count: groups.positions?.length ?? 0 },
+    { id: "names", label: "Names", count: groups.names?.length ?? 0 },
+    { id: "nicknames", label: "Tags", count: groups.nicknames?.length ?? 0 },
+    { id: "songs", label: "Songs", count: groups.songs?.length ?? 0 },
+  ];
 }
 
 export default function App() {
@@ -705,21 +763,19 @@ export default function App() {
         </main>
       </div>
 
-      {activeTab !== "walkups" ? (
-        <button
-          type="button"
-          onPointerDown={handleFadeOutAudio}
-          onClick={handleFadeOutAudio}
-          className="fixed inset-x-3 bottom-[calc(5.1rem+env(safe-area-inset-bottom))] z-30 mx-auto flex h-12 max-w-[11rem] touch-manipulation items-center justify-center gap-2 rounded-full border border-rose-300/40 bg-rose-500 px-5 text-sm font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.28)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:inset-x-auto sm:bottom-24 sm:right-4 sm:h-13 sm:max-w-none sm:px-6"
-          aria-label="Fade out audio"
-          title="Fade out audio"
-        >
-          <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-          <span>Fade</span>
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onPointerDown={handleFadeOutAudio}
+        onClick={handleFadeOutAudio}
+        className="fixed bottom-[calc(4.55rem+env(safe-area-inset-bottom))] right-3 z-40 flex h-10 touch-manipulation items-center justify-center gap-2 rounded-full border border-rose-200/60 bg-rose-500 px-3 text-xs font-black uppercase tracking-[0.14em] text-white shadow-[0_16px_34px_rgba(244,63,94,0.32)] transition hover:bg-rose-400 active:translate-y-[2px] active:scale-[0.98] sm:bottom-20 sm:right-4 sm:h-11 sm:px-5"
+        aria-label="Fade out audio"
+        title="Fade out audio"
+      >
+        <Square className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+        <span>Fade</span>
+      </button>
 
-      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl">
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-white/10 bg-slate-950/90 px-2 pb-[max(0.55rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-xl">
         <div className="mx-auto grid w-full max-w-4xl grid-cols-4 gap-2">
           {TABS.map((tab) => {
             const Icon = tab.icon;
@@ -730,7 +786,7 @@ export default function App() {
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1.25rem] px-1 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] leading-none transition sm:px-3 sm:py-3 sm:text-xs sm:tracking-[0.12em] ${
+                className={`flex min-w-0 flex-col items-center justify-center gap-1 rounded-[1rem] px-1 py-1.5 text-[10px] font-semibold uppercase tracking-[0.06em] leading-none transition sm:px-3 sm:py-2 sm:text-xs sm:tracking-[0.12em] ${
                   active
                     ? "bg-sky-400 text-slate-950 shadow-lg shadow-sky-500/30"
                     : "text-slate-300 hover:bg-white/5"
@@ -922,7 +978,7 @@ function WalkupsView({
     </section>
     {players.length && currentBatter ? (
       <div className="fixed inset-x-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-20 mx-auto max-w-4xl sm:inset-x-4 sm:bottom-24">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-stretch gap-2 rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+        <div className="rounded-[1.1rem] border border-white/8 bg-slate-950/84 p-1.5 shadow-[0_14px_34px_rgba(2,6,23,0.42)] backdrop-blur-xl sm:rounded-[1.7rem] sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
           <button
             type="button"
             onClick={() => onPlayCurrentBatter(currentBatter, players)}
@@ -942,18 +998,6 @@ function WalkupsView({
               <CirclePlay className="h-4 w-4 sm:h-4 sm:w-4" />
               <span className="sr-only sm:not-sr-only sm:text-xs sm:font-black sm:uppercase sm:tracking-[0.14em]">Play</span>
             </div>
-          </button>
-
-          <button
-            type="button"
-            onPointerDown={onStopAll}
-            onClick={onStopAll}
-            className="flex min-w-[4.75rem] touch-manipulation items-center justify-center gap-2 rounded-[1rem] border border-rose-300/40 bg-[linear-gradient(145deg,rgba(244,63,94,0.96),rgba(190,24,93,0.88))] px-3 py-2 text-white shadow-[0_16px_28px_rgba(244,63,94,0.22)] transition hover:brightness-110 active:translate-y-[2px] active:scale-[0.98] sm:min-w-[6.25rem] sm:gap-2.5 sm:rounded-[1.7rem] sm:px-4 sm:py-3"
-            aria-label="Fade out audio"
-            title="Fade out audio"
-          >
-            <Square className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-            <span className="text-[10px] font-black uppercase tracking-[0.14em] sm:text-xs">Fade</span>
           </button>
         </div>
       </div>
@@ -993,129 +1037,97 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
       const rightPriority = SPECIAL_CROWD_HYPE_IDS.has(right.id) ? 1 : 0;
       return leftPriority - rightPriority;
     });
+  const [lingerPlayback, setLingerPlayback] = useState(null);
+  const highlightPlayback = activePlayback ?? lingerPlayback;
+  const sections = [
+    { id: "umpire", title: "Umpire Calls", clips: strikeThreeClips },
+    { id: "player", title: "Player Hype", clips: playerHypeClips },
+    { id: "crowd", title: "Crowd Hype", clips: crowdHypeClips },
+  ].filter((section) => section.clips.length > 0);
+
+  useEffect(() => {
+    if (activePlayback) {
+      setLingerPlayback(activePlayback);
+      return undefined;
+    }
+
+    if (!lingerPlayback) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLingerPlayback(null);
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activePlayback, lingerPlayback]);
 
   return (
-    <div className="space-y-3">
-      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-300">
-          Umpire Calls
-        </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {strikeThreeClips.map((clip) => {
-            const isHesSafe = clip.id === "effect-hes-safe";
-            const isActive = activePlayback?.assetId === clip.id;
-            const buttonClass = isHesSafe
-              ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-                  isActive
-                    ? "border-fuchsia-50 bg-[linear-gradient(145deg,rgba(244,114,182,0.92),rgba(168,85,247,0.86)_42%,rgba(59,7,100,0.98))] shadow-[0_0_0_1px_rgba(244,114,182,0.4),0_0_26px_rgba(217,70,239,0.4),0_16px_28px_rgba(168,85,247,0.34)] ring-2 ring-fuchsia-200/85"
-                    : "border-fuchsia-200/70 bg-[linear-gradient(145deg,rgba(217,70,239,0.5),rgba(126,34,206,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(168,85,247,0.24)] hover:border-fuchsia-100/85"
-                }`
-              : `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-                  isActive
-                    ? "border-amber-50 bg-[linear-gradient(145deg,rgba(253,224,71,0.96),rgba(251,146,60,0.88)_42%,rgba(120,53,15,0.98))] shadow-[0_0_0_1px_rgba(253,224,71,0.38),0_0_24px_rgba(251,191,36,0.34),0_16px_28px_rgba(245,158,11,0.3)] ring-2 ring-amber-200/85"
-                    : "border-amber-200/65 bg-[linear-gradient(145deg,rgba(251,191,36,0.48),rgba(217,119,6,0.36)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(245,158,11,0.2)] hover:border-amber-100/85"
-                }`;
+    <div className="space-y-2">
+      <section className="glass-panel overflow-hidden rounded-[0.85rem] border border-white/8 sm:rounded-[1rem]">
+        <div className="space-y-0.5 p-0.5 sm:p-1">
+          {sections.map((section) => (
+            <section key={section.id} className="grid gap-px">
+              <div className="text-[8px] font-black uppercase tracking-[0.24em] text-white/36">
+                {section.title}
+              </div>
+              <div className="grid auto-rows-[4.65rem] grid-cols-5 gap-0.5 sm:auto-rows-[6.25rem]">
+                {section.clips.map((clip) => {
+                  const isActive = highlightPlayback?.assetId === clip.id;
+                  const isSpecialCrowdHype = section.id === "crowd" && SPECIAL_CROWD_HYPE_IDS.has(clip.id);
+                  const accentClass = isSpecialCrowdHype
+                    ? SOUNDBOARD_GROUP_STYLES.specialCrowd.button
+                    : SOUNDBOARD_GROUP_STYLES[section.id].button;
 
-            return (
-              <button
-                key={clip.id}
-                type="button"
-                onClick={() => onPlayClip({ clip })}
-                className={buttonClass}
-              >
-                <div className="flex h-full flex-col items-center justify-center">
-                  <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
-                    {clip.nickname}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
+                  return (
+                    <button
+                      key={clip.id}
+                      type="button"
+                      onClick={() => onPlayClip({ clip })}
+                      className={`group relative overflow-hidden rounded-[0.28rem] border text-center transition duration-150 active:scale-[0.94] active:translate-y-[2px] px-1 py-1 ${
+                        isActive
+                          ? "border-white bg-[linear-gradient(145deg,rgba(255,255,255,0.98),rgba(254,240,138,0.94)_48%,rgba(34,211,238,0.9))] text-slate-950 shadow-[0_0_0_2px_rgba(255,255,255,0.72),0_0_34px_rgba(250,204,21,0.5),0_18px_30px_rgba(34,211,238,0.26)] ring-4 ring-yellow-200/85"
+                          : accentClass
+                      }`}
+                    >
+                      <div
+                        className={`absolute inset-x-1 bottom-1 h-0.5 overflow-hidden rounded-full ${
+                          isActive ? "bg-slate-950/18" : "bg-black/26"
+                        }`}
+                      >
+                        <div
+                          className={`h-full rounded-full transition-[width] duration-100 ${
+                            isActive ? "bg-slate-950/75" : "bg-white/75"
+                          }`}
+                          style={{ width: isActive ? (activePlayback ? "100%" : "100%") : "18%" }}
+                        />
+                      </div>
+                      <div
+                        className={`pointer-events-none absolute right-1 top-1 z-10 ${
+                          isActive ? "text-slate-950/62" : "text-white/38"
+                        }`}
+                      >
+                        <Volume2 className="h-2.5 w-2.5" />
+                      </div>
+                      <div className="relative z-10 flex h-full min-w-0 flex-col items-center justify-center px-1 pt-1">
+                        <div
+                          className={`max-w-full truncate whitespace-nowrap font-extrabold uppercase leading-none tracking-[0] drop-shadow-[0_1px_2px_rgba(0,0,0,0.48)] ${
+                            isActive ? "text-slate-950" : "text-white"
+                          } text-[12px] sm:text-[18px]`}
+                        >
+                          {clip.nickname}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
 
-          {strikeThreeClips.length === 0 ? (
-            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
-              No strike 3 clips loaded yet.
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-lime-300">
-          Player Hype
-        </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {playerHypeClips.map((clip) => {
-            const isActive = activePlayback?.assetId === clip.id;
-            const buttonClass = `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-              isActive
-                ? "border-lime-50 bg-[linear-gradient(145deg,rgba(190,242,100,0.96),rgba(132,204,22,0.88)_42%,rgba(54,83,20,0.98))] shadow-[0_0_0_1px_rgba(190,242,100,0.36),0_0_24px_rgba(132,204,22,0.32),0_16px_28px_rgba(101,163,13,0.28)] ring-2 ring-lime-200/85"
-                : "border-lime-200/65 bg-[linear-gradient(145deg,rgba(163,230,53,0.5),rgba(77,124,15,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(101,163,13,0.22)] hover:border-lime-100/85"
-            }`;
-
-            return (
-              <button
-                key={clip.id}
-                type="button"
-                onClick={() => onPlayClip({ clip })}
-                className={buttonClass}
-              >
-                <div className="flex h-full flex-col items-center justify-center">
-                  <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
-                    {clip.nickname}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-
-          {playerHypeClips.length === 0 ? (
-            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
-              No player hype clips loaded yet.
-            </div>
-          ) : null}
-        </div>
-      </section>
-
-      <section className="glass-panel rounded-[1.25rem] border border-white/8 p-2.5 sm:rounded-[1.6rem] sm:p-4">
-        <div className="mb-2 text-[10px] font-semibold uppercase tracking-[0.24em] text-cyan-300">
-          Crowd Hype
-        </div>
-        <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          {crowdHypeClips.map((clip) => {
-            const isActive = activePlayback?.assetId === clip.id;
-            const isSpecialCrowdHype = SPECIAL_CROWD_HYPE_IDS.has(clip.id);
-            const buttonClass = isSpecialCrowdHype
-              ? `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-                  isActive
-                    ? "border-pink-50 bg-[linear-gradient(145deg,rgba(251,207,232,0.98),rgba(236,72,153,0.9)_42%,rgba(131,24,67,0.98))] shadow-[0_0_0_1px_rgba(251,207,232,0.42),0_0_26px_rgba(236,72,153,0.38),0_16px_28px_rgba(190,24,93,0.32)] ring-2 ring-pink-200/90"
-                    : "border-pink-200/70 bg-[linear-gradient(145deg,rgba(244,114,182,0.58),rgba(219,39,119,0.42)_42%,rgba(15,23,42,0.99))] shadow-[0_12px_22px_rgba(219,39,119,0.24)] hover:border-pink-100/85"
-                }`
-              : `aspect-square rounded-[0.22rem] border px-1.5 py-1.5 text-center transition duration-150 active:translate-y-[2px] active:scale-[0.97] ${
-                  isActive
-                    ? "border-cyan-50 bg-[linear-gradient(145deg,rgba(103,232,249,0.96),rgba(6,182,212,0.88)_42%,rgba(22,78,99,0.98))] shadow-[0_0_0_1px_rgba(103,232,249,0.36),0_0_24px_rgba(34,211,238,0.34),0_16px_28px_rgba(8,145,178,0.28)] ring-2 ring-cyan-200/85"
-                    : "border-cyan-200/65 bg-[linear-gradient(145deg,rgba(34,211,238,0.48),rgba(8,145,178,0.36)_42%,rgba(15,23,42,0.99))] shadow-[0_10px_20px_rgba(8,145,178,0.2)] hover:border-cyan-100/85"
-                }`;
-
-            return (
-              <button
-                key={clip.id}
-                type="button"
-                onClick={() => onPlayClip({ clip })}
-                className={buttonClass}
-              >
-                <div className="flex h-full flex-col items-center justify-center">
-                  <div className="line-clamp-3 text-[11px] font-extrabold uppercase leading-[0.92] tracking-[0.01em] text-white sm:text-[12px]">
-                    {clip.nickname}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-
-          {crowdHypeClips.length === 0 ? (
-            <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
-              No crowd hype clips loaded yet.
+          {sections.length === 0 ? (
+            <div className="rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
+              No event clips loaded yet.
             </div>
           ) : null}
         </div>
@@ -1126,84 +1138,151 @@ function SoundboardPage({ clips, onPlayClip, activePlayback }) {
 
 function FreestylePage({ groups, onPlayClip, activePlayback, playbackProgress }) {
   const entries = getFreestyleEntries(groups);
+  const sections = getFreestyleSections(groups);
+  const [lingerPlayback, setLingerPlayback] = useState(null);
+  const highlightPlayback = activePlayback ?? lingerPlayback;
+  const activeProgressPercent = `${Math.max(0, Math.min(1, playbackProgress)) * 100}%`;
+
+  useEffect(() => {
+    if (activePlayback) {
+      setLingerPlayback(activePlayback);
+      return undefined;
+    }
+
+    if (!lingerPlayback) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setLingerPlayback(null);
+    }, 1800);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [activePlayback, lingerPlayback]);
 
   return (
-    <div className="grid auto-rows-[4.3rem] grid-cols-6 grid-flow-dense gap-1 md:grid-cols-8 xl:grid-cols-12">
-      {entries.map((clip) => {
-        const relatedPlayerIds = Array.isArray(clip.playerIds)
-          ? clip.playerIds.filter(Boolean)
-          : clip.playerId
-            ? [clip.playerId]
-            : [];
-        const activePlayerIds = Array.isArray(activePlayback?.relatedPlayerIds)
-          ? activePlayback.relatedPlayerIds.filter(Boolean)
-          : activePlayback?.playerId
-            ? [activePlayback.playerId]
-            : [];
-        const isPlayerOwned = relatedPlayerIds.length > 0;
-        const isActive = isPlayerOwned
-          ? activePlayerIds.some((playerId) => relatedPlayerIds.includes(playerId))
-          : activePlayback?.assetId === clip.id;
-        const isCompact = clip.groupId === "positions" || clip.groupId === "numbers";
-        const accentClass = getFreestyleClipAccent(clip);
-        const ownerChip = getFreestyleOwnerChip(clip);
-
-        return (
-          <button
-            key={`${clip.groupId}-${clip.playerId ?? "global"}-${clip.id}`}
-            type="button"
-            onClick={() =>
-              onPlayClip({
-                clip,
-                playerId: clip.playerId ?? "",
-                playerName: clip.playerName ?? "",
-                relatedPlayerIds,
-              })
-            }
-            className={`group relative overflow-hidden rounded-[0.5rem] border text-center transition duration-150 active:scale-[0.94] active:translate-y-[2px] ${
-              FREESTYLE_GROUP_STYLES[clip.groupId].button
-            } ${
-              isCompact ? "col-span-1 px-1 py-0.5" : "col-span-2 px-1 py-0.5"
-            } ${
-              isActive
-                ? "border-white/85 bg-white/24 shadow-[0_0_0_1px_rgba(255,255,255,0.4),0_10px_24px_rgba(255,255,255,0.2),0_0_20px_rgba(255,255,255,0.2)] ring-2 ring-white/60"
-                : ""
-            } ${accentClass}`}
-          >
-            <div className="relative z-10 flex h-full flex-col items-center justify-center">
-              <div
-                className={`line-clamp-2 font-extrabold uppercase leading-[0.86] tracking-[0] text-white ${
-                  clip.groupId === "positions" || clip.groupId === "numbers"
-                    ? "text-[13px] sm:text-[14px]"
-                    : isCompact
-                      ? "text-[11px] sm:text-[12px]"
-                      : "text-[13px] sm:text-[15px]"
-                }`}
-              >
-                {getFreestyleClipLabel(clip)}
+    <div className="space-y-2">
+      <section className="glass-panel overflow-hidden rounded-[0.85rem] border border-white/8 sm:rounded-[1rem]">
+        <div className="space-y-0.5 p-0.5 sm:p-1">
+          {sections.map((section) => (
+            <section key={section.id} className="grid gap-px">
+              <div className="text-[8px] font-black uppercase tracking-[0.24em] text-white/36">
+                {section.title}
               </div>
-              {clip.groupId === "names" && clip.playerJerseyNumber ? (
-                <div className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/55">
-                  #{clip.playerJerseyNumber}
-                </div>
-              ) : null}
-              {ownerChip ? (
-                <div
-                  className={`mt-0.5 inline-flex max-w-full self-center rounded-[0.35rem] border px-1 py-0.5 text-[8px] font-semibold uppercase tracking-[0.04em] ${FREESTYLE_GROUP_STYLES[clip.groupId].chip}`}
-                >
-                  <span className="truncate">{ownerChip}</span>
-                </div>
-              ) : null}
-            </div>
-          </button>
-        );
-      })}
+              <div className="grid auto-rows-[4.65rem] grid-cols-5 gap-0.5 sm:auto-rows-[6.25rem]">
+                {section.clips.map((clip, index) => {
+                  const relatedPlayerIds = Array.isArray(clip.playerIds)
+                    ? clip.playerIds.filter(Boolean)
+                    : clip.playerId
+                      ? [clip.playerId]
+                      : [];
+                  const activePlayerIds = Array.isArray(highlightPlayback?.relatedPlayerIds)
+                    ? highlightPlayback.relatedPlayerIds.filter(Boolean)
+                    : highlightPlayback?.playerId
+                      ? [highlightPlayback.playerId]
+                      : [];
+                  const isPlayerOwned = relatedPlayerIds.length > 0;
+                  const isActive = isPlayerOwned
+                    ? activePlayerIds.some((playerId) => relatedPlayerIds.includes(playerId))
+                    : highlightPlayback?.assetId === clip.id;
+                  const accentClass = getFreestyleClipAccent(clip);
+                  const ownerChip = getFreestyleOwnerChip(clip);
 
-      {entries.length === 0 ? (
-        <div className="col-span-full rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
-          No clips in freestyle yet.
+                  return (
+                    <button
+                      key={`${clip.groupId}-${clip.playerId ?? "global"}-${clip.id}`}
+                      type="button"
+                      onClick={() =>
+                        onPlayClip({
+                          clip,
+                          playerId: clip.playerId ?? "",
+                          playerName: clip.playerName ?? "",
+                          relatedPlayerIds,
+                        })
+                      }
+                      className={`group relative overflow-hidden rounded-[0.28rem] border text-center transition duration-150 active:scale-[0.94] active:translate-y-[2px] ${
+                        FREESTYLE_GROUP_STYLES[clip.groupId].button
+                      } px-1 py-1 ${
+                        isActive
+                          ? "border-white bg-[linear-gradient(145deg,rgba(255,255,255,0.98),rgba(254,240,138,0.94)_48%,rgba(34,211,238,0.9))] text-slate-950 shadow-[0_0_0_2px_rgba(255,255,255,0.72),0_0_34px_rgba(250,204,21,0.5),0_18px_30px_rgba(34,211,238,0.26)] ring-4 ring-yellow-200/85"
+                          : ""
+                      } ${accentClass}`}
+                    >
+                      <div
+                        className={`absolute inset-x-1 bottom-1 h-0.5 overflow-hidden rounded-full ${
+                          isActive ? "bg-slate-950/18" : "bg-black/26"
+                        }`}
+                      >
+                        <div
+                          className={`h-full rounded-full transition-[width] duration-100 ${
+                            isActive ? "bg-slate-950/75" : "bg-white/75"
+                          }`}
+                          style={{ width: isActive ? (activePlayback ? activeProgressPercent : "100%") : "18%" }}
+                        />
+                      </div>
+                      <div
+                        className={`pointer-events-none absolute right-1 top-1 z-10 ${
+                          isActive ? "text-slate-950/62" : "text-white/38"
+                        }`}
+                      >
+                        <Volume2 className="h-2.5 w-2.5" />
+                      </div>
+                      <div className="relative z-10 flex h-full min-w-0 flex-col items-center justify-center px-1 pt-1">
+                        <div
+                          className={`max-w-full truncate whitespace-nowrap font-extrabold uppercase leading-none tracking-[0] drop-shadow-[0_1px_2px_rgba(0,0,0,0.48)] ${
+                            isActive ? "text-slate-950" : "text-white"
+                          } ${
+                            clip.groupId === "positions" || clip.groupId === "numbers"
+                              ? "text-[19px] sm:text-[28px]"
+                              : "text-[14px] sm:text-[22px]"
+                          }`}
+                        >
+                          {getFreestyleClipLabel(clip)}
+                        </div>
+                        {clip.groupId === "names" && clip.playerJerseyNumber ? (
+                          <div
+                            className={`mt-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] ${
+                              isActive ? "text-slate-950/58" : "text-white/55"
+                            }`}
+                          >
+                            #{clip.playerJerseyNumber}
+                          </div>
+                        ) : null}
+                        {(clip.groupId === "numbers" && ownerChip) ? (
+                          <div
+                            className={`mt-1 max-w-full truncate text-[8px] font-black uppercase leading-none tracking-[0.08em] ${
+                              isActive ? "text-slate-950/68" : "text-white/68"
+                            }`}
+                          >
+                            {ownerChip}
+                          </div>
+                        ) : null}
+                        {ownerChip && clip.groupId !== "numbers" ? (
+                          <div
+                            className={`mt-0.5 inline-flex max-w-full self-center rounded-[0.22rem] border px-0.5 py-0.5 text-[7px] font-semibold uppercase tracking-[0.02em] ${
+                              isActive
+                                ? "border-slate-950/20 bg-slate-950/10 text-slate-950"
+                                : FREESTYLE_GROUP_STYLES[clip.groupId].chip
+                            }`}
+                          >
+                            <span className="truncate">{ownerChip}</span>
+                          </div>
+                        ) : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+          {entries.length === 0 ? (
+            <div className="rounded-[1rem] border border-dashed border-white/10 px-4 py-6 text-sm text-slate-500">
+              No clips in freestyle yet.
+            </div>
+          ) : null}
         </div>
-      ) : null}
+      </section>
     </div>
   );
 }
