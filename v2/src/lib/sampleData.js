@@ -44,7 +44,7 @@ function eventClip(group, fileName, durationMs = 6000) {
 const announcementNowBatting = clip({
   id: "announcement-now-batting",
   group: "announcements",
-  label: "At Bat",
+  label: "Now Bat",
   src: assetSrc("announcements", "now batting.mp3"),
   durationMs: 1313,
 });
@@ -52,7 +52,7 @@ const announcementNowBatting = clip({
 const announcementMakeSomeNoise = clip({
   id: "announcement-make-some-noise",
   group: "announcements",
-  label: "Noise Up",
+  label: "Make Noise",
   src: assetSrc("announcements", "MAKE SOME NOISE.mp3"),
   durationMs: 2126,
 });
@@ -68,7 +68,7 @@ const announcementComingToPlate = clip({
 const announcementLetsHearItFor = clip({
   id: "announcement-lets-hear-it-for",
   group: "announcements",
-  label: "Hear It",
+  label: "Lets Hear",
   src: assetSrc("announcements", "LETS HEREE IT FOR.mp3"),
   durationMs: 1627,
 });
