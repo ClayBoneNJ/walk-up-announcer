@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AudioLines,
   ChevronDown,
@@ -6,10 +6,12 @@ import {
   ChevronRight,
   ChevronUp,
   CirclePlay,
+  Download,
   Library,
   RotateCcw,
   Sparkles,
   Square,
+  Upload,
   Users,
   Volume2,
   Waves,
@@ -17,11 +19,12 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v46";
+const APP_BUILD_LABEL = "v47";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
 const PLAYER_SEQUENCES_STORAGE_KEY = "walk-up-announcer-v2-player-sequences";
+const PLAYER_SEQUENCES_EXPORT_FILE_NAME = "walk-up-announcer-v2-player-sequences.json";
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 const V1_POSITION_BY_JERSEY = {
   9: "P",
@@ -55,6 +58,27 @@ function serializePlayerSequences(playerSequences) {
       clipId: event.clip?.id ?? "",
     })),
   }));
+}
+
+function createPortablePlayerSequencesExport(playerSequences) {
+  return {
+    format: PLAYER_SEQUENCES_STORAGE_KEY,
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    playerSequences: serializePlayerSequences(playerSequences),
+  };
+}
+
+function extractPortablePlayerSequences(payload) {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (payload && Array.isArray(payload.playerSequences)) {
+    return payload.playerSequences;
+  }
+
+  return null;
 }
 
 function hydrateSavedPlayerSequences(savedPlayers) {
@@ -189,6 +213,7 @@ function movePlayerByDirection(playerList, playerId, direction) {
 }
 
 export default function App() {
+  const importSettingsInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState("walkups");
   const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
   const [isEditingBattingOrder, setIsEditingBattingOrder] = useState(false);
@@ -276,6 +301,53 @@ export default function App() {
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
+  };
+
+  const handleExportSettings = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const payload = createPortablePlayerSequencesExport(playerSequences);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = PLAYER_SEQUENCES_EXPORT_FILE_NAME;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  };
+
+  const handleOpenImportSettings = () => {
+    importSettingsInputRef.current?.click();
+  };
+
+  const handleImportSettings = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    try {
+      const raw = await file.text();
+      const parsed = JSON.parse(raw);
+      const importedSequences = extractPortablePlayerSequences(parsed);
+
+      if (!importedSequences) {
+        throw new Error("Invalid settings file");
+      }
+
+      const hydratedSequences = hydrateSavedPlayerSequences(importedSequences);
+      setPlayerSequences(hydratedSequences);
+      persistPlayerSequences(hydratedSequences);
+    } catch {
+      window.alert("Could not import that settings file.");
+    } finally {
+      event.target.value = "";
+    }
   };
 
   useEffect(() => {
@@ -586,14 +658,39 @@ export default function App() {
                 <h2>Player Sequences</h2>
               </div>
 
-              <button
-                type="button"
-                onClick={handleBattingOrderToggle}
-                className={`player-edit-button ${isEditingBattingOrder ? "player-edit-button-active" : ""}`}
-              >
-                <Library className="button-icon" />
-                <span>{isEditingBattingOrder ? "Done Order" : "Edit Batting Order"}</span>
-              </button>
+              <div className="panel-actions">
+                <input
+                  ref={importSettingsInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  onChange={handleImportSettings}
+                  className="settings-file-input"
+                />
+                <button
+                  type="button"
+                  onClick={handleOpenImportSettings}
+                  className="player-edit-button"
+                >
+                  <Upload className="button-icon" />
+                  <span>Import Settings</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleExportSettings}
+                  className="player-edit-button"
+                >
+                  <Download className="button-icon" />
+                  <span>Export Settings</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleBattingOrderToggle}
+                  className={`player-edit-button ${isEditingBattingOrder ? "player-edit-button-active" : ""}`}
+                >
+                  <Library className="button-icon" />
+                  <span>{isEditingBattingOrder ? "Done Order" : "Edit Batting Order"}</span>
+                </button>
+              </div>
             </div>
 
             <div className="player-grid">

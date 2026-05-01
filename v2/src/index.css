@@ -301,6 +301,17 @@ button {
   align-items: start;
 }
 
+.panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.settings-file-input {
+  display: none;
+}
+
 .player-grid,
 .clip-group-grid,
 .clip-grid {
@@ -1086,6 +1097,21 @@ button {
 }
 
 @media (max-width: 719px) {
+  .panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .panel-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .panel-actions .player-edit-button {
+    width: 100%;
+    justify-content: center;
+  }
+
   .tab-bar {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 5px;
