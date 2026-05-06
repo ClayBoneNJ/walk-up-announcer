@@ -173,8 +173,9 @@ const teamPlayerData = [
     jerseyNumber: "9",
     position: "",
     role: "Walkup",
-    songLabel: "Centuries",
-    songFileName: "alex-bonk-mobile.wav",
+    songLabel: "Mom Song",
+    songFolder: "mom songs",
+    songFileName: "alex mom song.mp3",
     songDurationMs: 18250,
   },
   {
@@ -248,8 +249,9 @@ const teamPlayerData = [
     jerseyNumber: "16",
     position: "CF",
     role: "Walkup",
-    songLabel: "Savior",
-    songFileName: "marty-happle-mobile.wav",
+    songLabel: "Mom Song",
+    songFolder: "mom songs",
+    songFileName: "marty mom song.mp3",
     songDurationMs: 17704,
   },
   {
