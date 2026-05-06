@@ -195,8 +195,9 @@ const teamPlayerData = [
     jerseyNumber: "28",
     position: "3B",
     role: "Walkup",
-    songLabel: "Headstrong",
-    songFileName: "billy-wanko-mobile.wav",
+    songLabel: "Mom Song",
+    songFolder: "mom songs",
+    songFileName: "billy mom song.mp3",
     songDurationMs: 11925,
   },
   {
