@@ -256,6 +256,17 @@ const teamPlayerData = [
     songDurationMs: 17704,
   },
   {
+    id: "matty-waldman",
+    name: "Matty Waldman",
+    jerseyNumber: "25",
+    position: "",
+    role: "Walkup",
+    songLabel: "Mom Song",
+    songFolder: "mom songs",
+    songFileName: "matty waldman mom song.mp3",
+    songDurationMs: 26841,
+  },
+  {
     id: "matty",
     name: "Matty Wanko",
     jerseyNumber: "4",
@@ -289,7 +300,7 @@ const teamPlayerData = [
   },
 ];
 
-const numberClips = ["2", "4", "9", "13", "16", "17", "23", "24", "28", "33", "48", "88"].map((number) =>
+const numberClips = ["2", "4", "9", "13", "16", "17", "23", "24", "25", "28", "33", "48", "88"].map((number) =>
   clip({
     id: `number-${number}`,
     group: "numbers",
