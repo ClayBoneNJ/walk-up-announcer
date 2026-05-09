@@ -283,8 +283,9 @@ const teamPlayerData = [
     jerseyNumber: "13",
     position: "LF",
     role: "Walkup",
-    songLabel: "Cant Stop",
-    songFileName: "nate-clay-mobile.wav",
+    songLabel: "Mom Song",
+    songFolder: "mom songs",
+    songFileName: "nate mom song.mp3",
     songDurationMs: 19250,
   },
   {
