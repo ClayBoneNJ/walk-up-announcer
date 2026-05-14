@@ -6,8 +6,7 @@ import {
 } from "lucide-react";
 
 function assetSrc(folder, fileName) {
-  const encodedFolder = folder.split("/").map(encodeURIComponent).join("/");
-  return `${import.meta.env.BASE_URL}assets/audio/${encodedFolder}/${encodeURIComponent(fileName)}`;
+  return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}`;
 }
 
 function clip({ id, group, label, src, durationMs, playerId = "", playerName = "", ...extra }) {
@@ -173,9 +172,8 @@ const teamPlayerData = [
     jerseyNumber: "9",
     position: "",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "alex mom song.mp3",
+    songLabel: "Centuries",
+    songFileName: "alex-bonk-mobile.wav",
     songDurationMs: 18250,
   },
   {
@@ -184,9 +182,8 @@ const teamPlayerData = [
     jerseyNumber: "24",
     position: "SS",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "ben mom song.mp3",
+    songLabel: "Humpty Dance",
+    songFileName: "benjamin-yunker-mobile.wav",
     songDurationMs: 19000,
   },
   {
@@ -195,9 +192,8 @@ const teamPlayerData = [
     jerseyNumber: "28",
     position: "3B",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "billy mom song.mp3",
+    songLabel: "Headstrong",
+    songFileName: "billy-wanko-mobile.wav",
     songDurationMs: 11925,
   },
   {
@@ -206,9 +202,8 @@ const teamPlayerData = [
     jerseyNumber: "33",
     position: "CF",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "cam mom song.mp3",
+    songLabel: "Toxicity",
+    songFileName: "camden-pagoda-mobile.wav",
     songDurationMs: 17000,
   },
   {
@@ -217,9 +212,8 @@ const teamPlayerData = [
     jerseyNumber: "2",
     position: "2B",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "gio mom song.mp3",
+    songLabel: "Hypnotize",
+    songFileName: "giovanni-turchi-mobile.wav",
     songDurationMs: 17750,
   },
   {
@@ -228,9 +222,8 @@ const teamPlayerData = [
     jerseyNumber: "23",
     position: "C",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "landon mom song.mp3",
+    songLabel: "Fireball",
+    songFileName: "landon-hanrahan-mobile.wav",
     songDurationMs: 13000,
   },
   {
@@ -239,9 +232,8 @@ const teamPlayerData = [
     jerseyNumber: "88",
     position: "1B",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "logan mom song.mp3",
+    songLabel: "All I Do Is Win",
+    songFileName: "logan-hanrahan-mobile.wav",
     songDurationMs: 20750,
   },
   {
@@ -250,9 +242,8 @@ const teamPlayerData = [
     jerseyNumber: "16",
     position: "CF",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "marty mom song.mp3",
+    songLabel: "Savior",
+    songFileName: "marty-happle-mobile.wav",
     songDurationMs: 17704,
   },
   {
@@ -261,9 +252,8 @@ const teamPlayerData = [
     jerseyNumber: "4",
     position: "P",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "matty mom song.mp3",
+    songLabel: "Everlong",
+    songFileName: "matty-wanko-mobile.wav",
     songDurationMs: 26841,
   },
   {
@@ -282,9 +272,8 @@ const teamPlayerData = [
     jerseyNumber: "17",
     position: "RF",
     role: "Walkup",
-    songLabel: "Mom Song",
-    songFolder: "mom songs",
-    songFileName: "Tritan mom song.mp3",
+    songLabel: "EoO",
+    songFileName: "tristan-aquino-mobile.wav",
     songDurationMs: 18000,
   },
 ];
@@ -324,7 +313,7 @@ const songClips = teamPlayerData.map((player) =>
     id: `song-${player.id}`,
     group: "songs",
     label: player.songLabel,
-    src: assetSrc(player.songFolder ?? "songs", player.songFileName),
+    src: assetSrc("songs", player.songFileName),
     durationMs: player.songDurationMs,
     playerId: player.id,
     playerName: player.name,
