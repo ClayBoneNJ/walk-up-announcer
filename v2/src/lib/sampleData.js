@@ -342,14 +342,14 @@ const crowdHereWeGo = clip({
 
 const umpireCallClips = [
   "play ball!!.mp3",
-  "whip-wipe-wipe.mp3",
-  "fresh and clean.mp3",
   "he gone.mp3",
   "hes outta there.mp3",
   "strike 3 hes out.mp3",
   "Hes SAFE!.mp3",
   "hasta la vista baby.mp3",
   "bye have a good time.mp3",
+  "whip-wipe-wipe.mp3",
+  "fresh and clean.mp3",
 ].map((fileName) => eventClip("umpire-calls", fileName, 5500));
 
 const playerHypeClips = [
