@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v53";
+const APP_BUILD_LABEL = "v54";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1054,6 +1054,7 @@ function getFreestyleDisplayLabel(clip) {
   const displayLabels = {
     "umpire-calls-whip-wipe-wipe": "Wipe",
     "umpire-calls-fresh-and-clean": "Fresh Clean",
+    "crowd-hype-our-time-goonies": "Our Time",
   };
 
   if (displayLabels[clip.id]) {
@@ -1087,6 +1088,7 @@ function getSpecialSamplerPadClass(clip) {
   const specialPadClasses = {
     "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
     "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
+    "crowd-hype-our-time-goonies": "sampler-pad-our-time",
   };
 
   if (specialPadClasses[clip.id]) {

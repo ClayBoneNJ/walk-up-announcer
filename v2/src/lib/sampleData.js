@@ -368,12 +368,12 @@ const crowdHypeClips = [
   "whistle bomb.mp3",
   "eye of the tiger.mp3",
   "clap yo hands.mp3",
-  "GTA Sound Effect.mp3",
+  "our time goonies.mp3",
   "WOW!.mp3",
   "1up.mp3",
   "boom goes the dynamite.mp3",
   "three best friends.mp3",
-  "our time goonies.mp3",
+  "GTA Sound Effect.mp3",
 ].map((fileName) => eventClip("crowd-hype", fileName, 6500));
 
 export const clipLibrary = [

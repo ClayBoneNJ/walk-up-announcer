@@ -934,6 +934,12 @@ button {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 12px 28px rgba(249, 115, 22, 0.34);
 }
 
+.sampler-pad-our-time {
+  border-color: rgba(216, 180, 254, 0.82);
+  background: radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.28), transparent 24%), linear-gradient(145deg, rgba(192, 132, 252, 0.84), rgba(79, 70, 229, 0.64) 48%, rgba(49, 17, 101, 0.98));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 12px 28px rgba(124, 58, 237, 0.34);
+}
+
 .sampler-pad-wipe,
 .sampler-pad-fresh-clean {
   border-color: rgba(125, 211, 252, 0.82);
