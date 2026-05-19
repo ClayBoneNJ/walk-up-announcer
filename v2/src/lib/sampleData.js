@@ -65,6 +65,14 @@ const announcementComingToPlate = clip({
   durationMs: 1682,
 });
 
+const announcementComingToMound = clip({
+  id: "announcement-coming-to-mound",
+  group: "announcements",
+  label: "To Mound",
+  src: assetSrc("announcements", "COMING TO THE MOUND.mp3"),
+  durationMs: 1700,
+});
+
 const announcementLetsHearItFor = clip({
   id: "announcement-lets-hear-it-for",
   group: "announcements",
@@ -362,12 +370,14 @@ const crowdHypeClips = [
   "1up.mp3",
   "boom goes the dynamite.mp3",
   "three best friends.mp3",
+  "our time goonies.mp3",
 ].map((fileName) => eventClip("crowd-hype", fileName, 6500));
 
 export const clipLibrary = [
   announcementNowBatting,
   announcementMakeSomeNoise,
   announcementComingToPlate,
+  announcementComingToMound,
   announcementLetsHearItFor,
   announcementUpNext,
   ...numberClips,
@@ -415,6 +425,7 @@ export const announcementOptions = [
   announcementNowBatting,
   announcementMakeSomeNoise,
   announcementComingToPlate,
+  announcementComingToMound,
   announcementLetsHearItFor,
   announcementUpNext,
 ];
