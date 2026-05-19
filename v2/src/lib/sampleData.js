@@ -342,6 +342,7 @@ const crowdHereWeGo = clip({
 
 const umpireCallClips = [
   "play ball!!.mp3",
+  "whip-wipe-wipe.mp3",
   "he gone.mp3",
   "hes outta there.mp3",
   "strike 3 hes out.mp3",
