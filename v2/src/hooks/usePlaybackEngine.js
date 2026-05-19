@@ -2,6 +2,17 @@ import { useMemo, useRef, useState } from "react";
 
 const STOP_FADE_MS = 700;
 
+function isIOSAudioHost() {
+  if (typeof navigator === "undefined") {
+    return false;
+  }
+
+  const platform = navigator.platform || "";
+  const userAgent = navigator.userAgent || "";
+  const touchCapableMac = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  return /iPad|iPhone|iPod/.test(userAgent) || touchCapableMac;
+}
+
 function createAudio(src) {
   const audio = new Audio(src);
   audio.preload = "auto";
@@ -58,6 +69,8 @@ export function usePlaybackEngine() {
   const [audioReadyState, setAudioReadyState] = useState({
     offline: false,
     armed: false,
+    directPlayback: false,
+    failedCount: 0,
     loading: false,
   });
 
@@ -68,6 +81,10 @@ export function usePlaybackEngine() {
 
   const getPlayableSrc = async (src) => {
     if (!src) {
+      return src;
+    }
+
+    if (isIOSAudioHost()) {
       return src;
     }
 
@@ -115,10 +132,22 @@ export function usePlaybackEngine() {
 
     setAudioReadyState((current) => ({
       ...current,
+      failedCount: 0,
       loading: true,
     }));
 
-    await Promise.allSettled(
+    if (isIOSAudioHost()) {
+      setAudioReadyState({
+        offline: false,
+        armed: false,
+        directPlayback: true,
+        failedCount: 0,
+        loading: false,
+      });
+      return;
+    }
+
+    const results = await Promise.allSettled(
       uniqueSources.map(async (src) => {
         if (warmCacheRef.current.has(src)) {
           return warmCacheRef.current.get(src);
@@ -148,9 +177,13 @@ export function usePlaybackEngine() {
       }),
     );
 
+    const failedCount = results.filter((result) => result.status === "rejected").length;
+
     setAudioReadyState({
-      offline: true,
-      armed: true,
+      offline: failedCount === 0,
+      armed: uniqueSources.length > 0 && failedCount === 0,
+      directPlayback: false,
+      failedCount,
       loading: false,
     });
   };
@@ -239,6 +272,8 @@ export function usePlaybackEngine() {
     setAudioReadyState({
       offline: false,
       armed: false,
+      directPlayback: false,
+      failedCount: 0,
       loading: false,
     });
   };

@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v55";
+const APP_BUILD_LABEL = "v56";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -301,6 +301,26 @@ export default function App() {
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
+  };
+
+  const getAudioArmButtonLabel = () => {
+    if (audioReadyState.loading) {
+      return "Arming Audio";
+    }
+
+    if (audioReadyState.directPlayback) {
+      return "iPhone Tap Mode";
+    }
+
+    if (audioReadyState.armed) {
+      return "Audio Ready";
+    }
+
+    if (audioReadyState.failedCount > 0) {
+      return "Retry Audio";
+    }
+
+    return "Arm Audio";
   };
 
   const handleExportSettings = () => {
@@ -614,11 +634,13 @@ export default function App() {
                 ? "primary-action-ready"
                 : audioReadyState.loading
                   ? "primary-action-loading"
-                  : "primary-action-warning"
+                  : audioReadyState.directPlayback
+                    ? "primary-action-iphone"
+                    : "primary-action-warning"
             }`}
           >
             <Waves className="button-icon" />
-            {audioReadyState.armed ? "Audio Ready" : audioReadyState.loading ? "Arming Audio" : "Arm Audio"}
+            {getAudioArmButtonLabel()}
           </button>
           <button
             type="button"
