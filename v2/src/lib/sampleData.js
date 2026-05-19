@@ -181,7 +181,7 @@ const teamPlayerData = [
     position: "",
     role: "Walkup",
     songLabel: "Centuries",
-    songFileName: "alex-bonk-mobile.wav",
+    songFileName: "alex-bonk-mobile.mp3",
     songDurationMs: 18250,
   },
   {
@@ -191,7 +191,7 @@ const teamPlayerData = [
     position: "SS",
     role: "Walkup",
     songLabel: "Humpty Dance",
-    songFileName: "benjamin-yunker-mobile.wav",
+    songFileName: "benjamin-yunker-mobile.mp3",
     songDurationMs: 19000,
   },
   {
@@ -201,7 +201,7 @@ const teamPlayerData = [
     position: "3B",
     role: "Walkup",
     songLabel: "Headstrong",
-    songFileName: "billy-wanko-mobile.wav",
+    songFileName: "billy-wanko-mobile.mp3",
     songDurationMs: 11925,
   },
   {
@@ -211,7 +211,7 @@ const teamPlayerData = [
     position: "CF",
     role: "Walkup",
     songLabel: "Toxicity",
-    songFileName: "camden-pagoda-mobile.wav",
+    songFileName: "camden-pagoda-mobile.mp3",
     songDurationMs: 17000,
   },
   {
@@ -221,7 +221,7 @@ const teamPlayerData = [
     position: "2B",
     role: "Walkup",
     songLabel: "Hypnotize",
-    songFileName: "giovanni-turchi-mobile.wav",
+    songFileName: "giovanni-turchi-mobile.mp3",
     songDurationMs: 17750,
   },
   {
@@ -231,7 +231,7 @@ const teamPlayerData = [
     position: "C",
     role: "Walkup",
     songLabel: "Fireball",
-    songFileName: "landon-hanrahan-mobile.wav",
+    songFileName: "landon-hanrahan-mobile.mp3",
     songDurationMs: 13000,
   },
   {
@@ -241,7 +241,7 @@ const teamPlayerData = [
     position: "1B",
     role: "Walkup",
     songLabel: "All I Do Is Win",
-    songFileName: "logan-hanrahan-mobile.wav",
+    songFileName: "logan-hanrahan-mobile.mp3",
     songDurationMs: 20750,
   },
   {
@@ -251,7 +251,7 @@ const teamPlayerData = [
     position: "CF",
     role: "Walkup",
     songLabel: "Savior",
-    songFileName: "marty-happle-mobile.wav",
+    songFileName: "marty-happle-mobile.mp3",
     songDurationMs: 17704,
   },
   {
@@ -261,7 +261,7 @@ const teamPlayerData = [
     position: "P",
     role: "Walkup",
     songLabel: "Everlong",
-    songFileName: "matty-wanko-mobile.wav",
+    songFileName: "matty-wanko-mobile.mp3",
     songDurationMs: 26841,
   },
   {
@@ -271,7 +271,7 @@ const teamPlayerData = [
     position: "LF",
     role: "Walkup",
     songLabel: "Cant Stop",
-    songFileName: "nate-clay-mobile.wav",
+    songFileName: "nate-clay-mobile.mp3",
     songDurationMs: 19250,
   },
   {
@@ -281,7 +281,7 @@ const teamPlayerData = [
     position: "RF",
     role: "Walkup",
     songLabel: "EoO",
-    songFileName: "tristan-aquino-mobile.wav",
+    songFileName: "tristan-aquino-mobile.mp3",
     songDurationMs: 18000,
   },
 ];
