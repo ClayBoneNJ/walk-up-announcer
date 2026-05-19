@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v51";
+const APP_BUILD_LABEL = "v52";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1051,6 +1051,15 @@ function getClipPlayerIds(clip) {
 }
 
 function getFreestyleDisplayLabel(clip) {
+  const displayLabels = {
+    "umpire-calls-whip-wipe-wipe": "Wipe",
+    "umpire-calls-fresh-and-clean": "Fresh Clean",
+  };
+
+  if (displayLabels[clip.id]) {
+    return displayLabels[clip.id];
+  }
+
   if (clip.group !== "songs") {
     return clip.label;
   }
@@ -1073,6 +1082,23 @@ const SPECIAL_CROWD_HYPE_IDS = new Set([
   "crowd-hype-boom-goes-the-dynamite",
   "crowd-hype-three-best-friends",
 ]);
+
+function getSpecialSamplerPadClass(clip) {
+  const specialPadClasses = {
+    "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
+    "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
+  };
+
+  if (specialPadClasses[clip.id]) {
+    return specialPadClasses[clip.id];
+  }
+
+  if (clip.group === "crowd-hype" && SPECIAL_CROWD_HYPE_IDS.has(clip.id)) {
+    return "sampler-pad-special-crowd";
+  }
+
+  return "";
+}
 
 function getNumberPlayerLabel(clip) {
   if (clip.group !== "numbers") {
@@ -1152,10 +1178,7 @@ function ClipBoard({ title, description, groups, variant = "board", activePlayba
                   : false;
                 const live = isSampler ? associated || highlightPlayback?.clipId === clip.id : activePlayback?.clipId === clip.id;
                 const numberPlayerLabel = getNumberPlayerLabel(clip);
-                const padClass =
-                  clip.group === "crowd-hype" && SPECIAL_CROWD_HYPE_IDS.has(clip.id)
-                    ? "sampler-pad-special-crowd"
-                    : getSamplerPadClass(group.id);
+                const padClass = getSpecialSamplerPadClass(clip) || getSamplerPadClass(group.id);
                 return (
                   <button
                     key={clip.id}
