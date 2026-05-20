@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v64";
+const APP_BUILD_LABEL = "v65";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -309,7 +309,7 @@ export default function App() {
     }
 
     if (audioReadyState.directPlayback) {
-      return "iPhone Tap Mode";
+      return audioReadyState.offline ? "iPhone Cached" : "iPhone Tap Mode";
     }
 
     if (audioReadyState.armed) {
@@ -617,6 +617,11 @@ export default function App() {
 
   const activePlayerId =
     activePlayback?.type === "sequence" ? activePlayback.playerId : activePlayback?.playerId || "";
+  const audioCacheProgress = audioReadyState.totalCount > 0
+    ? Math.round((audioReadyState.cachedCount / audioReadyState.totalCount) * 100)
+    : 0;
+  const showAudioCacheStatus =
+    audioReadyState.loading || audioReadyState.totalCount > 0 || audioReadyState.failedCount > 0;
 
   return (
     <div className="app-shell">
@@ -642,6 +647,25 @@ export default function App() {
             <Waves className="button-icon" />
             {getAudioArmButtonLabel()}
           </button>
+          {showAudioCacheStatus ? (
+            <div className="audio-cache-status">
+              <div className="audio-cache-status-row">
+                <span>
+                  {audioReadyState.loading
+                    ? "Caching audio"
+                    : audioReadyState.failedCount > 0
+                      ? "Cache incomplete"
+                      : "Audio cache ready"}
+                </span>
+                <strong>
+                  {audioReadyState.cachedCount}/{audioReadyState.totalCount}
+                </strong>
+              </div>
+              <div className="audio-cache-meter">
+                <span style={{ width: `${audioCacheProgress}%` }} />
+              </div>
+            </div>
+          ) : null}
           <button
             type="button"
             onClick={resetEngine}

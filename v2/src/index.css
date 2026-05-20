@@ -107,6 +107,44 @@ button {
   flex: 1 1 0;
 }
 
+.audio-cache-status {
+  flex: 1 1 100%;
+  display: grid;
+  gap: 6px;
+  padding: 0 4px;
+}
+
+.audio-cache-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: rgba(226, 238, 252, 0.82);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.audio-cache-status-row strong {
+  color: #f8fbff;
+}
+
+.audio-cache-meter {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.audio-cache-meter span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.94), rgba(74, 222, 128, 0.92));
+  transition: width 180ms ease;
+}
+
 .status-pill {
   flex: 0 0 auto;
   border: 1px solid rgba(123, 211, 255, 0.25);

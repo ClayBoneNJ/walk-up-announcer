@@ -2,6 +2,42 @@ import { useMemo, useRef, useState } from "react";
 
 const STOP_FADE_MS = 700;
 
+async function cacheSourcesWithServiceWorker(sources = [], onProgress = () => {}) {
+  if (!("serviceWorker" in navigator)) {
+    return { cachedCount: 0, failedCount: sources.length, totalCount: sources.length };
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  const serviceWorker = navigator.serviceWorker.controller || registration.active;
+
+  if (!serviceWorker) {
+    return { cachedCount: 0, failedCount: sources.length, totalCount: sources.length };
+  }
+
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const timeoutId = window.setTimeout(() => {
+      channel.port1.close();
+      resolve({ cachedCount: 0, failedCount: sources.length, totalCount: sources.length });
+    }, 45000);
+
+    channel.port1.onmessage = (event) => {
+      if (event.data?.type === "CACHE_URLS_PROGRESS") {
+        onProgress(event.data);
+        return;
+      }
+
+      if (event.data?.type === "CACHE_URLS_COMPLETE") {
+        window.clearTimeout(timeoutId);
+        channel.port1.close();
+        resolve(event.data);
+      }
+    };
+
+    serviceWorker.postMessage({ type: "CACHE_URLS", urls: sources }, [channel.port2]);
+  });
+}
+
 function isIOSAudioHost() {
   if (typeof navigator === "undefined") {
     return false;
@@ -71,6 +107,8 @@ export function usePlaybackEngine() {
     armed: false,
     directPlayback: false,
     failedCount: 0,
+    cachedCount: 0,
+    totalCount: 0,
     loading: false,
   });
 
@@ -133,15 +171,29 @@ export function usePlaybackEngine() {
     setAudioReadyState((current) => ({
       ...current,
       failedCount: 0,
+      cachedCount: 0,
+      totalCount: uniqueSources.length,
       loading: true,
     }));
 
     if (isIOSAudioHost()) {
+      const result = await cacheSourcesWithServiceWorker(uniqueSources, (progress) => {
+        setAudioReadyState((current) => ({
+          ...current,
+          cachedCount: progress.cachedCount,
+          failedCount: progress.failedCount,
+          totalCount: progress.totalCount,
+          loading: true,
+        }));
+      });
+
       setAudioReadyState({
-        offline: false,
+        offline: result.failedCount === 0,
         armed: false,
         directPlayback: true,
-        failedCount: 0,
+        failedCount: result.failedCount,
+        cachedCount: result.cachedCount,
+        totalCount: result.totalCount,
         loading: false,
       });
       return;
@@ -184,6 +236,8 @@ export function usePlaybackEngine() {
       armed: uniqueSources.length > 0 && failedCount === 0,
       directPlayback: false,
       failedCount,
+      cachedCount: uniqueSources.length - failedCount,
+      totalCount: uniqueSources.length,
       loading: false,
     });
   };
@@ -274,6 +328,8 @@ export function usePlaybackEngine() {
       armed: false,
       directPlayback: false,
       failedCount: 0,
+      cachedCount: 0,
+      totalCount: 0,
       loading: false,
     });
   };
