@@ -350,6 +350,7 @@ const umpireCallClips = [
   "bye have a good time.mp3",
   "whip-wipe-wipe.mp3",
   "fresh and clean.mp3",
+  "sweeping.mp3",
 ].map((fileName) => eventClip("umpire-calls", fileName, 5500));
 
 const ourTimePlayerHype = clip({
