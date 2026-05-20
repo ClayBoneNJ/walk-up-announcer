@@ -352,11 +352,19 @@ const umpireCallClips = [
   "fresh and clean.mp3",
 ].map((fileName) => eventClip("umpire-calls", fileName, 5500));
 
+const ourTimePlayerHype = clip({
+  id: "player-hype-our-time-goonies",
+  group: "player-hype",
+  label: "our time goonies",
+  src: assetSrc("events/crowd-hype", "our time goonies.mp3"),
+  durationMs: 6500,
+});
+
 const playerHypeClips = [
   "BILL! BILL! BILL!.mp3",
   "88 mph.mp3",
   "my homie nate.mp3",
-].map((fileName) => eventClip("player-hype", fileName, 4500));
+].map((fileName) => eventClip("player-hype", fileName, 4500)).concat(ourTimePlayerHype);
 
 const crowdHypeClips = [
   "when i say.mp3",
@@ -368,7 +376,6 @@ const crowdHypeClips = [
   "whistle bomb.mp3",
   "eye of the tiger.mp3",
   "clap yo hands.mp3",
-  "our time goonies.mp3",
   "WOW!.mp3",
   "1up.mp3",
   "boom goes the dynamite.mp3",

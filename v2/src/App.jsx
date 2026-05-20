@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v60";
+const APP_BUILD_LABEL = "v61";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1076,7 +1076,7 @@ function getFreestyleDisplayLabel(clip) {
   const displayLabels = {
     "umpire-calls-whip-wipe-wipe": "Wipe",
     "umpire-calls-fresh-and-clean": "Fresh Clean",
-    "crowd-hype-our-time-goonies": "Our Time",
+    "player-hype-our-time-goonies": "Our Time",
   };
 
   if (displayLabels[clip.id]) {
@@ -1102,6 +1102,7 @@ const SPECIAL_CROWD_HYPE_IDS = new Set([
   "crowd-hype-gta-sound-effect",
   "crowd-hype-wow",
   "crowd-hype-1up",
+  "crowd-hype-whistle-bomb",
   "crowd-hype-boom-goes-the-dynamite",
   "crowd-hype-three-best-friends",
 ]);
@@ -1111,7 +1112,7 @@ function getSpecialSamplerPadClass(clip) {
     "umpire-calls-play-ball": "sampler-pad-play-ball",
     "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
     "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
-    "crowd-hype-our-time-goonies": "sampler-pad-our-time",
+    "player-hype-our-time-goonies": "sampler-pad-our-time",
   };
 
   if (specialPadClasses[clip.id]) {
