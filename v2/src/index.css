@@ -1708,3 +1708,179 @@ body::before {
     border-radius: 10px;
   }
 }
+
+/* v67 team-color pass: gray, navy, light blue, and white. */
+:root {
+  --ink: #f8fbff;
+  --chalk: #ffffff;
+  --foul-line: #93c5fd;
+  --stadium-red: #60a5fa;
+  --turf: #cbd5e1;
+  --field-green: #0f2747;
+  --scoreboard: #071527;
+  --scoreboard-glass: rgba(7, 21, 39, 0.84);
+  --night: #020817;
+  --electric: #38bdf8;
+  --card-border: rgba(226, 232, 240, 0.22);
+  background:
+    radial-gradient(circle at 18% -8%, rgba(255, 255, 255, 0.32), transparent 8%),
+    radial-gradient(circle at 82% -8%, rgba(191, 219, 254, 0.28), transparent 8%),
+    radial-gradient(circle at 50% -4%, rgba(147, 197, 253, 0.18), transparent 20%),
+    linear-gradient(135deg, rgba(15, 39, 71, 0.28) 0 18%, transparent 18% 100%),
+    linear-gradient(225deg, rgba(203, 213, 225, 0.1) 0 18%, transparent 18% 100%),
+    linear-gradient(180deg, #020817 0%, #071527 46%, #020817 100%);
+}
+
+body::before {
+  background:
+    radial-gradient(ellipse at 50% 105%, rgba(96, 165, 250, 0.18), transparent 34%),
+    linear-gradient(90deg, transparent 0 12%, rgba(226, 232, 240, 0.08) 12% 13%, transparent 13% 87%, rgba(226, 232, 240, 0.08) 87% 88%, transparent 88%),
+    radial-gradient(circle at 8% 18%, rgba(56, 189, 248, 0.16), transparent 20%),
+    radial-gradient(circle at 94% 22%, rgba(148, 163, 184, 0.18), transparent 18%);
+}
+
+.hero-card {
+  background:
+    radial-gradient(circle at 10% 12%, rgba(255, 255, 255, 0.22), transparent 12%),
+    radial-gradient(circle at 84% 18%, rgba(96, 165, 250, 0.22), transparent 20%),
+    linear-gradient(135deg, rgba(7, 21, 39, 0.96), rgba(15, 39, 71, 0.82) 46%, rgba(30, 41, 59, 0.9));
+}
+
+.hero-card::before {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 18px, rgba(226, 232, 240, 0.2) 18px 19px),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 38%);
+}
+
+.hero-topline,
+.panel-kicker,
+.player-topline,
+.clip-card-topline,
+.player-config-field span {
+  color: #bfdbfe;
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.42);
+}
+
+.hero-card h1,
+.panel h2 {
+  color: #ffffff;
+  text-shadow:
+    0 3px 0 rgba(0, 0, 0, 0.42),
+    0 0 24px rgba(147, 197, 253, 0.22);
+}
+
+.primary-action,
+.primary-action-warning {
+  border-color: rgba(147, 197, 253, 0.76);
+  background: linear-gradient(145deg, rgba(191, 219, 254, 0.96), rgba(96, 165, 250, 0.82));
+  color: #071527;
+}
+
+.primary-action-ready,
+.primary-action-iphone {
+  border-color: rgba(226, 232, 240, 0.76);
+  background: linear-gradient(145deg, rgba(226, 232, 240, 0.94), rgba(96, 165, 250, 0.72));
+  color: #071527;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.22) inset,
+    0 16px 34px rgba(96, 165, 250, 0.28);
+}
+
+.audio-cache-meter span {
+  background: linear-gradient(90deg, #1e3a8a, #60a5fa, #ffffff);
+}
+
+.tab-bar {
+  border-top-color: rgba(147, 197, 253, 0.3);
+}
+
+.tab-button {
+  color: rgba(248, 251, 255, 0.84);
+}
+
+.tab-button-active {
+  border-color: rgba(147, 197, 253, 0.78);
+  background:
+    linear-gradient(145deg, rgba(96, 165, 250, 0.24), rgba(203, 213, 225, 0.14)),
+    rgba(7, 21, 39, 0.86);
+  box-shadow: 0 0 22px rgba(96, 165, 250, 0.18);
+}
+
+.player-card {
+  border-color: rgba(147, 197, 253, 0.28);
+  background:
+    linear-gradient(90deg, rgba(147, 197, 253, 0.18), transparent 30%),
+    linear-gradient(145deg, rgba(15, 39, 71, 0.78), rgba(7, 21, 39, 0.9));
+}
+
+.player-card::before {
+  background: linear-gradient(180deg, #ffffff, #60a5fa, #64748b);
+}
+
+.player-card-live {
+  border-color: rgba(255, 255, 255, 0.92);
+  background:
+    radial-gradient(circle at 14% 20%, rgba(255, 255, 255, 0.18), transparent 20%),
+    linear-gradient(135deg, rgba(147, 197, 253, 0.28), rgba(203, 213, 225, 0.16) 38%, rgba(7, 21, 39, 0.92) 64%);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.24),
+    0 20px 50px rgba(96, 165, 250, 0.24),
+    0 0 44px rgba(203, 213, 225, 0.16);
+}
+
+.player-number-badge {
+  border-color: rgba(226, 232, 240, 0.68);
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(96, 165, 250, 0.74));
+  color: #071527;
+}
+
+.player-callout-toggle,
+.player-position-label,
+.player-position-select,
+.announcement-option-button {
+  background: rgba(226, 232, 240, 0.08);
+  border-color: rgba(226, 232, 240, 0.2);
+  color: rgba(248, 251, 255, 0.9);
+}
+
+.announcement-option-button-active {
+  border-color: rgba(147, 197, 253, 0.76);
+  background: linear-gradient(145deg, rgba(96, 165, 250, 0.28), rgba(203, 213, 225, 0.12));
+}
+
+.timeline-lane {
+  border-color: rgba(226, 232, 240, 0.12);
+  background:
+    linear-gradient(90deg, rgba(226, 232, 240, 0.08) 0 1px, transparent 1px 12.5%),
+    rgba(0, 0, 0, 0.2);
+}
+
+.timeline-lane-readout {
+  color: rgba(248, 251, 255, 0.82);
+}
+
+.track-b {
+  background: linear-gradient(145deg, rgba(226, 232, 240, 0.9), rgba(96, 165, 250, 0.64));
+  color: #071527;
+}
+
+.sampler-pad-group h3 {
+  color: #bfdbfe;
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.3);
+}
+
+.sampler-pad-live {
+  border-color: rgba(255, 255, 255, 1);
+  background: linear-gradient(145deg, #ffffff, #bfdbfe 46%, #60a5fa);
+  color: #071527;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.78),
+    0 0 38px rgba(96, 165, 250, 0.58),
+    0 20px 36px rgba(15, 39, 71, 0.3);
+}
+
+.floating-fade-button {
+  border-color: rgba(226, 232, 240, 0.66);
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.98), rgba(15, 23, 42, 0.96));
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.38);
+}
