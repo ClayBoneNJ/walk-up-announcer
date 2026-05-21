@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v67";
+const APP_BUILD_LABEL = "v68";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -628,6 +628,11 @@ export default function App() {
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
+        <img
+          src={`${import.meta.env.BASE_URL}assets/riverdog-tuff.png`}
+          alt="Sayreville Riverdogs"
+          className="hero-logo"
+        />
 
         <div className="control-row">
           <button
