@@ -1747,6 +1747,72 @@ body::before {
   }
 }
 
+/* v70: make the custom background and hero logo more prominent. */
+body {
+  background:
+    linear-gradient(180deg, rgba(2, 8, 23, 0.24), rgba(2, 8, 23, 0.62)),
+    url("/walk-up-announcer/assets/riverdogs-bg.png") center top / cover fixed,
+    #020817;
+}
+
+body::before {
+  opacity: 0.74;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(147, 197, 253, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(2, 8, 23, 0.08), rgba(2, 8, 23, 0.52));
+}
+
+.hero-card {
+  min-height: 230px;
+  background:
+    linear-gradient(90deg, rgba(2, 8, 23, 0.88) 0%, rgba(7, 21, 39, 0.64) 48%, rgba(7, 21, 39, 0.22) 100%),
+    linear-gradient(180deg, rgba(2, 8, 23, 0.12), rgba(2, 8, 23, 0.4)),
+    url("/walk-up-announcer/assets/riverdogs-bg.png") center 34% / cover no-repeat;
+  border-color: rgba(191, 219, 254, 0.4);
+}
+
+.hero-card::before {
+  opacity: 0.18;
+}
+
+.hero-logo {
+  right: clamp(12px, 2.4vw, 28px);
+  top: clamp(8px, 1.8vw, 18px);
+  width: clamp(132px, 20vw, 260px);
+  max-height: 92%;
+  opacity: 1;
+  filter:
+    drop-shadow(0 18px 28px rgba(0, 0, 0, 0.54))
+    drop-shadow(0 0 22px rgba(96, 165, 250, 0.46));
+}
+
+.app-shell::before {
+  opacity: 0.08;
+}
+
+@media (max-width: 719px) {
+  body {
+    background:
+      linear-gradient(180deg, rgba(2, 8, 23, 0.32), rgba(2, 8, 23, 0.72)),
+      url("/walk-up-announcer/assets/riverdogs-bg.png") center top / auto 100vh fixed,
+      #020817;
+  }
+
+  .hero-card {
+    min-height: 210px;
+    background:
+      linear-gradient(90deg, rgba(2, 8, 23, 0.9) 0%, rgba(7, 21, 39, 0.68) 58%, rgba(7, 21, 39, 0.3) 100%),
+      url("/walk-up-announcer/assets/riverdogs-bg.png") center top / cover no-repeat;
+  }
+
+  .hero-logo {
+    right: 8px;
+    top: 8px;
+    width: 118px;
+    opacity: 0.96;
+  }
+}
+
 /* v67 team-color pass: gray, navy, light blue, and white. */
 :root {
   --ink: #f8fbff;
