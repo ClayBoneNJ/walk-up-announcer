@@ -1711,6 +1711,42 @@ body::before {
   }
 }
 
+/* v69 custom background image layer. */
+body {
+  background:
+    linear-gradient(180deg, rgba(2, 8, 23, 0.6), rgba(2, 8, 23, 0.88)),
+    url("/walk-up-announcer/assets/riverdogs-bg.png") center top / cover fixed,
+    #020817;
+}
+
+body::before {
+  background:
+    radial-gradient(circle at 50% 16%, rgba(147, 197, 253, 0.22), transparent 28%),
+    radial-gradient(ellipse at 50% 105%, rgba(96, 165, 250, 0.16), transparent 34%),
+    linear-gradient(90deg, transparent 0 12%, rgba(226, 232, 240, 0.08) 12% 13%, transparent 13% 87%, rgba(226, 232, 240, 0.08) 87% 88%, transparent 88%);
+}
+
+.hero-card,
+.panel,
+.player-card,
+.clip-group,
+.tab-button {
+  background-color: rgba(7, 21, 39, 0.82);
+}
+
+.app-shell::before {
+  opacity: 0.04;
+}
+
+@media (max-width: 719px) {
+  body {
+    background:
+      linear-gradient(180deg, rgba(2, 8, 23, 0.62), rgba(2, 8, 23, 0.9)),
+      url("/walk-up-announcer/assets/riverdogs-bg.png") center top / auto 100vh fixed,
+      #020817;
+  }
+}
+
 /* v67 team-color pass: gray, navy, light blue, and white. */
 :root {
   --ink: #f8fbff;
