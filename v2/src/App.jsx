@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v74";
+const APP_BUILD_LABEL = "v75";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1142,6 +1142,12 @@ const ALTERNATE_CROWD_HYPE_IDS = new Set([
   "crowd-hype-bullfighter",
 ]);
 
+const CHANT_CROWD_HYPE_IDS = new Set([
+  "crowd-hype-we-will-rock-you",
+  "crowd-hype-clap-yo-hands",
+  "crowd-hype-hands-clap",
+]);
+
 function getSpecialSamplerPadClass(clip) {
   const specialPadClasses = {
     "umpire-calls-play-ball": "sampler-pad-play-ball",
@@ -1161,6 +1167,10 @@ function getSpecialSamplerPadClass(clip) {
 
   if (clip.group === "crowd-hype" && ALTERNATE_CROWD_HYPE_IDS.has(clip.id)) {
     return "sampler-pad-alt-crowd";
+  }
+
+  if (clip.group === "crowd-hype" && CHANT_CROWD_HYPE_IDS.has(clip.id)) {
+    return "sampler-pad-chant-crowd";
   }
 
   return "";
