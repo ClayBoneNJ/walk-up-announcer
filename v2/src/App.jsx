@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v71";
+const APP_BUILD_LABEL = "v72";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1141,6 +1141,7 @@ function getSpecialSamplerPadClass(clip) {
     "umpire-calls-play-ball": "sampler-pad-play-ball",
     "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
     "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
+    "umpire-calls-sweeping": "sampler-pad-sweeping",
     "player-hype-our-time-goonies": "sampler-pad-our-time",
   };
 
