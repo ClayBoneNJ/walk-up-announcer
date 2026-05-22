@@ -376,6 +376,7 @@ const crowdHypeClips = [
   "defence.mp3",
   "eye of the tiger.mp3",
   "clap yo hands.mp3",
+  "Hands Clap.mp3",
   "whistle bomb.mp3",
   "WOW!.mp3",
   "1up.mp3",
