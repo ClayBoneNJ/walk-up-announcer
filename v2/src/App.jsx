@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v79";
+const APP_BUILD_LABEL = "v80";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1106,6 +1106,7 @@ function getFreestyleDisplayLabel(clip) {
     "umpire-calls-whip-wipe-wipe": "Wipe",
     "umpire-calls-fresh-and-clean": "Fresh Clean",
     "player-hype-our-time-goonies": "Our Time",
+    "player-hype-eat-it": "Eat It",
   };
 
   if (displayLabels[clip.id]) {

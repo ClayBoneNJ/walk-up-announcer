@@ -190,7 +190,7 @@ const teamPlayerData = [
     jerseyNumber: "24",
     position: "SS",
     role: "Walkup",
-    songLabel: "Humpty Dance",
+    songLabel: "Feel Me Flow",
     songFileName: "benjamin-yunker-mobile.mp3",
     songDurationMs: 19000,
   },
@@ -368,6 +368,7 @@ const playerHypeClips = [
   "new challenger!.mp3",
   "Benny Jet.mp3",
   "Run Marty.mp3",
+  "Eat it!.mp3",
 ].map((fileName) => eventClip("player-hype", fileName, 4500)).concat(ourTimePlayerHype);
 
 const crowdHypeClips = [
