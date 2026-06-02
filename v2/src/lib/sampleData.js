@@ -363,13 +363,15 @@ const ourTimePlayerHype = clip({
 
 const playerHypeClips = [
   "BILL! BILL! BILL!.mp3",
-  "88 mph.mp3",
   "my homie nate.mp3",
-  "new challenger!.mp3",
   "Benny Jet.mp3",
   "Run Marty.mp3",
-  "Eat it!.mp3",
-].map((fileName) => eventClip("player-hype", fileName, 4500)).concat(ourTimePlayerHype);
+].map((fileName) => eventClip("player-hype", fileName, 4500)).concat([
+  eventClip("player-hype", "88 mph.mp3", 4500),
+  ourTimePlayerHype,
+  eventClip("player-hype", "Eat it!.mp3", 4500),
+  eventClip("player-hype", "new challenger!.mp3", 4500),
+]);
 
 const crowdHypeClips = [
   "when i say.mp3",

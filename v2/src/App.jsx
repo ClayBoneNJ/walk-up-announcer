@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v80";
+const APP_BUILD_LABEL = "v81";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1155,6 +1155,10 @@ function getSpecialSamplerPadClass(clip) {
     "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
     "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
     "umpire-calls-sweeping": "sampler-pad-sweeping",
+    "player-hype-bill-bill-bill": "sampler-pad-player-callout",
+    "player-hype-my-homie-nate": "sampler-pad-player-callout",
+    "player-hype-benny-jet": "sampler-pad-player-callout",
+    "player-hype-run-marty": "sampler-pad-player-callout",
     "player-hype-our-time-goonies": "sampler-pad-our-time",
   };
 
