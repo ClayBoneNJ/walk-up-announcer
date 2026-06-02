@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v81";
+const APP_BUILD_LABEL = "v82";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1152,6 +1152,8 @@ const CHANT_CROWD_HYPE_IDS = new Set([
 function getSpecialSamplerPadClass(clip) {
   const specialPadClasses = {
     "umpire-calls-play-ball": "sampler-pad-play-ball",
+    "umpire-calls-hes-outta-there": "sampler-pad-close-call",
+    "umpire-calls-hes-safe": "sampler-pad-close-call",
     "umpire-calls-whip-wipe-wipe": "sampler-pad-wipe",
     "umpire-calls-fresh-and-clean": "sampler-pad-fresh-clean",
     "umpire-calls-sweeping": "sampler-pad-sweeping",
