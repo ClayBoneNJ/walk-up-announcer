@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v82";
+const APP_BUILD_LABEL = "v83";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1161,6 +1161,7 @@ function getSpecialSamplerPadClass(clip) {
     "player-hype-my-homie-nate": "sampler-pad-player-callout",
     "player-hype-benny-jet": "sampler-pad-player-callout",
     "player-hype-run-marty": "sampler-pad-player-callout",
+    "player-hype-weapon-x": "sampler-pad-player-callout",
     "player-hype-our-time-goonies": "sampler-pad-our-time",
   };
 

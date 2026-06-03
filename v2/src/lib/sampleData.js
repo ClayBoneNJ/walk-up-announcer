@@ -366,6 +366,7 @@ const playerHypeClips = [
   "my homie nate.mp3",
   "Benny Jet.mp3",
   "Run Marty.mp3",
+  "Weapon X.mp3",
 ].map((fileName) => eventClip("player-hype", fileName, 4500)).concat([
   eventClip("player-hype", "88 mph.mp3", 4500),
   ourTimePlayerHype,
