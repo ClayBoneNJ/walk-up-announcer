@@ -380,6 +380,7 @@ const crowdHypeClips = [
   "Organ Scale Chant.mp3",
   "Bullfighter.mp3",
   "we will rock you.mp3",
+  "Seven Nation.mp3",
   "clap yo hands.mp3",
   "Hands Clap.mp3",
   "defence.mp3",

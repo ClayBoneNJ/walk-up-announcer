@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v83";
+const APP_BUILD_LABEL = "v84";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1145,6 +1145,7 @@ const ALTERNATE_CROWD_HYPE_IDS = new Set([
 
 const CHANT_CROWD_HYPE_IDS = new Set([
   "crowd-hype-we-will-rock-you",
+  "crowd-hype-seven-nation",
   "crowd-hype-clap-yo-hands",
   "crowd-hype-hands-clap",
 ]);
