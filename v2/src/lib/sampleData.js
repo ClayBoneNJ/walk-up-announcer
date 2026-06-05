@@ -372,6 +372,7 @@ const playerHypeClips = [
   eventClip("player-hype", "88 mph.mp3", 4500),
   ourTimePlayerHype,
   eventClip("player-hype", "Eat it!.mp3", 4500),
+  eventClip("player-hype", "Shake it Off.mp3", 4500),
   eventClip("player-hype", "new challenger!.mp3", 4500),
 ]);
 
