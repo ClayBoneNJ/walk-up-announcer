@@ -362,6 +362,7 @@ const ourTimePlayerHype = clip({
 });
 
 const playerHypeClips = [
+  "HOMERUN!.mp3",
   "BILL! BILL! BILL!.mp3",
   "my homie nate.mp3",
   "Benny Jet.mp3",

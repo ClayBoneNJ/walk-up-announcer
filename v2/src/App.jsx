@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v88";
+const APP_BUILD_LABEL = "v89";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1105,6 +1105,7 @@ function getFreestyleDisplayLabel(clip) {
   const displayLabels = {
     "umpire-calls-whip-wipe-wipe": "Wipe",
     "umpire-calls-fresh-and-clean": "Fresh Clean",
+    "player-hype-homerun": "Home Run",
     "player-hype-our-time-goonies": "Our Time",
     "player-hype-eat-it": "Eat It",
     "player-hype-shake-it-off": "Shake It Off",
@@ -1166,6 +1167,7 @@ function getSpecialSamplerPadClass(clip) {
     "player-hype-chicken-hawk": "sampler-pad-player-callout",
     "player-hype-run-marty": "sampler-pad-player-callout",
     "player-hype-weapon-x": "sampler-pad-player-callout",
+    "player-hype-homerun": "sampler-pad-home-run",
     "player-hype-our-time-goonies": "sampler-pad-our-time",
   };
 
@@ -1280,7 +1282,11 @@ function ClipBoard({ title, description, groups, variant = "board", activePlayba
                   >
                     {isSampler ? (
                       <>
-                        <Volume2 className="sampler-pad-icon" />
+                        {clip.id === "player-hype-homerun" ? (
+                          <Sparkles className="sampler-pad-icon" />
+                        ) : (
+                          <Volume2 className="sampler-pad-icon" />
+                        )}
                         <strong>{getFreestyleDisplayLabel(clip)}</strong>
                         <small>{numberPlayerLabel || clip.playerName || formatMs(getClipDurationMs(clip, durationBySrc))}</small>
                         <span className="sampler-pad-level">
