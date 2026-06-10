@@ -1034,10 +1034,18 @@ button {
 }
 
 .sampler-pad-home-run::after {
-  background: linear-gradient(120deg, transparent 0 38%, rgba(255, 255, 255, 0.16) 48%, transparent 58% 100%);
-  opacity: 0.72;
-  transform: translateX(-120%);
-  animation: home-run-gleam 5.5s ease-in-out infinite;
+  top: -35%;
+  right: -18%;
+  bottom: auto;
+  left: auto;
+  width: 62%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34), rgba(254, 240, 138, 0.2) 34%, transparent 68%);
+  opacity: 0;
+  transform: scale(0.46);
+  transform-origin: center;
+  animation: home-run-gleam 6s ease-in-out infinite;
 }
 
 .sampler-pad-home-run .sampler-pad-icon {
@@ -1132,19 +1140,20 @@ button {
 
 @keyframes home-run-gleam {
   0%,
-  58% {
-    opacity: 0;
-    transform: translateX(-120%);
-  }
-
-  68% {
-    opacity: 0.72;
-  }
-
-  82%,
+  66%,
   100% {
     opacity: 0;
-    transform: translateX(120%);
+    transform: scale(0.46);
+  }
+
+  72% {
+    opacity: 0.55;
+    transform: scale(0.84);
+  }
+
+  82% {
+    opacity: 0;
+    transform: scale(1.16);
   }
 }
 
