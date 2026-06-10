@@ -1004,18 +1004,18 @@ button {
 }
 
 .sampler-pad-home-run {
-  border-color: rgba(186, 230, 253, 0.78);
+  border-color: rgba(224, 242, 254, 0.88);
   background:
-    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.3), transparent 25%),
-    radial-gradient(circle at 82% 20%, rgba(186, 230, 253, 0.28), transparent 34%),
-    linear-gradient(145deg, rgba(240, 249, 255, 0.86), rgba(125, 211, 252, 0.78) 18%, rgba(14, 165, 233, 0.72) 38%, rgba(37, 99, 235, 0.86) 58%, rgba(14, 165, 233, 0.72) 76%, rgba(240, 249, 255, 0.86) 100%);
+    radial-gradient(circle at 18% 14%, rgba(255, 255, 255, 0.38), transparent 25%),
+    radial-gradient(circle at 82% 20%, rgba(186, 230, 253, 0.36), transparent 34%),
+    linear-gradient(145deg, rgba(248, 250, 252, 0.96), rgba(125, 211, 252, 0.88) 18%, rgba(14, 165, 233, 0.82) 38%, rgba(29, 78, 216, 0.92) 58%, rgba(56, 189, 248, 0.82) 76%, rgba(248, 250, 252, 0.96) 100%);
   background-size: auto, auto, 260% 260%;
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    0 0 0 1px rgba(186, 230, 253, 0.22),
-    0 0 18px rgba(56, 189, 248, 0.34),
-    0 14px 30px rgba(37, 99, 235, 0.24);
-  animation: home-run-blue-shift 4.6s ease-in-out infinite, home-run-glow 2.8s ease-in-out infinite;
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    0 0 0 1px rgba(186, 230, 253, 0.28),
+    0 0 22px rgba(56, 189, 248, 0.44),
+    0 14px 32px rgba(37, 99, 235, 0.3);
+  animation: home-run-blue-shift 3.8s ease-in-out infinite, home-run-glow 2.6s ease-in-out infinite;
 }
 
 .sampler-pad-home-run::before,
@@ -1029,9 +1029,9 @@ button {
 
 .sampler-pad-home-run::before {
   background:
-    radial-gradient(circle at 28% 68%, rgba(255, 255, 255, 0.24) 0 1px, transparent 2px),
-    radial-gradient(circle at 84% 58%, rgba(186, 230, 253, 0.24) 0 1px, transparent 2px);
-  opacity: 0.7;
+    radial-gradient(circle at 28% 68%, rgba(255, 255, 255, 0.34) 0 1px, transparent 2px),
+    radial-gradient(circle at 84% 58%, rgba(224, 242, 254, 0.34) 0 1px, transparent 2px);
+  opacity: 0.82;
 }
 
 .sampler-pad-home-run::after {
@@ -1042,7 +1042,7 @@ button {
   opacity: 0;
   transform: translateX(-46%);
   transform-origin: center;
-  animation: home-run-gleam 6.4s cubic-bezier(0.28, 0.02, 0.18, 1) infinite;
+  animation: home-run-gleam 5.4s cubic-bezier(0.28, 0.02, 0.18, 1) infinite;
 }
 
 .sampler-pad-home-run .sampler-pad-icon {
@@ -1131,18 +1131,18 @@ button {
     filter: saturate(1);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.34),
-      0 0 0 1px rgba(186, 230, 253, 0.2),
-      0 0 16px rgba(56, 189, 248, 0.28),
-      0 14px 30px rgba(37, 99, 235, 0.22);
+      0 0 0 1px rgba(186, 230, 253, 0.24),
+      0 0 20px rgba(56, 189, 248, 0.34),
+      0 14px 30px rgba(37, 99, 235, 0.28);
   }
 
   50% {
     filter: saturate(1.08);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.38),
-      0 0 0 1px rgba(186, 230, 253, 0.3),
-      0 0 26px rgba(56, 189, 248, 0.44),
-      0 16px 34px rgba(37, 99, 235, 0.3);
+      0 0 0 1px rgba(224, 242, 254, 0.42),
+      0 0 34px rgba(56, 189, 248, 0.58),
+      0 16px 38px rgba(37, 99, 235, 0.38);
   }
 }
 
@@ -1154,7 +1154,7 @@ button {
   }
 
   68% {
-    opacity: 0.84;
+    opacity: 1;
   }
 
   78%,
