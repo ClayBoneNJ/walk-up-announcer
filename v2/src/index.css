@@ -1036,6 +1036,8 @@ button {
 .sampler-pad-home-run::after {
   background: linear-gradient(120deg, transparent 0 38%, rgba(255, 255, 255, 0.16) 48%, transparent 58% 100%);
   opacity: 0.72;
+  transform: translateX(-120%);
+  animation: home-run-gleam 5.5s ease-in-out infinite;
 }
 
 .sampler-pad-home-run .sampler-pad-icon {
@@ -1125,6 +1127,24 @@ button {
       0 0 0 1px rgba(254, 240, 138, 0.26),
       0 0 26px rgba(250, 204, 21, 0.42),
       0 16px 34px rgba(248, 113, 113, 0.28);
+  }
+}
+
+@keyframes home-run-gleam {
+  0%,
+  58% {
+    opacity: 0;
+    transform: translateX(-120%);
+  }
+
+  68% {
+    opacity: 0.72;
+  }
+
+  82%,
+  100% {
+    opacity: 0;
+    transform: translateX(120%);
   }
 }
 
