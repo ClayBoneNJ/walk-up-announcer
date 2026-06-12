@@ -270,7 +270,7 @@ const teamPlayerData = [
     jerseyNumber: "13",
     position: "LF",
     role: "Walkup",
-    songLabel: "Cant Stop",
+    songLabel: "Hooligan",
     songFileName: "nate-clay-mobile.mp3",
     songDurationMs: 19250,
   },
