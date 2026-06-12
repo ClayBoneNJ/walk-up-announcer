@@ -361,6 +361,14 @@ const ourTimePlayerHype = clip({
   durationMs: 6500,
 });
 
+const pacDeathPlayerHype = clip({
+  id: "player-hype-pac-death",
+  group: "player-hype",
+  label: "Pac Death",
+  src: assetSrc("events/player-hype", "pacman-die.mp3"),
+  durationMs: 4500,
+});
+
 const playerHypeClips = [
   "HOMERUN!.mp3",
   "BILL! BILL! BILL!.mp3",
@@ -375,6 +383,7 @@ const playerHypeClips = [
   eventClip("player-hype", "Eat it!.mp3", 4500),
   eventClip("player-hype", "Shake it Off.mp3", 4500),
   eventClip("player-hype", "new challenger!.mp3", 4500),
+  pacDeathPlayerHype,
 ]);
 
 const crowdHypeClips = [
