@@ -185,6 +185,16 @@ const teamPlayerData = [
     songDurationMs: 18250,
   },
   {
+    id: "alex-kelman",
+    name: "Alex Kelman",
+    jerseyNumber: "48",
+    position: "",
+    role: "Walkup",
+    songLabel: "Walk-Up Song",
+    songFileName: "alex-kelman-mobile.mp3",
+    songDurationMs: 23484,
+  },
+  {
     id: "benjamin",
     name: "Benjamin Yunker",
     jerseyNumber: "24",
@@ -202,7 +212,7 @@ const teamPlayerData = [
     role: "Walkup",
     songLabel: "Headstrong",
     songFileName: "billy-wanko-mobile.mp3",
-    songDurationMs: 11925,
+    songDurationMs: 27846,
   },
   {
     id: "camden",
