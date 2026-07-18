@@ -5,8 +5,10 @@ import {
   Users,
 } from "lucide-react";
 
+const AUDIO_ASSET_VERSION = "104";
+
 function assetSrc(folder, fileName) {
-  return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}`;
+  return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
 }
 
 function clip({ id, group, label, src, durationMs, playerId = "", playerName = "", ...extra }) {
