@@ -28,8 +28,6 @@ const PLAYER_SEQUENCES_EXPORT_FILE_NAME = "walk-up-announcer-v2-player-sequences
 const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"];
 const V1_POSITION_BY_JERSEY = {
   9: "P",
-  23: "SS",
-  88: "LF",
 };
 const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
 
