@@ -5,7 +5,7 @@ import {
   Users,
 } from "lucide-react";
 
-const AUDIO_ASSET_VERSION = "104";
+const AUDIO_ASSET_VERSION = "105";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -267,6 +267,16 @@ const teamPlayerData = [
     songDurationMs: 20000,
   },
   {
+    id: "marcellus",
+    name: "Marcellus Davidson",
+    jerseyNumber: "73",
+    position: "",
+    role: "Walkup",
+    songLabel: "Walk-Up Song",
+    songFileName: "marcellus-wallace-mobile.mp3",
+    songDurationMs: 20000,
+  },
+  {
     id: "marty",
     name: "Marty Happle",
     jerseyNumber: "16",
@@ -308,7 +318,7 @@ const teamPlayerData = [
   },
 ];
 
-const numberClips = ["2", "4", "9", "13", "16", "17", "23", "24", "27", "28", "33", "48", "88"].map((number) =>
+const numberClips = ["2", "4", "9", "13", "16", "17", "23", "24", "27", "28", "33", "48", "73", "88"].map((number) =>
   clip({
     id: `number-${number}`,
     group: "numbers",
