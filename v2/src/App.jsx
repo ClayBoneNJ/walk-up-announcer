@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v105";
+const APP_BUILD_LABEL = "v106";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -188,6 +188,12 @@ function getTrackACalloutEvent(sequence = []) {
   return [...sequence]
     .filter((event) => event.track === "A" && event.startMs > 0 && event.clip.group !== "names")
     .sort((left, right) => left.startMs - right.startMs)[0] ?? null;
+}
+
+function getAnnouncementEvent(sequence = []) {
+  return sequence.find(
+    (event) => event.track === "A" && event.clip?.group === "announcements",
+  );
 }
 
 function getPositionClip(positionLabel) {
@@ -428,9 +434,7 @@ export default function App() {
           return player;
         }
 
-        const currentAnnouncement = player.sequence.find(
-          (event) => event.track === "A" && event.startMs === 0,
-        );
+        const currentAnnouncement = getAnnouncementEvent(player.sequence);
 
         if (!currentAnnouncement) {
           return player;
@@ -443,7 +447,7 @@ export default function App() {
         return {
           ...player,
           sequence: player.sequence.map((event) =>
-            event.track === "A" && event.startMs === 0
+            event.id === currentAnnouncement.id
               ? {
                   ...event,
                   clip: nextAnnouncement,
@@ -874,7 +878,7 @@ export default function App() {
                         >
                           {announcementOptions.map((clip) => {
                             const selected =
-                              player.sequence.find((event) => event.track === "A" && event.startMs === 0)?.clip.id ===
+                              getAnnouncementEvent(player.sequence)?.clip.id ===
                               clip.id;
 
                             return (
