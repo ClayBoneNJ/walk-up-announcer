@@ -5,7 +5,7 @@ import {
   Users,
 } from "lucide-react";
 
-const AUDIO_ASSET_VERSION = "107";
+const AUDIO_ASSET_VERSION = "108";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -340,6 +340,16 @@ const songClips = teamPlayerData.map((player) =>
   }),
 );
 
+const standaloneSongClips = [
+  clip({
+    id: "song-enter-sandman",
+    group: "songs",
+    label: "Enter Sandman",
+    src: assetSrc("songs", "sandman.mp3"),
+    durationMs: 21000,
+  }),
+];
+
 const numberClipByValue = Object.fromEntries(numberClips.map((numberClip) => [numberClip.label.slice(1), numberClip]));
 const nameClipByPlayerId = Object.fromEntries(nameClips.map((nameClip) => [nameClip.playerId, nameClip]));
 const songClipByPlayerId = Object.fromEntries(songClips.map((songClip) => [songClip.playerId, songClip]));
@@ -428,6 +438,7 @@ export const clipLibrary = [
   ...positionClips,
   ...nameClips,
   ...songClips,
+  ...standaloneSongClips,
   crowdHereWeGo,
   ...umpireCallClips,
   ...playerHypeClips,
