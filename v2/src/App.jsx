@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v110";
+const APP_BUILD_LABEL = "v111";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -169,6 +169,14 @@ function getDisplayEventsForTrack(sequence, track, totalDurationMs, durationBySr
     displayLeft: (event.startMs / totalDurationMs) * 100,
     displayWidth: (getClipDurationMs(event.clip, durationBySrc) / totalDurationMs) * 100,
   }));
+}
+
+function getWalkupSongDisplayLabel(event) {
+  if (!event?.clip?.id) {
+    return "Walkup";
+  }
+
+  return event.clip.label || "Walkup";
 }
 
 function getTimelineTextSizeClass(width) {
@@ -972,7 +980,10 @@ export default function App() {
                           </button>
                         </div>
                         <div className="timeline-canvas">
-                          {trackBEvents.map((event) => (
+                          {trackBEvents.map((event) => {
+                            const songDisplayLabel = getWalkupSongDisplayLabel(event);
+
+                            return (
                           <button
                             key={event.id}
                             type="button"
@@ -982,12 +993,13 @@ export default function App() {
                               left: `${event.displayLeft}%`,
                               width: `${event.displayWidth}%`,
                             }}
-                            title={`${event.clip.label} at ${formatMs(event.startMs)}`}
+                            title={`${songDisplayLabel} at ${formatMs(event.startMs)}`}
                           >
-                            <span>{event.clip.label}</span>
+                            <span>{songDisplayLabel}</span>
                             <small>{formatMs(event.startMs)}</small>
                           </button>
-                        ))}
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
