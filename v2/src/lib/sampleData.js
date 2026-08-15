@@ -348,6 +348,13 @@ const standaloneSongClips = [
     src: assetSrc("songs", "sandman.mp3"),
     durationMs: 21000,
   }),
+  clip({
+    id: "song-like-a-stone",
+    group: "songs",
+    label: "Like a Stone",
+    src: assetSrc("songs", "like a stone.mp3"),
+    durationMs: 21000,
+  }),
 ];
 
 const numberClipByValue = Object.fromEntries(numberClips.map((numberClip) => [numberClip.label.slice(1), numberClip]));
