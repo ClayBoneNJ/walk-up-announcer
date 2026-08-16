@@ -237,6 +237,16 @@ const teamPlayerData = [
     songDurationMs: 17750,
   },
   {
+    id: "gio-mortensen",
+    name: "Gio Mortensen",
+    jerseyNumber: "",
+    position: "",
+    role: "Walkup",
+    songLabel: "Walkup",
+    songFileName: "gio-mortensen-mobile.mp3",
+    songDurationMs: 20000,
+  },
+  {
     id: "mario",
     name: "Mario Contreras",
     jerseyNumber: "27",
@@ -275,6 +285,16 @@ const teamPlayerData = [
     songLabel: "Everlong",
     songFileName: "matty-wanko-mobile.mp3",
     songDurationMs: 26841,
+  },
+  {
+    id: "matty-waldman",
+    name: "Matty Waldman",
+    jerseyNumber: "",
+    position: "",
+    role: "Walkup",
+    songLabel: "Walk-Up Song",
+    songFileName: "mario-c-mobile.mp3",
+    songDurationMs: 20000,
   },
   {
     id: "nate",
@@ -461,20 +481,26 @@ function event(id, track, startMs, clip) {
   };
 }
 
-export const players = teamPlayerData.map((player) => ({
-  id: player.id,
-  name: player.name,
-  jerseyNumber: player.jerseyNumber,
-  role: player.role,
-  position: player.position,
-  usePositionClip: false,
-  sequence: [
-    event(`${player.id}-announcement`, "A", 0, announcementNowBatting),
-    event(`${player.id}-number`, "A", 1250, numberClipByValue[player.jerseyNumber]),
-    event(`${player.id}-name`, "A", 2600, nameClipByPlayerId[player.id]),
-    event(`${player.id}-song`, "B", 3600, songClipByPlayerId[player.id]),
-  ],
-}));
+export const players = teamPlayerData.map((player) => {
+  const numberClip = numberClipByValue[player.jerseyNumber];
+  const nameStartMs = numberClip ? 2600 : 1250;
+  const songStartMs = numberClip ? 3600 : 2600;
+
+  return {
+    id: player.id,
+    name: player.name,
+    jerseyNumber: player.jerseyNumber,
+    role: player.role,
+    position: player.position,
+    usePositionClip: false,
+    sequence: [
+      event(`${player.id}-announcement`, "A", 0, announcementNowBatting),
+      ...(numberClip ? [event(`${player.id}-number`, "A", 1250, numberClip)] : []),
+      event(`${player.id}-name`, "A", nameStartMs, nameClipByPlayerId[player.id]),
+      event(`${player.id}-song`, "B", songStartMs, songClipByPlayerId[player.id]),
+    ],
+  };
+});
 
 export const screenTabs = [
   { id: "walkups", label: "Walkups", icon: Users },

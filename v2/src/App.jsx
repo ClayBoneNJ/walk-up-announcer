@@ -19,7 +19,7 @@ import {
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v111";
+const APP_BUILD_LABEL = "v112";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -791,7 +791,7 @@ export default function App() {
                   <div className="player-meta">
                     <div className="player-identity">
                       <div className="player-number-badge">
-                        #{player.jerseyNumber}
+                        {player.jerseyNumber ? `#${player.jerseyNumber}` : "Temp"}
                       </div>
                       <div className="player-copy">
                         <div className="player-name-row">
