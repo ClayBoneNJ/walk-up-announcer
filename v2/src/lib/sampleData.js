@@ -239,7 +239,7 @@ const teamPlayerData = [
   {
     id: "gio-mortensen",
     name: "Gio Mortensen",
-    jerseyNumber: "",
+    jerseyNumber: "55",
     position: "",
     role: "Walkup",
     songLabel: "Walkup",
@@ -289,7 +289,7 @@ const teamPlayerData = [
   {
     id: "matty-waldman",
     name: "Matty Waldman",
-    jerseyNumber: "",
+    jerseyNumber: "25",
     position: "",
     role: "Walkup",
     songLabel: "Walk-Up Song",
@@ -318,7 +318,7 @@ const teamPlayerData = [
   },
 ];
 
-const numberClips = ["2", "4", "9", "13", "16", "17", "24", "27", "28", "33", "48", "73"].map((number) =>
+const numberClips = ["2", "4", "9", "13", "16", "17", "24", "25", "27", "28", "33", "48", "55", "73"].map((number) =>
   clip({
     id: `number-${number}`,
     group: "numbers",
