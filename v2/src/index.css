@@ -630,6 +630,8 @@ button {
 }
 
 .announcement-option-button {
+  position: relative;
+  z-index: 2;
   min-height: 36px;
   border: 1px solid rgba(125, 211, 252, 0.2);
   border-radius: 999px;
@@ -640,6 +642,9 @@ button {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  touch-action: manipulation;
+  -webkit-appearance: none;
+  -webkit-tap-highlight-color: rgba(125, 211, 252, 0.2);
 }
 
 .announcement-button-row-collapsed .announcement-option-button {
@@ -1688,7 +1693,13 @@ body::before {
   position: absolute;
   inset: 0 auto 0 0;
   width: 6px;
+  pointer-events: none;
   background: linear-gradient(180deg, var(--foul-line), var(--stadium-red), var(--turf));
+}
+
+.player-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .player-card-live {
