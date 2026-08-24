@@ -5,7 +5,7 @@ import {
   Users,
 } from "lucide-react";
 
-const AUDIO_ASSET_VERSION = "110";
+const AUDIO_ASSET_VERSION = "117";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -452,7 +452,29 @@ const crowdHypeClips = [
   "boom goes the dynamite.mp3",
   "three best friends.mp3",
   "GTA Sound Effect.mp3",
+  "Fatality.mp3",
+  "Finish him!.mp3",
+  "Flawless Victory.mp3",
+  "dogs-barking.mp3",
+  "who let the dogs.mp3",
 ].map((fileName) => eventClip("crowd-hype", fileName, 6500));
+
+const crowdHypeMusicClips = [
+  clip({
+    id: "crowd-hype-senora",
+    group: "crowd-hype",
+    label: "Senora",
+    src: assetSrc("songs", "senora.mp3"),
+    durationMs: 21000,
+  }),
+  clip({
+    id: "crowd-hype-testify",
+    group: "crowd-hype",
+    label: "Testify",
+    src: assetSrc("songs", "testify.mp3"),
+    durationMs: 21000,
+  }),
+];
 
 export const clipLibrary = [
   announcementNowBatting,
@@ -470,6 +492,7 @@ export const clipLibrary = [
   ...umpireCallClips,
   ...playerHypeClips,
   ...crowdHypeClips,
+  ...crowdHypeMusicClips,
 ];
 
 function event(id, track, startMs, clip) {
