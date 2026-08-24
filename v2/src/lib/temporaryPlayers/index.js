@@ -2,6 +2,16 @@
 // their Freestyle song cards remain available without creating Walkups cards.
 export const temporaryPlayerData = [
   {
+    id: "mario",
+    name: "Mario Contreras",
+    jerseyNumber: "27",
+    position: "",
+    role: "Walkup",
+    songLabel: "Walk-Up Song",
+    songFileName: "mario-c-mobile.mp3",
+    songDurationMs: 20000,
+  },
+  {
     id: "marcellus",
     name: "Marcellus Davidson",
     jerseyNumber: "73",

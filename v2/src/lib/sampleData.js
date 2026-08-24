@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "119";
+const AUDIO_ASSET_VERSION = "120";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -245,16 +245,6 @@ const teamPlayerData = [
     role: "Walkup",
     songLabel: "Walkup",
     songFileName: "gio-mortensen-mobile.mp3",
-    songDurationMs: 20000,
-  },
-  {
-    id: "mario",
-    name: "Mario Contreras",
-    jerseyNumber: "27",
-    position: "",
-    role: "Walkup",
-    songLabel: "Walk-Up Song",
-    songFileName: "mario-c-mobile.mp3",
     songDurationMs: 20000,
   },
   {
