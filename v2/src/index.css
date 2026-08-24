@@ -607,6 +607,8 @@ button {
 
 .player-config-row {
   margin-top: 12px;
+  display: grid;
+  gap: 10px;
 }
 
 .player-config-field {

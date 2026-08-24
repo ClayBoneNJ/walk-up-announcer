@@ -5,7 +5,7 @@ import {
   Users,
 } from "lucide-react";
 
-const AUDIO_ASSET_VERSION = "117";
+const AUDIO_ASSET_VERSION = "118";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -348,6 +348,23 @@ const nameClips = teamPlayerData.map((player) =>
   }),
 );
 
+const billyAlternateNameClip = clip({
+  id: "name-billy-alternate",
+  group: "names",
+  label: "Billy Wanko (Alternate)",
+  src: assetSrc("names", "BILLY WANKO alternate.mp3"),
+  durationMs: 1300,
+  playerId: "billy",
+  playerName: "Billy Wanko",
+});
+
+export const nameOptionsByPlayerId = {
+  billy: [
+    { clip: nameClips.find((nameClip) => nameClip.playerId === "billy"), label: "Original" },
+    { clip: billyAlternateNameClip, label: "Alternate" },
+  ],
+};
+
 const songClips = teamPlayerData.map((player) =>
   clip({
     id: `song-${player.id}`,
@@ -486,6 +503,7 @@ export const clipLibrary = [
   ...numberClips,
   ...positionClips,
   ...nameClips,
+  billyAlternateNameClip,
   ...songClips,
   ...standaloneSongClips,
   crowdHereWeGo,

@@ -17,9 +17,16 @@ import {
   Waves,
 } from "lucide-react";
 import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
-import { announcementOptions, clipLibrary, players, positionOptions, screenTabs } from "./lib/sampleData";
+import {
+  announcementOptions,
+  clipLibrary,
+  nameOptionsByPlayerId,
+  players,
+  positionOptions,
+  screenTabs,
+} from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v117";
+const APP_BUILD_LABEL = "v118";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -200,6 +207,12 @@ function getTrackACalloutEvent(sequence = []) {
 function getAnnouncementEvent(sequence = []) {
   return sequence.find(
     (event) => event.track === "A" && event.clip?.group === "announcements",
+  );
+}
+
+function getNameEvent(sequence = []) {
+  return sequence.find(
+    (event) => event.track === "A" && event.clip?.group === "names",
   );
 }
 
@@ -464,6 +477,38 @@ export default function App() {
                     ...event,
                     startMs: Math.max(0, event.startMs + startShiftMs),
                   }
+              : event,
+          ),
+        };
+      }),
+    );
+  };
+
+  const updateNamePronunciation = (playerId, nameClipId) => {
+    const nextNameClip = nameOptionsByPlayerId[playerId]
+      ?.find((option) => option.clip?.id === nameClipId)?.clip;
+
+    if (!nextNameClip) {
+      return;
+    }
+
+    setPlayerSequences((currentPlayers) =>
+      currentPlayers.map((player) => {
+        if (player.id !== playerId) {
+          return player;
+        }
+
+        const currentNameEvent = getNameEvent(player.sequence);
+
+        if (!currentNameEvent) {
+          return player;
+        }
+
+        return {
+          ...player,
+          sequence: player.sequence.map((event) =>
+            event.id === currentNameEvent.id
+              ? { ...event, clip: nextNameClip }
               : event,
           ),
         };
@@ -901,6 +946,31 @@ export default function App() {
                           })}
                         </div>
                       </div>
+                      {nameOptionsByPlayerId[player.id] ? (
+                        <div className={`player-config-field ${isCollapsed ? "player-config-field-collapsed" : ""}`}>
+                          {!isCollapsed ? <span>Name pronunciation</span> : null}
+                          <div
+                            className={`announcement-button-row ${isCollapsed ? "announcement-button-row-collapsed" : ""}`}
+                            role="group"
+                            aria-label={`${player.name} name pronunciation`}
+                          >
+                            {nameOptionsByPlayerId[player.id].map((option) => {
+                              const selected = getNameEvent(player.sequence)?.clip.id === option.clip.id;
+
+                              return (
+                                <button
+                                  key={option.clip.id}
+                                  type="button"
+                                  onClick={() => updateNamePronunciation(player.id, option.clip.id)}
+                                  className={`announcement-option-button ${selected ? "announcement-option-button-active" : ""}`}
+                                >
+                                  {option.label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     {!isCollapsed ? (
