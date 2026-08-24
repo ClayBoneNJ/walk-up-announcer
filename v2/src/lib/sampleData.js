@@ -4,8 +4,9 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "118";
+const AUDIO_ASSET_VERSION = "119";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -257,16 +258,6 @@ const teamPlayerData = [
     songDurationMs: 20000,
   },
   {
-    id: "marcellus",
-    name: "Marcellus Davidson",
-    jerseyNumber: "73",
-    position: "",
-    role: "Walkup",
-    songLabel: "Walk-Up Song",
-    songFileName: "marcellus-wallace-mobile.mp3",
-    songDurationMs: 20000,
-  },
-  {
     id: "marty",
     name: "Marty Happle",
     jerseyNumber: "16",
@@ -285,16 +276,6 @@ const teamPlayerData = [
     songLabel: "Everlong",
     songFileName: "matty-wanko-mobile.mp3",
     songDurationMs: 26841,
-  },
-  {
-    id: "matty-waldman",
-    name: "Matty Waldman",
-    jerseyNumber: "25",
-    position: "",
-    role: "Walkup",
-    songLabel: "Walk-Up Song",
-    songFileName: "mario-c-mobile.mp3",
-    songDurationMs: 20000,
   },
   {
     id: "nate",
@@ -365,7 +346,7 @@ export const nameOptionsByPlayerId = {
   ],
 };
 
-const songClips = teamPlayerData.map((player) =>
+const songClips = [...teamPlayerData, ...temporaryPlayerData].map((player) =>
   clip({
     id: `song-${player.id}`,
     group: "songs",
