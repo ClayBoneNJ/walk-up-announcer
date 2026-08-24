@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "121";
+const AUDIO_ASSET_VERSION = "122";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -460,6 +460,13 @@ const crowdHypeMusicClips = [
     group: "crowd-hype",
     label: "Testify",
     src: assetSrc("songs", "testify.mp3"),
+    durationMs: 21000,
+  }),
+  clip({
+    id: "crowd-hype-pump-it-up",
+    group: "crowd-hype",
+    label: "Pump It Up",
+    src: assetSrc("songs", "pump it up.mp3"),
     durationMs: 21000,
   }),
 ];
