@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v120";
+const APP_BUILD_LABEL = "v121";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -207,6 +207,8 @@ function getTrackACalloutEvent(sequence = []) {
 function getAnnouncementEvent(sequence = []) {
   return sequence.find(
     (event) => event.track === "A" && event.clip?.group === "announcements",
+  ) ?? sequence.find(
+    (event) => event.track === "A" && event.id?.endsWith("-announcement"),
   );
 }
 
@@ -922,7 +924,22 @@ export default function App() {
 
                     <div className="player-config-row">
                       <div className={`player-config-field ${isCollapsed ? "player-config-field-collapsed" : ""}`}>
-                        {!isCollapsed ? <span>Announcement</span> : null}
+                        <span>Announcement</span>
+                        <select
+                          className="announcement-touch-select"
+                          value={
+                            getAnnouncementEvent(player.sequence)?.clip?.group === "announcements"
+                              ? getAnnouncementEvent(player.sequence).clip.id
+                              : ""
+                          }
+                          onChange={(event) => updateAnnouncement(player.id, event.target.value)}
+                          aria-label={`Choose ${player.name} announcement`}
+                        >
+                          <option value="" disabled>Choose announcement</option>
+                          {announcementOptions.map((clip) => (
+                            <option key={clip.id} value={clip.id}>{clip.label}</option>
+                          ))}
+                        </select>
                         <div
                           className={`announcement-button-row ${isCollapsed ? "announcement-button-row-collapsed" : ""}`}
                           role="group"

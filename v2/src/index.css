@@ -631,6 +631,26 @@ button {
   padding-left: 60px;
 }
 
+.announcement-touch-select {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .announcement-touch-select {
+    display: block;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid rgba(147, 197, 253, 0.48);
+    border-radius: 12px;
+    background: rgba(7, 21, 39, 0.96);
+    color: #f8fbff;
+    padding: 0 38px 0 12px;
+    font-size: 16px;
+    font-weight: 700;
+    touch-action: manipulation;
+  }
+}
+
 .announcement-option-button {
   position: relative;
   z-index: 2;
