@@ -2091,14 +2091,20 @@ body::before {
 }
 
 .player-card-live {
-  border-color: rgba(255, 255, 255, 0.92);
+  border-color: #ffffff;
   background:
-    radial-gradient(circle at 14% 20%, rgba(255, 255, 255, 0.18), transparent 20%),
-    linear-gradient(135deg, rgba(147, 197, 253, 0.28), rgba(203, 213, 225, 0.16) 38%, rgba(7, 21, 39, 0.92) 64%);
+    radial-gradient(circle at 14% 20%, rgba(255, 255, 255, 0.32), transparent 24%),
+    linear-gradient(135deg, rgba(56, 189, 248, 0.62), rgba(37, 99, 235, 0.42) 44%, rgba(7, 21, 39, 0.96) 72%);
   box-shadow:
-    0 0 0 2px rgba(255, 255, 255, 0.24),
-    0 20px 50px rgba(96, 165, 250, 0.24),
-    0 0 44px rgba(203, 213, 225, 0.16);
+    0 0 0 4px #38bdf8,
+    0 20px 54px rgba(56, 189, 248, 0.48),
+    0 0 52px rgba(255, 255, 255, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+.player-card-live::before {
+  width: 10px;
+  background: linear-gradient(180deg, #ffffff, #38bdf8, #2563eb);
 }
 
 .player-number-badge {
