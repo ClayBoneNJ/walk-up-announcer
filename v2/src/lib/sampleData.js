@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "124";
+const AUDIO_ASSET_VERSION = "125";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -444,6 +444,7 @@ const crowdHypeClips = [
   "Finish him!.mp3",
   "Flawless Victory.mp3",
   "dogs-barking.mp3",
+  "Dmx dogs.mp3",
   "who let the dogs.mp3",
 ].map((fileName) => eventClip("crowd-hype", fileName, 6500));
 
