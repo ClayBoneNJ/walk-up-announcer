@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v122";
+const APP_BUILD_LABEL = "v123";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -258,6 +258,7 @@ export default function App() {
     ),
   );
   const [durationBySrc, setDurationBySrc] = useState({});
+  const [lastPlayedPlayerId, setLastPlayedPlayerId] = useState("");
   const warmSources = useMemo(
     () => [...new Set(clipLibrary.map((clip) => clip.src).filter(Boolean))],
     [],
@@ -673,8 +674,6 @@ export default function App() {
     );
   };
 
-  const activePlayerId =
-    activePlayback?.type === "sequence" ? activePlayback.playerId : activePlayback?.playerId || "";
   const audioCacheProgress = audioReadyState.totalCount > 0
     ? Math.round((audioReadyState.cachedCount / audioReadyState.totalCount) * 100)
     : 0;
@@ -833,7 +832,7 @@ export default function App() {
                 return (
                   <article
                     key={player.id}
-                    className={`player-card ${isCollapsed ? "player-card-collapsed" : "player-card-expanded"} ${activePlayerId === player.id ? "player-card-live" : ""} ${moveCueClass}`}
+                    className={`player-card ${isCollapsed ? "player-card-collapsed" : "player-card-expanded"} ${lastPlayedPlayerId === player.id ? "player-card-live" : ""} ${moveCueClass}`}
                   >
                   <div className="player-meta">
                     <div className="player-identity">
@@ -895,7 +894,10 @@ export default function App() {
                       ) : null}
                       <button
                         type="button"
-                        onClick={() => playSequence(player)}
+                        onClick={() => {
+                          setLastPlayedPlayerId(player.id);
+                          playSequence(player);
+                        }}
                         className="primary-action compact"
                       >
                         <CirclePlay className="button-icon" />

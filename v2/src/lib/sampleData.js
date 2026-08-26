@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "122";
+const AUDIO_ASSET_VERSION = "123";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
