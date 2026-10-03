@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v125";
+const APP_BUILD_LABEL = "v126";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -130,7 +130,9 @@ function hydrateSavedPlayerSequences(savedPlayers) {
           ...event,
           track: savedEvent.track ?? event.track,
           startMs: typeof savedEvent.startMs === "number" ? savedEvent.startMs : event.startMs,
-          clip: savedClip ?? event.clip,
+          clip: event.clip?.group === "numbers" && savedClip?.label !== `#${player.jerseyNumber}`
+            ? event.clip
+            : savedClip ?? event.clip,
         };
       }),
     };

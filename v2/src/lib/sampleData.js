@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "125";
+const AUDIO_ASSET_VERSION = "126";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -178,6 +178,66 @@ const basePositionClips = [
 
 const teamPlayerData = [
   {
+    id: "nick",
+    name: "Nick Mangino",
+    jerseyNumber: "7",
+    position: "",
+    role: "Walkup",
+    songLabel: "Blind",
+    songFileName: "blind.mp3",
+    songDurationMs: 25607,
+  },
+  {
+    id: "alex-figuroa",
+    name: "Alex Figuroa",
+    jerseyNumber: "10",
+    position: "",
+    role: "Walkup",
+    songLabel: "20 Min",
+    songFileName: "Lil Uzi Vert - 20 Min Alex F.mp3",
+    songDurationMs: 22987,
+  },
+  {
+    id: "brandon",
+    name: "Brandon Perry",
+    jerseyNumber: "5",
+    position: "",
+    role: "Walkup",
+    songLabel: "Lose Yourself",
+    songFileName: "lose yourself - eminem - brandon perry.mp3",
+    songDurationMs: 18758,
+  },
+  {
+    id: "jadiel",
+    name: "Jadiel Serano",
+    jerseyNumber: "22",
+    position: "",
+    role: "Walkup",
+    songLabel: "Y Que",
+    songFileName: "y que - don miguelo - jadiel.mp3",
+    songDurationMs: 19918,
+  },
+  {
+    id: "mario",
+    name: "Mario Contreras",
+    jerseyNumber: "27",
+    position: "",
+    role: "Walkup",
+    songLabel: "Bandolero",
+    songFileName: "bandolero - don omar - Mario contreras.mp3",
+    songDurationMs: 33426,
+  },
+  {
+    id: "simon",
+    name: "Simon Angelis",
+    jerseyNumber: "72",
+    position: "",
+    role: "Walkup",
+    songLabel: "Iron Man",
+    songFileName: "Iron Man- sabbath - simon angelis.mp3",
+    songDurationMs: 33492,
+  },
+  {
     id: "alex",
     name: "Alex Bonk",
     jerseyNumber: "9",
@@ -203,6 +263,7 @@ const teamPlayerData = [
     jerseyNumber: "24",
     position: "SS",
     role: "Walkup",
+    songEnabled: false,
     songLabel: "Humpty Dance",
     songFileName: "benjamin-yunker-mobile.mp3",
     songDurationMs: 19000,
@@ -223,9 +284,9 @@ const teamPlayerData = [
     jerseyNumber: "33",
     position: "CF",
     role: "Walkup",
-    songLabel: "Toxicity",
-    songFileName: "camden-pagoda-mobile.mp3",
-    songDurationMs: 17000,
+    songLabel: "Three Little Birds",
+    songFileName: "3 little birds  - bob marley - cam pagoda.mp3",
+    songDurationMs: 25966,
   },
   {
     id: "giovanni",
@@ -233,9 +294,9 @@ const teamPlayerData = [
     jerseyNumber: "2",
     position: "2B",
     role: "Walkup",
-    songLabel: "Hypnotize",
-    songFileName: "giovanni-turchi-mobile.mp3",
-    songDurationMs: 17750,
+    songLabel: "Poison",
+    songFileName: "Poison - BBD- gio turchi.mp3",
+    songDurationMs: 14376,
   },
   {
     id: "gio-mortensen",
@@ -253,9 +314,9 @@ const teamPlayerData = [
     jerseyNumber: "16",
     position: "CF",
     role: "Walkup",
-    songLabel: "Savior",
-    songFileName: "marty-happle-mobile.mp3",
-    songDurationMs: 17704,
+    songLabel: "Intro",
+    songFileName: "Intro -ph10 - marty.mp3",
+    songDurationMs: 24141,
   },
   {
     id: "matty",
@@ -280,7 +341,7 @@ const teamPlayerData = [
   {
     id: "tristan",
     name: "Tristan Aquino",
-    jerseyNumber: "17",
+    jerseyNumber: "23",
     position: "RF",
     role: "Walkup",
     songLabel: "EoO",
@@ -289,7 +350,7 @@ const teamPlayerData = [
   },
 ];
 
-const numberClips = ["2", "4", "9", "13", "16", "17", "24", "25", "27", "28", "33", "48", "55", "73"].map((number) =>
+const numberClips = ["2", "4", "5", "7", "9", "10", "13", "16", "22", "23", "24", "25", "27", "28", "33", "48", "55", "72", "73"].map((number) =>
   clip({
     id: `number-${number}`,
     group: "numbers",
@@ -517,7 +578,7 @@ export const players = teamPlayerData.map((player) => {
       event(`${player.id}-announcement`, "A", 0, announcementNowBatting),
       ...(numberClip ? [event(`${player.id}-number`, "A", 1250, numberClip)] : []),
       event(`${player.id}-name`, "A", nameStartMs, nameClipByPlayerId[player.id]),
-      event(`${player.id}-song`, "B", songStartMs, songClipByPlayerId[player.id]),
+      ...(player.songEnabled === false ? [] : [event(`${player.id}-song`, "B", songStartMs, songClipByPlayerId[player.id])]),
     ],
   };
 });
