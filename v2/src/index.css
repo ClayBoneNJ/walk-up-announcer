@@ -2398,3 +2398,23 @@ body::after {
   padding-right: 0;
   text-shadow: 2px 3px 0 #183e70, 0 5px 14px #0009;
 }
+
+/* v131: compact floating scoreboard with full-size touch targets on tablets. */
+@media (min-width: 600px) and (max-width: 1400px) {
+  .app-shell > .scoreboard {
+    width: 320px;
+    gap: 5px;
+    padding: 6px 8px;
+    border-radius: 22px;
+  }
+  .scoreboard .score-counter { grid-template-rows: 44px 46px 44px 18px; }
+  .scoreboard .score-counter button { min-height: 44px; }
+  .scoreboard .score-counter button svg { width: 28px; height: 26px; }
+  .scoreboard .score-counter output { font-size: 36px; border-radius: 10px; }
+  .scoreboard .score-counter > span { font-size: 12px; }
+  .scoreboard .inning-half { gap: 2px; }
+  .scoreboard .inning-half button { min-height: 44px; font-size: 11px; gap: 3px; }
+  .scoreboard .inning-half button span { width: 10px; height: 10px; }
+  .scoreboard .inning-half .score-reset { min-height: 44px; font-size: 10px; }
+  .hero-card { padding-top: 24px; padding-right: 340px; min-height: 190px; }
+}
