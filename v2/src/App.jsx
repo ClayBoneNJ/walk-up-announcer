@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v129";
+const APP_BUILD_LABEL = "v130";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -742,7 +742,7 @@ export default function App() {
       <Scoreboard game={game} setGame={setGame} />
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
-        <h1>Walk-Up Announcer V2</h1>
+        <h1>Dynamite Baseball</h1>
 
         <div className="control-row">
           <button
