@@ -2365,3 +2365,17 @@ body::after {
   .score-counter > span { font-size: 13px; }
   .inning-half button { font-size: 11px; }
 }
+
+/* v129: keep game controls visible while scrolling, outside the blurred header. */
+.app-shell > .scoreboard {
+  position: fixed;
+  z-index: 60;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  width: min(440px, calc(100vw - 24px));
+  box-sizing: border-box;
+  margin: 0;
+}
+@media (max-width: 1100px) {
+  .hero-card { padding-top: 230px; }
+}

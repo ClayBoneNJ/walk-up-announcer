@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v128";
+const APP_BUILD_LABEL = "v129";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -324,7 +324,7 @@ export default function App() {
     fadeOutAndStopAll,
   } = usePlaybackEngine({
     onClipPlayed: (clip) => {
-      if (clip.id === "crowd-hype-1up") {
+      if (["crowd-hype-1up", "player-hype-homerun"].includes(clip.id)) {
         setGame((current) => ({ ...current, home: Math.min(99, current.home + 1) }));
       }
     },
@@ -739,10 +739,10 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <Scoreboard game={game} setGame={setGame} />
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
-        <Scoreboard game={game} setGame={setGame} />
 
         <div className="control-row">
           <button
