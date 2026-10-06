@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v127";
+const APP_BUILD_LABEL = "v128";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -38,8 +38,9 @@ const V1_POSITION_BY_JERSEY = {
 };
 const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
 
-function Scoreboard() {
-  const initialGame = { away: 0, home: 0, inning: 1, half: "top" };
+const initialGame = { away: 0, home: 0, inning: 1, half: "top" };
+
+function useScoreboardGame() {
   const [game, setGame] = useState(() => {
     try {
       const saved = JSON.parse(localStorage.getItem("walk-up-scoreboard"));
@@ -50,12 +51,25 @@ function Scoreboard() {
   useEffect(() => {
     try { localStorage.setItem("walk-up-scoreboard", JSON.stringify(game)); } catch { /* Controls still work without storage. */ }
   }, [game]);
-  const adjust = (key, amount) => setGame((current) => ({ ...current, [key]: Math.max(key === "inning" ? 1 : 0, Math.min(99, current[key] + amount)) }));
+  return [game, setGame];
+}
+
+function Scoreboard({ game, setGame }) {
+  const adjust = (key, amount) => setGame((current) => {
+    if (key === "inning") {
+      const halfInning = Math.max(0, Math.min(197, (current.inning - 1) * 2 + (current.half === "bottom" ? 1 : 0) + amount));
+      return { ...current, inning: Math.floor(halfInning / 2) + 1, half: halfInning % 2 ? "bottom" : "top" };
+    }
+    return { ...current, [key]: Math.max(0, Math.min(99, current[key] + amount)) };
+  });
+  const atLimit = (key, direction) => key === "inning"
+    ? (direction > 0 ? game.inning === 99 && game.half === "bottom" : game.inning === 1 && game.half === "top")
+    : game[key] === (direction > 0 ? 99 : 0);
   const counter = (key, label) => (
     <div className="score-counter">
-      <button type="button" aria-label={`Increase ${label.toLowerCase()}`} disabled={game[key] === 99} onClick={() => adjust(key, 1)}><ChevronUp /></button>
+      <button type="button" aria-label={key === "inning" ? "Next half inning" : `Increase ${label.toLowerCase()}`} disabled={atLimit(key, 1)} onClick={() => adjust(key, 1)}><ChevronUp /></button>
       <output aria-label={label} aria-live="polite">{game[key]}</output>
-      <button type="button" aria-label={`Decrease ${label.toLowerCase()}`} disabled={game[key] === (key === "inning" ? 1 : 0)} onClick={() => adjust(key, -1)}><ChevronDown /></button>
+      <button type="button" aria-label={key === "inning" ? "Previous half inning" : `Decrease ${label.toLowerCase()}`} disabled={atLimit(key, -1)} onClick={() => adjust(key, -1)}><ChevronDown /></button>
       <span>{label}</span>
     </div>
   );
@@ -277,6 +291,7 @@ function movePlayerByDirection(playerList, playerId, direction) {
 }
 
 export default function App() {
+  const [game, setGame] = useScoreboardGame();
   const importSettingsInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState("walkups");
   const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
@@ -307,7 +322,13 @@ export default function App() {
     playClipNow,
     playSequence,
     fadeOutAndStopAll,
-  } = usePlaybackEngine();
+  } = usePlaybackEngine({
+    onClipPlayed: (clip) => {
+      if (clip.id === "crowd-hype-1up") {
+        setGame((current) => ({ ...current, home: Math.min(99, current.home + 1) }));
+      }
+    },
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -721,7 +742,7 @@ export default function App() {
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
-        <Scoreboard />
+        <Scoreboard game={game} setGame={setGame} />
 
         <div className="control-row">
           <button

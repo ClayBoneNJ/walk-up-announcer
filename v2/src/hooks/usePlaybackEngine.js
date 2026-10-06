@@ -95,7 +95,7 @@ function stopAudioNow(audio) {
   audio.load();
 }
 
-export function usePlaybackEngine() {
+export function usePlaybackEngine({ onClipPlayed } = {}) {
   const warmCacheRef = useRef(new Map());
   const objectUrlCacheRef = useRef(new Map());
   const activeAudiosRef = useRef([]);
@@ -266,7 +266,7 @@ export function usePlaybackEngine() {
       setActivePlayback(null);
     };
 
-    await audio.play().catch(() => null);
+    await audio.play().then(() => onClipPlayed?.(clip)).catch(() => null);
   };
 
   const playSequence = async (player) => {
@@ -311,7 +311,7 @@ export function usePlaybackEngine() {
           }
         };
 
-        await audio.play().catch(() => null);
+        await audio.play().then(() => onClipPlayed?.(event.clip)).catch(() => null);
       }, event.startMs);
 
       sequenceTimeoutsRef.current.push(timeoutId);
