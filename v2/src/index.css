@@ -2337,3 +2337,31 @@ body::after {
     content: " // FIELD AUDIO";
   }
 }
+
+/* v127 scoreboard, inspired by the supplied neon panel. */
+.hero-card { padding-right: 490px; min-height: 250px; }
+.scoreboard { position: absolute; top: 20px; right: 20px; width: 440px; display: grid; grid-template-columns: 1fr 1fr .8fr 1fr; gap: 8px; padding: 12px 14px; border: 3px solid #51ee65; border-radius: 30px; background: linear-gradient(145deg, #27352e, #030705 28%, #101813 80%, #33483b); box-shadow: inset 0 0 0 3px #121c16, inset 0 0 18px #18ed4033, 0 0 16px #18ed4033, 0 10px 24px #0009; }
+.score-counter { display: grid; grid-template-rows: 36px 70px 36px 24px; text-align: center; min-width: 0; }
+.scoreboard button { padding: 0; min-height: 36px; border: 0; border-radius: 8px; background: transparent; color: #51ff39; cursor: pointer; touch-action: manipulation; }
+.scoreboard button:hover { background: #51ff391a; }
+.scoreboard button:focus-visible { outline: 2px solid white; outline-offset: 2px; }
+.scoreboard button:disabled { opacity: .3; cursor: default; }
+.score-counter button svg { width: 36px; height: 32px; stroke-width: 4; filter: drop-shadow(0 0 4px #51ff39); }
+.score-counter output { display: grid; place-items: center; border: 2px solid #43f951; border-radius: 14px; color: #fff; font-size: 54px; font-weight: 950; line-height: 1; font-variant-numeric: tabular-nums; background: radial-gradient(circle, #26312a 1px, transparent 2px) 0 0 / 6px 6px, #030604; box-shadow: 0 0 8px #43f95144; text-shadow: 0 3px 0 #89928b; }
+.score-counter > span { font-size: 16px; font-weight: 900; text-transform: uppercase; color: #f1f5f2; }
+.inning-half { display: flex; flex-direction: column; justify-content: center; gap: 8px; }
+.inning-half button { display: flex; flex-direction: column; align-items: center; gap: 5px; text-transform: uppercase; font-weight: 900; font-size: 13px; padding: 5px 0; color: #8b918c; }
+.inning-half button span { width: 14px; height: 14px; background: #565e58; border-radius: 50%; }
+.inning-half button[aria-pressed="true"] { color: #51ff39; }
+.inning-half button[aria-pressed="true"] span { background: #36fa30; box-shadow: 0 0 12px #36fa30; }
+.inning-half .score-reset { font-size: 10px; min-height: 28px; color: #bec8c0; text-transform: none; }
+@media (max-width: 1100px) {
+  .hero-card { padding-right: 24px; }
+  .scoreboard { position: relative; top: auto; right: auto; width: min(440px, 100%); box-sizing: border-box; margin: 16px 0; }
+}
+@media (max-width: 420px) {
+  .scoreboard { gap: 5px; padding: 10px; border-radius: 24px; }
+  .score-counter output { font-size: 44px; }
+  .score-counter > span { font-size: 13px; }
+  .inning-half button { font-size: 11px; }
+}

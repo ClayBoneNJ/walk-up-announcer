@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v126";
+const APP_BUILD_LABEL = "v127";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -37,6 +37,40 @@ const V1_POSITION_BY_JERSEY = {
   9: "P",
 };
 const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
+
+function Scoreboard() {
+  const initialGame = { away: 0, home: 0, inning: 1, half: "top" };
+  const [game, setGame] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("walk-up-scoreboard"));
+      if (saved && ["away", "home", "inning"].every((key) => Number.isInteger(saved[key]) && saved[key] >= (key === "inning" ? 1 : 0) && saved[key] <= 99) && ["top", "bottom"].includes(saved.half)) return saved;
+    } catch { /* Start a new game when saved data is unavailable. */ }
+    return initialGame;
+  });
+  useEffect(() => {
+    try { localStorage.setItem("walk-up-scoreboard", JSON.stringify(game)); } catch { /* Controls still work without storage. */ }
+  }, [game]);
+  const adjust = (key, amount) => setGame((current) => ({ ...current, [key]: Math.max(key === "inning" ? 1 : 0, Math.min(99, current[key] + amount)) }));
+  const counter = (key, label) => (
+    <div className="score-counter">
+      <button type="button" aria-label={`Increase ${label.toLowerCase()}`} disabled={game[key] === 99} onClick={() => adjust(key, 1)}><ChevronUp /></button>
+      <output aria-label={label} aria-live="polite">{game[key]}</output>
+      <button type="button" aria-label={`Decrease ${label.toLowerCase()}`} disabled={game[key] === (key === "inning" ? 1 : 0)} onClick={() => adjust(key, -1)}><ChevronDown /></button>
+      <span>{label}</span>
+    </div>
+  );
+  return (
+    <section className="scoreboard" aria-label="Game scoreboard">
+      {counter("away", "Away")}
+      {counter("home", "Home")}
+      <div className="inning-half">
+        {["top", "bottom"].map((half) => <button type="button" key={half} aria-pressed={game.half === half} onClick={() => setGame((current) => ({ ...current, half }))}>{half}<span /></button>)}
+        <button type="button" className="score-reset" onClick={() => { if (window.confirm("Reset scores to 0 and return to the top of inning 1?")) setGame(initialGame); }}>Reset</button>
+      </div>
+      {counter("inning", "Inning")}
+    </section>
+  );
+}
 
 function getDefaultPosition(player) {
   return player.position || V1_POSITION_BY_JERSEY[player.jerseyNumber] || "";
@@ -687,11 +721,7 @@ export default function App() {
       <header className="hero-card">
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
         <h1>Walk-Up Announcer V2</h1>
-        <img
-          src={`${import.meta.env.BASE_URL}assets/riverdog-tuff.png`}
-          alt="Sayreville Riverdogs"
-          className="hero-logo"
-        />
+        <Scoreboard />
 
         <div className="control-row">
           <button
