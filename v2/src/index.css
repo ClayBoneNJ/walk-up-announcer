@@ -2418,3 +2418,26 @@ body::after {
   .scoreboard .inning-half .score-reset { min-height: 44px; font-size: 10px; }
   .hero-card { padding-top: 24px; padding-right: 340px; min-height: 190px; }
 }
+
+/* v132: the entire floating scoreboard fits in one crowd-button footprint. */
+.app-shell > .scoreboard {
+  width: min(250px, calc(100vw - 24px));
+  height: 100px;
+  gap: 4px;
+  padding: 3px 6px;
+  border-width: 2px;
+  border-radius: 14px;
+}
+.scoreboard .score-counter { grid-template-rows: 24px 30px 24px 12px; }
+.scoreboard .score-counter button { min-height: 24px; }
+.scoreboard .score-counter button svg { width: 22px; height: 20px; stroke-width: 3; }
+.scoreboard .score-counter output { font-size: 27px; border-width: 1px; border-radius: 7px; }
+.scoreboard .score-counter > span { font-size: 9px; line-height: 12px; }
+.scoreboard .inning-half { gap: 2px; }
+.scoreboard .inning-half button { min-height: 28px; padding: 1px 0; gap: 2px; font-size: 8px; }
+.scoreboard .inning-half button span { width: 7px; height: 7px; }
+.scoreboard .inning-half .score-reset { min-height: 22px; font-size: 8px; }
+.hero-card { padding-top: 24px; padding-right: 280px; min-height: 190px; }
+@media (max-width: 599px) {
+  .hero-card { padding-top: 120px; padding-right: 24px; }
+}
