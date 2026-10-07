@@ -5,8 +5,9 @@ import {
   Users,
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
+import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "135";
+const AUDIO_ASSET_VERSION = "136";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -18,7 +19,7 @@ function clip({ id, group, label, src, durationMs, playerId = "", playerName = "
     group,
     label,
     src,
-    durationMs,
+    durationMs: audioDurations[decodeURIComponent(src.split("assets/audio/")[1].split("?")[0])] ?? durationMs,
     playerId,
     playerName,
     ...extra,

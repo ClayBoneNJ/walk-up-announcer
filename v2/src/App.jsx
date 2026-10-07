@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v135";
+const APP_BUILD_LABEL = "v136";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -308,7 +308,7 @@ export default function App() {
       ]),
     ),
   );
-  const [durationBySrc, setDurationBySrc] = useState({});
+  const durationBySrc = useMemo(() => Object.fromEntries(clipLibrary.map((clip) => [clip.src, clip.durationMs])), []);
   const [lastPlayedPlayerId, setLastPlayedPlayerId] = useState("");
   const warmSources = useMemo(
     () => [...new Set(clipLibrary.map((clip) => clip.src).filter(Boolean))],
@@ -317,6 +317,7 @@ export default function App() {
   const {
     activePlayback,
     audioReadyState,
+    playbackError,
     primeSources,
     resetEngine,
     playClipNow,
@@ -329,61 +330,6 @@ export default function App() {
       }
     },
   });
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadDurations = async () => {
-      const durationEntries = await Promise.all(
-        clipLibrary.map(
-          (clip) =>
-            new Promise((resolve) => {
-              if (!clip?.src) {
-                resolve([clip.src, clip.durationMs]);
-                return;
-              }
-
-              const audio = new Audio();
-
-              const finish = (durationMs) => {
-                audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
-                audio.removeEventListener("error", handleError);
-                resolve([clip.src, durationMs]);
-              };
-
-              const handleLoadedMetadata = () => {
-                const durationMs =
-                  Number.isFinite(audio.duration) && audio.duration > 0
-                    ? Math.round(audio.duration * 1000)
-                    : clip.durationMs;
-                finish(durationMs);
-              };
-
-              const handleError = () => {
-                finish(clip.durationMs);
-              };
-
-              audio.preload = "metadata";
-              audio.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
-              audio.addEventListener("error", handleError, { once: true });
-              audio.src = clip.src;
-            }),
-        ),
-      );
-
-      if (cancelled) {
-        return;
-      }
-
-      setDurationBySrc(Object.fromEntries(durationEntries));
-    };
-
-    loadDurations();
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleArmAudio = async () => {
     await primeSources(warmSources);
@@ -791,6 +737,7 @@ export default function App() {
           </button>
         </div>
 
+        {playbackError ? <p className="audio-error" role="alert">{playbackError}</p> : null}
       </header>
 
       <nav className="tab-bar">

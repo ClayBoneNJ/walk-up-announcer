@@ -32,6 +32,10 @@ jobs:
         working-directory: ./v2
         run: npm ci
 
+      - name: Test audio reliability
+        working-directory: ./v2
+        run: npm test
+
       - name: Build app
         working-directory: ./v2
         run: npm run build
