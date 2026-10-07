@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v133";
+const APP_BUILD_LABEL = "v134";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1323,7 +1323,6 @@ function getSpecialSamplerPadClass(clip) {
     "player-hype-benny-jet": "sampler-pad-player-callout",
     "player-hype-chicken-hawk": "sampler-pad-player-callout",
     "player-hype-run-marty": "sampler-pad-player-callout",
-    "player-hype-weapon-x": "sampler-pad-player-callout",
     "player-hype-homerun": "sampler-pad-home-run",
     "player-hype-our-time-goonies": "sampler-pad-our-time",
   };

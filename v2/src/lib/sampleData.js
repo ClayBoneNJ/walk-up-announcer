@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 
-const AUDIO_ASSET_VERSION = "133";
+const AUDIO_ASSET_VERSION = "134";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -474,7 +474,6 @@ const playerHypeClips = [
   "Benny Jet.mp3",
   "Chicken Hawk.mp3",
   "Run Marty.mp3",
-  "Weapon X.mp3",
 ].map((fileName) => eventClip("player-hype", fileName, 4500)).concat([
   eventClip("player-hype", "88 mph.mp3", 4500),
   ourTimePlayerHype,
@@ -485,7 +484,6 @@ const playerHypeClips = [
 ]);
 
 const crowdHypeClips = [
-  "when i say.mp3",
   "Here We Go.mp3",
   "Organ Scale Chant.mp3",
   "Bullfighter.mp3",
@@ -504,9 +502,6 @@ const crowdHypeClips = [
   "Fatality.mp3",
   "Finish him!.mp3",
   "Flawless Victory.mp3",
-  "dogs-barking.mp3",
-  "Dmx dogs.mp3",
-  "who let the dogs.mp3",
 ].map((fileName) => eventClip("crowd-hype", fileName, 6500));
 
 const crowdHypeMusicClips = [
