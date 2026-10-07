@@ -13,13 +13,18 @@ export function withTimeout(promise, durationMs, message) {
 
 // Unlock on the user's tap, then reuse the context for downloaded and timed
 // clips. Bound decoded memory rather than decoding the entire mobile library.
-export function createWebAudioPlayback(AudioContextClass) {
+export function createWebAudioPlayback(AudioContextClass, audioHost = globalThis.navigator) {
   let context = null;
   const decoded = new Map();
   const pending = new Map();
   let decodedBytes = 0;
 
   const resume = () => {
+    // Safari's default Web Audio session follows the Silent switch. Declare
+    // media playback before creating/resuming the context, as HTMLAudio does.
+    try {
+      if (audioHost?.audioSession) audioHost.audioSession.type = "playback";
+    } catch { /* Older hosts may expose an unsupported or read-only session. */ }
     if (!context || context.state === "closed") context = new AudioContextClass();
     const current = context;
     // Keep this synchronous: Safari needs the original user gesture.

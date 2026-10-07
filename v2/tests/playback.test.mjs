@@ -202,3 +202,37 @@ test("Stop during mobile walkup preparation cancels every future announcement an
     assert.deepEqual(h.played, []);
   });
 });
+
+test("iPhone declares media playback before creating/resuming audio and reapplies it after reset", async () => {
+  const events = [];
+  const audioHost = { audioSession: { set type(value) { events.push(value); } } };
+  class Context {
+    constructor() { events.push("create"); this.state = "suspended"; this.sampleRate = 44100; }
+    resume() { events.push("resume"); this.state = "running"; return Promise.resolve(); }
+    createBufferSource() { return { connect() {}, disconnect() {}, start() {} }; }
+    createBuffer() { return {}; }
+    close() { return Promise.resolve(); }
+  }
+  const backend = createWebAudioPlayback(Context, audioHost);
+  await backend.resume();
+  await backend.resume();
+  backend.reset();
+  await backend.resume();
+  assert.deepEqual(events, ["playback", "create", "resume", "playback", "resume", "playback", "create", "resume"]);
+  backend.reset();
+});
+
+test("Unsupported audio sessions do not prevent audio from resuming", async () => {
+  class Context {
+    constructor() { this.state = "suspended"; this.sampleRate = 44100; }
+    resume() { this.state = "running"; return Promise.resolve(); }
+    createBufferSource() { return { connect() {}, disconnect() {}, start() {} }; }
+    createBuffer() { return {}; }
+    close() { return Promise.resolve(); }
+  }
+  for (const host of [undefined, {}, { audioSession: { set type(_) { throw new Error("Unsupported"); } } }]) {
+    const backend = createWebAudioPlayback(Context, host);
+    await backend.resume();
+    backend.reset();
+  }
+});

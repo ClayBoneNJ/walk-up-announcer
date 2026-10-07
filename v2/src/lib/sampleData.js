@@ -7,7 +7,7 @@ import {
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "136";
+const AUDIO_ASSET_VERSION = "137";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
