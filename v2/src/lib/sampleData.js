@@ -7,7 +7,7 @@ import {
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "137";
+const AUDIO_ASSET_VERSION = "138";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -498,6 +498,7 @@ const crowdHypeClips = [
   "WOW!.mp3",
   "whistle bomb.mp3",
   "boom goes the dynamite.mp3",
+  "Dyn-O-Mite! Boom.mp3",
   "three best friends.mp3",
   "GTA Sound Effect.mp3",
   "Fatality.mp3",
