@@ -5,7 +5,7 @@ import vm from "node:vm";
 import { createWebAudioPlayback, withTimeout } from "../src/lib/webAudioPlayback.js";
 
 const hookSource = readFileSync(new URL("../src/hooks/usePlaybackEngine.js", import.meta.url), "utf8")
-  .replace(/^import .*;\n/gm, "").replace("export function ", "function ");
+  .replace(/^import .*;\r?\n/gm, "").replace("export function ", "function ");
 function harness({ mobile = true, serviceWorker } = {}) {
   let gesture = true;
   const contexts = [];

@@ -26,7 +26,7 @@ import {
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v138";
+const APP_BUILD_LABEL = "v139";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -1240,6 +1240,7 @@ const SPECIAL_CROWD_HYPE_IDS = new Set([
   "crowd-hype-wow",
   "crowd-hype-1up",
   "crowd-hype-whistle-bomb",
+  "crowd-hype-fuse-bomb",
   "crowd-hype-boom-goes-the-dynamite",
   "crowd-hype-dyn-o-mite-boom",
   "crowd-hype-three-best-friends",
