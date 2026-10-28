@@ -42,8 +42,8 @@ tap Arm Audio in the selected edition to preload that edition's library for offl
 
 Halloween currently includes the 16 supplied combined entrance/number/name recordings
 on Track A. Gio Mortensen has no supplied recording and is omitted from this edition.
-Matty's Deep End song is on Track B, starting after his combined walkup by default;
-its timing can be moved independently. Other song lanes are empty. Crowd effects are shared
+Matty's Deep End and Nate's Hush songs are on Track B, starting after each player's
+combined walkup by default; their timing can be moved independently. Other song lanes are empty. Crowd effects are shared
 with Regular. Source recordings go in the local `halloween/` inbox; published recordings
 live in `public/assets/audio/halloween/walkups/` and are mapped in `src/lib/sampleData.js`.
 The full Halloween skin lives in `src/halloween.css`, with bundled haunted-ballpark
