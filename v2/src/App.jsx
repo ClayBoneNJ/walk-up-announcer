@@ -7,9 +7,12 @@ import {
   ChevronUp,
   CirclePlay,
   Download,
+  Flame,
+  Ghost,
   Library,
   RotateCcw,
   Sparkles,
+  Skull,
   Square,
   Upload,
   Users,
@@ -20,13 +23,15 @@ import { usePlaybackEngine } from "./hooks/usePlaybackEngine";
 import {
   announcementOptions,
   clipLibrary,
+  halloweenClipLibrary,
+  halloweenPlayers,
   nameOptionsByPlayerId,
   players,
   positionOptions,
   screenTabs,
 } from "./lib/sampleData";
 
-const APP_BUILD_LABEL = "v140";
+const APP_BUILD_LABEL = "v142";
 const DISPLAY_TIMELINE_DURATION_MS = 20000;
 const SONG_NUDGE_MS = 250;
 const ORDER_MOVE_ANIMATION_MS = 320;
@@ -36,7 +41,7 @@ const V1_POSITION_OPTIONS = ["P", "C", "1B", "2B", "3B", "SS", "LF", "CF", "RF"]
 const V1_POSITION_BY_JERSEY = {
   9: "P",
 };
-const clipById = new Map(clipLibrary.map((clip) => [clip.id, clip]));
+const clipById = new Map([...clipLibrary, ...halloweenClipLibrary].map((clip) => [clip.id, clip]));
 
 const initialGame = { away: 0, home: 0, inning: 1, half: "top" };
 
@@ -90,8 +95,8 @@ function getDefaultPosition(player) {
   return player.position || V1_POSITION_BY_JERSEY[player.jerseyNumber] || "";
 }
 
-function createInitialPlayerSequences() {
-  return players.map((player) => ({
+function createInitialPlayerSequences(sourcePlayers = players) {
+  return sourcePlayers.map((player) => ({
     ...player,
     position: getDefaultPosition(player),
     usePositionClip: player.usePositionClip ?? false,
@@ -113,10 +118,11 @@ function serializePlayerSequences(playerSequences) {
   }));
 }
 
-function createPortablePlayerSequencesExport(playerSequences) {
+function createPortablePlayerSequencesExport(playerSequences, edition) {
   return {
     format: PLAYER_SEQUENCES_STORAGE_KEY,
     version: 1,
+    edition,
     exportedAt: new Date().toISOString(),
     playerSequences: serializePlayerSequences(playerSequences),
   };
@@ -134,8 +140,9 @@ function extractPortablePlayerSequences(payload) {
   return null;
 }
 
-function hydrateSavedPlayerSequences(savedPlayers) {
-  const basePlayers = createInitialPlayerSequences();
+function hydrateSavedPlayerSequences(savedPlayers, sourcePlayers = players, allowedClips = clipLibrary) {
+  const allowedClipIds = new Set(allowedClips.map((clip) => clip.id));
+  const basePlayers = createInitialPlayerSequences(sourcePlayers);
   const basePlayerMap = new Map(basePlayers.map((player) => [player.id, player]));
   const savedPlayerMap = new Map(
     Array.isArray(savedPlayers) ? savedPlayers.map((player) => [player.id, player]) : [],
@@ -168,7 +175,7 @@ function hydrateSavedPlayerSequences(savedPlayers) {
       usePositionClip: savedPlayer.usePositionClip ?? player.usePositionClip ?? false,
       sequence: player.sequence.map((event) => {
         const savedEvent = savedSequenceMap.get(event.id);
-        const savedClip = savedEvent?.clipId ? clipById.get(savedEvent.clipId) : null;
+        const savedClip = allowedClipIds.has(savedEvent?.clipId) ? clipById.get(savedEvent.clipId) : null;
 
         if (!savedEvent) {
           return event;
@@ -187,22 +194,22 @@ function hydrateSavedPlayerSequences(savedPlayers) {
   }).filter(Boolean);
 }
 
-function loadSavedPlayerSequences() {
+function loadSavedPlayerSequences(sourcePlayers, allowedClips, storageKey) {
   if (typeof window === "undefined") {
-    return createInitialPlayerSequences();
+    return createInitialPlayerSequences(sourcePlayers);
   }
 
   try {
-    const raw = window.localStorage.getItem(PLAYER_SEQUENCES_STORAGE_KEY);
+    const raw = window.localStorage.getItem(storageKey);
 
     if (!raw) {
-      return createInitialPlayerSequences();
+      return createInitialPlayerSequences(sourcePlayers);
     }
 
     const parsed = JSON.parse(raw);
-    return hydrateSavedPlayerSequences(parsed);
+    return hydrateSavedPlayerSequences(parsed, sourcePlayers, allowedClips);
   } catch {
-    return createInitialPlayerSequences();
+    return createInitialPlayerSequences(sourcePlayers);
   }
 }
 
@@ -291,28 +298,44 @@ function movePlayerByDirection(playerList, playerId, direction) {
 }
 
 export default function App() {
+  const [edition, setEdition] = useState(() => {
+    try { return localStorage.getItem("walk-up-edition") === "halloween" ? "halloween" : "regular"; }
+    catch { return "regular"; }
+  });
+  useEffect(() => {
+    document.body.dataset.edition = edition;
+    try { localStorage.setItem("walk-up-edition", edition); } catch { /* Selection still works. */ }
+  }, [edition]);
+  return <EditionApp key={edition} edition={edition} onEditionChange={setEdition} />;
+}
+
+function EditionApp({ edition, onEditionChange }) {
+  const isHalloween = edition === "halloween";
+  const editionPlayers = isHalloween ? halloweenPlayers : players;
+  const editionClips = isHalloween ? halloweenClipLibrary : clipLibrary;
+  const storageKey = isHalloween ? "walk-up-announcer-halloween-player-sequences" : PLAYER_SEQUENCES_STORAGE_KEY;
   const [game, setGame] = useScoreboardGame();
   const importSettingsInputRef = useRef(null);
   const [activeTab, setActiveTab] = useState("walkups");
-  const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences());
+  const [playerSequences, setPlayerSequences] = useState(() => loadSavedPlayerSequences(editionPlayers, editionClips, storageKey));
   const [isEditingBattingOrder, setIsEditingBattingOrder] = useState(false);
   const [orderMovementCue, setOrderMovementCue] = useState(null);
   const [collapsedPlayers, setCollapsedPlayers] = useState(() =>
-    Object.fromEntries(players.map((player) => [player.id, true])),
+    Object.fromEntries(editionPlayers.map((player) => [player.id, true])),
   );
   const [selectedTrackAEventByPlayer, setSelectedTrackAEventByPlayer] = useState(() =>
     Object.fromEntries(
-      players.map((player) => [
+      editionPlayers.map((player) => [
         player.id,
         player.sequence.find((event) => event.track === "A")?.id ?? "",
       ]),
     ),
   );
-  const durationBySrc = useMemo(() => Object.fromEntries(clipLibrary.map((clip) => [clip.src, clip.durationMs])), []);
+  const durationBySrc = useMemo(() => Object.fromEntries(editionClips.map((clip) => [clip.src, clip.durationMs])), [editionClips]);
   const [lastPlayedPlayerId, setLastPlayedPlayerId] = useState("");
   const warmSources = useMemo(
-    () => [...new Set(clipLibrary.map((clip) => clip.src).filter(Boolean))],
-    [],
+    () => [...new Set(editionClips.map((clip) => clip.src).filter(Boolean))],
+    [editionClips],
   );
   const {
     activePlayback,
@@ -360,12 +383,12 @@ export default function App() {
       return;
     }
 
-    const payload = createPortablePlayerSequencesExport(playerSequences);
+    const payload = createPortablePlayerSequencesExport(playerSequences, edition);
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const downloadUrl = window.URL.createObjectURL(blob);
     const downloadLink = document.createElement("a");
     downloadLink.href = downloadUrl;
-    downloadLink.download = PLAYER_SEQUENCES_EXPORT_FILE_NAME;
+    downloadLink.download = isHalloween ? "walk-up-announcer-halloween-player-sequences.json" : PLAYER_SEQUENCES_EXPORT_FILE_NAME;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     downloadLink.remove();
@@ -386,17 +409,20 @@ export default function App() {
     try {
       const raw = await file.text();
       const parsed = JSON.parse(raw);
+      if ((parsed.edition ?? "regular") !== edition) {
+        throw new Error("Choose a settings file exported from this edition.");
+      }
       const importedSequences = extractPortablePlayerSequences(parsed);
 
       if (!importedSequences) {
         throw new Error("Invalid settings file");
       }
 
-      const hydratedSequences = hydrateSavedPlayerSequences(importedSequences);
+      const hydratedSequences = hydrateSavedPlayerSequences(importedSequences, editionPlayers, editionClips);
       setPlayerSequences(hydratedSequences);
       persistPlayerSequences(hydratedSequences);
-    } catch {
-      window.alert("Could not import that settings file.");
+    } catch (error) {
+      window.alert(error.message || "Could not import that settings file.");
     } finally {
       event.target.value = "";
     }
@@ -420,7 +446,7 @@ export default function App() {
     }
 
     window.localStorage.setItem(
-      PLAYER_SEQUENCES_STORAGE_KEY,
+      storageKey,
       JSON.stringify(serializePlayerSequences(nextPlayerSequences)),
     );
   };
@@ -687,8 +713,19 @@ export default function App() {
     <div className="app-shell">
       <Scoreboard game={game} setGame={setGame} />
       <header className="hero-card">
+        {isHalloween ? <div className="halloween-hero-art" aria-hidden="true" /> : null}
         <div className="hero-topline">{APP_BUILD_LABEL}</div>
-        <h1>Dynamite Baseball</h1>
+        {isHalloween ? <p className="halloween-brand"><Ghost aria-hidden="true" /> Dynamite Baseball presents</p> : null}
+        <h1>{isHalloween ? "Fright Night" : "Dynamite Baseball"}</h1>
+        {isHalloween ? <p className="halloween-caption">Big swings. Spooky sounds.</p> : null}
+        <div className="edition-switcher" role="group" aria-label="App edition">
+          {[{ id: "regular", label: "Regular" }, { id: "halloween", label: "Halloween" }].map((option) => (
+            <button key={option.id} type="button" aria-pressed={edition === option.id}
+              onClick={() => { if (option.id !== edition) { resetEngine(); onEditionChange(option.id); } }}>
+              {option.label}
+            </button>
+          ))}
+        </div>
 
         <div className="control-row">
           <button
@@ -742,7 +779,7 @@ export default function App() {
 
       <nav className="tab-bar">
         {screenTabs.map((tab) => {
-          const Icon = tab.icon;
+          const Icon = isHalloween ? ({ walkups: Ghost, freestyle: Flame, crowd: Skull, roster: Users }[tab.id] ?? tab.icon) : tab.icon;
           return (
             <button
               key={tab.id}
@@ -762,8 +799,8 @@ export default function App() {
           <section className="panel">
             <div className="panel-header">
               <div>
-                <div className="panel-kicker">Walkups</div>
-                <h2>Player Sequences</h2>
+                <div className="panel-kicker">{isHalloween ? "Enter if you dare" : "Walkups"}</div>
+                <h2>{isHalloween ? "The Fright Lineup" : "Player Sequences"}</h2>
               </div>
 
               <div className="panel-actions">
@@ -842,7 +879,7 @@ export default function App() {
                       <div className="player-copy">
                         <div className="player-name-row">
                           <h3>{player.name}</h3>
-                          <label className="player-callout-toggle">
+                          {!isHalloween ? <><label className="player-callout-toggle">
                             <input
                               type="checkbox"
                               checked={player.usePositionClip ?? false}
@@ -864,7 +901,7 @@ export default function App() {
                                 {position}
                               </option>
                             ))}
-                          </select>
+                          </select></> : <span className="combined-walkup-label">Halloween walkup</span>}
                         </div>
                       </div>
                     </div>
@@ -924,7 +961,7 @@ export default function App() {
                     </div>
                   </div>
 
-                    <div className="player-config-row">
+                    {!isHalloween ? <div className="player-config-row">
                       <div className={`player-config-field ${isCollapsed ? "player-config-field-collapsed" : ""}`}>
                         <span>Announcement</span>
                         <select
@@ -990,7 +1027,7 @@ export default function App() {
                           </div>
                         </div>
                       ) : null}
-                    </div>
+                    </div> : <p className="combined-walkup-note"><Ghost aria-hidden="true" /> Entrance, number & name · one recording</p>}
 
                     {!isCollapsed ? (
                     <>
@@ -1053,22 +1090,25 @@ export default function App() {
                             onClick={() => nudgeSongStart(player.id, -1)}
                             className="timeline-arrow-button"
                             aria-label={`Move ${player.name} song earlier`}
+                            disabled={!songEvent}
                           >
                             <ChevronLeft className="button-icon" />
                           </button>
                           <span className="timeline-lane-readout">
-                            Song starts {formatMs(songEvent?.startMs || 0)}
+                            {songEvent ? `Song starts ${formatMs(songEvent.startMs)}` : "No song yet"}
                           </span>
                           <button
                             type="button"
                             onClick={() => nudgeSongStart(player.id, 1)}
                             className="timeline-arrow-button"
                             aria-label={`Move ${player.name} song later`}
+                            disabled={!songEvent}
                           >
                             <ChevronRight className="button-icon" />
                           </button>
                         </div>
                         <div className="timeline-canvas">
+                          {!songEvent ? <span className="empty-song-lane">Song coming soon · separate track</span> : null}
                           {trackBEvents.map((event) => {
                             const songDisplayLabel = getWalkupSongDisplayLabel(event);
 
@@ -1103,9 +1143,10 @@ export default function App() {
 
         {activeTab === "freestyle" ? (
           <ClipBoard
+            clips={editionClips}
             title="Freestyle"
             description="Team voice clips and songs. Every tap cuts the current clip, then fires the selected clip."
-            groups={["announcements", "numbers", "positions", "names", "songs"]}
+            groups={isHalloween ? ["halloween-walkups"] : ["announcements", "numbers", "positions", "names", "songs"]}
             variant="sampler"
             activePlayback={activePlayback}
             durationBySrc={durationBySrc}
@@ -1115,6 +1156,7 @@ export default function App() {
 
         {activeTab === "crowd" ? (
           <ClipBoard
+            clips={editionClips}
             title="Crowd"
             description="Crowd hype and interruptive game-day moments."
             groups={["umpire-calls", "player-hype", "crowd-hype"]}
@@ -1142,8 +1184,9 @@ export default function App() {
                 >
                   <strong>{player.name}</strong>
                   <span>
-                    {player.sequence.length} events • song overlap starts at{" "}
-                    {formatMs(player.sequence.find((event) => event.track === "B")?.startMs || 0)}
+                    {player.sequence.length} events · {player.sequence.some((event) => event.track === "B")
+                      ? `song starts ${formatMs(player.sequence.find((event) => event.track === "B").startMs)}`
+                      : "No song yet"}
                   </span>
                 </div>
               ))}
@@ -1168,6 +1211,7 @@ export default function App() {
 
 function getClipGroupTitle(groupId) {
   const titles = {
+    "halloween-walkups": "Halloween Walkups",
     announcements: "Vox",
     numbers: "Number",
     positions: "Position",
@@ -1307,13 +1351,13 @@ function getNumberPlayerLabel(clip) {
   return clip.playerName ? String(clip.playerName).trim().split(/\s+/)[0] : "";
 }
 
-function ClipBoard({ title, description, groups, variant = "board", activePlayback, onPlayClip, durationBySrc }) {
+function ClipBoard({ clips = clipLibrary, title, description, groups, variant = "board", activePlayback, onPlayClip, durationBySrc }) {
   const groupedClips = groups.flatMap((groupId) => {
     return [
       {
         id: groupId,
         title: getClipGroupTitle(groupId),
-        clips: clipLibrary.filter((clip) => clip.group === groupId),
+        clips: clips.filter((clip) => clip.group === groupId),
       },
     ];
   });

@@ -8,10 +8,10 @@ const temporary = readFileSync(new URL("src/lib/temporaryPlayers/index.js", root
 const source = readFileSync(new URL("src/lib/sampleData.js", root), "utf8")
   .replace(/^import [\s\S]*?;\s*/gm, "").replaceAll("export const ", "const ")
   .replaceAll("import.meta.env.BASE_URL", '"/walk-up-announcer/"');
-const { clipLibrary } = vm.runInNewContext(`${temporary}\n${source}\n({clipLibrary})`,
+const { clipLibrary, halloweenClipLibrary } = vm.runInNewContext(`${temporary}\n${source}\n({clipLibrary, halloweenClipLibrary})`,
   { audioDurations, AudioLines: {}, Library: {}, Sparkles: {}, Users: {} });
 test("Every soundboard clip has its measured duration immediately", () => {
-  for (const clip of clipLibrary) {
+  for (const clip of [...clipLibrary, ...halloweenClipLibrary]) {
     const path = decodeURIComponent(clip.src.split("assets/audio/")[1].split("?")[0]);
     assert.ok(existsSync(new URL(`public/assets/audio/${path}`, root)), path);
     assert.ok(Number.isFinite(audioDurations[path]) && audioDurations[path] > 0, path);

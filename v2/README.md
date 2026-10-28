@@ -33,6 +33,22 @@ npm run dev
 npm run build
 ```
 
+## Editions
+
+The header switches between Regular and Halloween. Each edition remembers its own
+batting order and timeline offsets, and exported settings identify their edition.
+The scoreboard is shared. Switching editions stops playback and resets audio readiness;
+tap Arm Audio in the selected edition to preload that edition's library for offline use.
+
+Halloween currently includes the 16 supplied combined entrance/number/name recordings
+on Track A. Gio Mortensen has no supplied recording and is omitted from this edition.
+Track B is empty until separate Halloween songs are supplied. Crowd effects are shared
+with Regular. Source recordings go in the local `halloween/` inbox; published recordings
+live in `public/assets/audio/halloween/walkups/` and are mapped in `src/lib/sampleData.js`.
+The full Halloween skin lives in `src/halloween.css`, with bundled haunted-ballpark
+artwork, pumpkin number badges, and the licensed Creepster display font. Artwork
+generation details are in `../docs/halloween-art.md`.
+
 ## Audio reliability
 
 Clip durations are measured from the audio files and bundled in src/lib/audioDurations.json. After adding or replacing audio, regenerate them with npm run audio:durations -- <path-to-ffmpeg>. The production build does not require FFmpeg.

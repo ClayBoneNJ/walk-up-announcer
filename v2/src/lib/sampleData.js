@@ -7,7 +7,7 @@ import {
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "140";
+const AUDIO_ASSET_VERSION = "142";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -580,6 +580,50 @@ export const players = teamPlayerData.map((player) => {
     ],
   };
 });
+
+// Combined Halloween voice recordings stay on A; future songs belong on B.
+const halloweenFilesByPlayerId = {
+  nick: "nick mangino walk.mp3",
+  "alex-figuroa": "alex figuroa walk.mp3",
+  brandon: "brandon perry walk.mp3",
+  jadiel: "jadiel serano walk.mp3",
+  mario: "mario contreras walk.mp3",
+  simon: "simon angelis walkup.mp3",
+  alex: "alex bonk walk.mp3",
+  "alex-kelman": "alex kelman walk.mp3",
+  benjamin: "ben yunker walk.mp3",
+  billy: "billy wanko walk.mp3",
+  camden: "cam pagoda walk.mp3",
+  giovanni: "gio turchi walk.mp3",
+  marty: "marty happle wak.mp3",
+  matty: "matty wanko walk.mp3",
+  nate: "nate clay walk.mp3",
+  tristan: "tristan aquino walk.mp3",
+};
+
+export const halloweenWalkupClips = teamPlayerData
+  .filter((player) => halloweenFilesByPlayerId[player.id])
+  .map((player) => clip({
+    id: `halloween-walkup-${player.id}`,
+    group: "halloween-walkups",
+    label: player.name,
+    src: assetSrc("halloween/walkups", halloweenFilesByPlayerId[player.id]),
+    playerId: player.id,
+    playerName: player.name,
+  }));
+
+export const halloweenPlayers = players
+  .filter((player) => halloweenFilesByPlayerId[player.id])
+  .map((player) => ({
+    ...player,
+    sequence: [event(`${player.id}-halloween-walkup`, "A", 0,
+      halloweenWalkupClips.find((clip) => clip.playerId === player.id))],
+  }));
+
+export const halloweenClipLibrary = [
+  ...halloweenWalkupClips,
+  ...clipLibrary.filter((clip) => ["crowd", "umpire-calls", "player-hype", "crowd-hype"].includes(clip.group)),
+];
 
 export const screenTabs = [
   { id: "walkups", label: "Walkups", icon: Users },

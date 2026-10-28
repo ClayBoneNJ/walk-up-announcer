@@ -1,0 +1,159 @@
+@font-face {
+  font-family: "Creepster";
+  src: url("/walk-up-announcer/assets/fonts/Creepster-Regular.ttf") format("truetype");
+  font-display: swap;
+}
+
+body[data-edition="halloween"] {
+  --pumpkin: #ffa345;
+  --witch: #ba8aff;
+  --ectoplasm: #c4f477;
+  --ink: #fff1dc;
+  --chalk: #fff1dc;
+  --foul-line: #ffa345;
+  --electric: #ba8aff;
+  --card-border: #b889e24d;
+  background: linear-gradient(#10091b55, #10091b8c), url("/walk-up-announcer/assets/halloween-haunted-ballpark.webp") center / cover fixed, #10091b;
+}
+body[data-edition="halloween"]::before {
+  background: radial-gradient(ellipse at 50% 100%, #a261df21, transparent 65%);
+}
+body[data-edition="halloween"]::after,
+body[data-edition="halloween"] .app-shell::before { content: none; }
+
+/* The art remains visible beside the controls, rather than sitting behind opaque panels. */
+body[data-edition="halloween"] .hero-card {
+  isolation: isolate;
+  min-height: 390px;
+  padding: 30px 48% 30px 30px;
+  border: 1px solid #ef9c4c99;
+  border-radius: 28px 28px 42px 12px;
+  background: #160d20;
+  box-shadow: 0 20px 70px #0009, inset 0 0 0 5px #ffab4310, 0 0 30px #ff7a1312;
+}
+body[data-edition="halloween"] .hero-card::before { content: none; }
+body[data-edition="halloween"] .hero-card > .halloween-hero-art {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, #160d20 0%, #160d20f5 31%, #160d2066 54%, transparent 73%), url("/walk-up-announcer/assets/halloween-haunted-ballpark.webp") right center / cover;
+}
+body[data-edition="halloween"] .hero-card .hero-topline::after { content: "  //  HALLOWEEN EDITION"; color: #edb6ff; }
+body[data-edition="halloween"] .hero-topline { font-size: 10px; letter-spacing: .18em; color: #ffc27a; }
+body[data-edition="halloween"] .halloween-brand { display: flex; align-items: center; gap: 8px; margin: 22px 0 5px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: #e9d8f5; }
+.halloween-brand svg { flex: 0 0 auto; width: 22px; height: 22px; color: #bd8cf3; }
+body[data-edition="halloween"] .hero-card h1 {
+  margin: 0;
+  padding: 0;
+  color: #ffb24f;
+  font: 400 clamp(3.7rem, 7.4vw, 6.7rem)/.98 "Creepster", Impact, fantasy;
+  letter-spacing: .025em;
+  text-transform: uppercase;
+  text-shadow: 0 3px 0 #742c18, 0 7px 0 #08050d, 0 0 35px #ff861c40;
+}
+body[data-edition="halloween"] .hero-card h1::after { display: none; }
+body[data-edition="halloween"] .halloween-caption { margin: 13px 0 20px; color: #e8d4ef; font-size: 12px; letter-spacing: .13em; text-transform: uppercase; font-weight: 700; }
+body[data-edition="halloween"] .edition-switcher { background: #090610ab; border-color: #b889e24d; }
+body[data-edition="halloween"] .edition-switcher button { color: #cbb6db; }
+body[data-edition="halloween"] .edition-switcher button[aria-pressed="true"] { color: #1b0e11; border-color: #ffd092; background: linear-gradient(145deg, #ffc064, #f28432); box-shadow: 0 2px 12px #ff8c2829; }
+body[data-edition="halloween"] .control-row { gap: 8px; }
+body[data-edition="halloween"] .primary-action-warning { color: #1c101e; border-color: #dfb9ff; background: linear-gradient(145deg, #e2bdff, #a775dc); box-shadow: 0 4px 18px #a375d530; }
+body[data-edition="halloween"] :is(.primary-action-ready, .primary-action-iphone) { color: #15200b; border-color: #e7ffb7; background: linear-gradient(135deg, #ddfca3, #9acd51); box-shadow: 0 4px 18px #c4f47726; }
+body[data-edition="halloween"] .primary-action-loading { color: #251808; background: #ffc064; border-color: #ffe5bc; }
+body[data-edition="halloween"] .secondary-action { color: #efdef7; background: #30203b; border-color: #9866b65e; }
+body[data-edition="halloween"] .audio-cache-meter span { background: linear-gradient(90deg, #ad70ef, #c4f477); }
+body[data-edition="halloween"] .audio-cache-status-row { color: #d9c7e5; }
+
+/* Bat-wing corners and webbing frame the operational panels. */
+body[data-edition="halloween"] .panel { border-color: #b889e25c; background: linear-gradient(145deg, #271633f2, #120c1df2); box-shadow: 0 20px 50px #0008, inset 0 1px 0 #e8c4ff12; }
+body[data-edition="halloween"] .panel::before { width: 100%; height: 3px; background: linear-gradient(90deg, #ffa345, #ba8aff 45%, transparent); box-shadow: none; }
+body[data-edition="halloween"] .panel-kicker { color: #c4f477; text-shadow: none; letter-spacing: .22em; }
+body[data-edition="halloween"] .panel h2 { color: #ffbb6f; font: 400 clamp(1.9rem, 4vw, 2.8rem)/1.1 "Creepster", Impact, fantasy; letter-spacing: .03em; text-shadow: 0 3px 0 #0d0712; }
+body[data-edition="halloween"] .tab-bar { border-color: #ba8aff45; }
+body[data-edition="halloween"] .tab-button { color: #d8c1e8; border-color: #9e6ac04d; border-radius: 18px 18px 6px 6px; background: linear-gradient(145deg, #33203feb, #140d20f5); box-shadow: inset 0 1px 0 #e8c4ff14, 0 7px 15px #0004; }
+body[data-edition="halloween"] .tab-button-active { color: #ffd6a1; border-color: #ffac54; background: linear-gradient(145deg, #67351be8, #35172ee8); box-shadow: inset 0 2px 0 #ffbc5e4d, 0 0 24px #ff8d251a; }
+body[data-edition="halloween"] .tab-button-active .tab-icon { color: #ffc070; filter: drop-shadow(0 0 5px #ff8a2855); }
+body[data-edition="halloween"] .tab-button-active::after { background: #c4f477; box-shadow: 0 0 10px #c4f47777; }
+
+body[data-edition="halloween"] .player-card {
+  border-color: #9b6cbe5e;
+  border-radius: 12px 28px 12px 28px;
+  background: radial-gradient(ellipse at 0 100%, #bd591c1f, transparent 40%), linear-gradient(120deg, #2c1939f5, #170f20f5);
+  box-shadow: 0 10px 22px #0004, inset 0 1px 0 #edcaff0d;
+}
+body[data-edition="halloween"] .player-card::before { width: 4px; background: linear-gradient(#ffbd65, #cf7035 40%, #9355c3); }
+body[data-edition="halloween"] .player-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 66px;
+  height: 58px;
+  border-radius: 0 28px 0 0;
+  opacity: .28;
+  pointer-events: none;
+  background: repeating-radial-gradient(circle at 100% 0, transparent 0 12px, #c8a0e1 13px 13.5px, transparent 14px 23px), linear-gradient(145deg, transparent 49%, #c8a0e1 50%, transparent 51%), linear-gradient(120deg, transparent 49%, #c8a0e1 50%, transparent 51%);
+}
+body[data-edition="halloween"] .player-card h3 { color: #fff0d9; }
+body[data-edition="halloween"] .player-number-badge { flex: 0 0 58px; width: 58px; height: 60px; overflow: visible; border: 0; border-radius: 0; background: url("/walk-up-announcer/assets/halloween-pumpkin.svg") center / contain no-repeat; color: #32120b; text-shadow: 0 1px 0 #ffd17e; padding-top: 8px; font-size: 20px; filter: drop-shadow(0 3px 7px #ff871b26); }
+body[data-edition="halloween"] .player-number-badge::before { content: none; }
+body[data-edition="halloween"] .combined-walkup-label { color: #d3b0ef; letter-spacing: .12em; font-size: 9px; }
+body[data-edition="halloween"] .combined-walkup-note { display: flex; align-items: center; gap: 6px; color: #bda7cc; font-size: 11px; }
+.combined-walkup-note svg { width: 14px; height: 14px; flex-shrink: 0; color: #ab86c3; }
+body[data-edition="halloween"] .player-actions .primary-action { color: #241009; border-color: #ffd39b; border-radius: 12px; background: linear-gradient(145deg, #ffc470, #f18b36); box-shadow: inset 0 1px 0 #fff0b5, 0 4px 0 #7e361a, 0 5px 20px #ff8b271a; }
+body[data-edition="halloween"] :is(.player-edit-button, .timeline-arrow-button, .player-order-arrow) { color: #e3c7f5; border-color: #b78ad24d; background: #34203f; }
+body[data-edition="halloween"] .player-edit-button-active { color: #20102a; background: #d4adf6; border-color: #f0d8ff; }
+body[data-edition="halloween"] .player-card-live { border-color: #c4f477; background: radial-gradient(ellipse at 0 0, #a3d34f33, transparent 50%), linear-gradient(120deg, #2c2835, #191422); box-shadow: 0 0 0 2px #c4f47766, 0 0 28px #b3ee5626, inset 0 1px 0 #e4ffba33; }
+body[data-edition="halloween"] .player-card-live::before { background: linear-gradient(#e8ffb5, #a2d94e); }
+
+body[data-edition="halloween"] .timeline-lane { background: #0e0915; border-color: #9a6ab73d; }
+body[data-edition="halloween"] .timeline-canvas { border-color: #9a6ab72e; background: repeating-linear-gradient(90deg, #cda0eb0d 0 1px, transparent 1px 12.5%), #0c0811; }
+body[data-edition="halloween"] .timeline-canvas::before { opacity: .12; }
+body[data-edition="halloween"] .timeline-lane-readout { color: #dbc7e8; }
+body[data-edition="halloween"] .track-a { color: #29110b; border-color: #ffc67b; background: linear-gradient(135deg, #ffd18b, #ee8a37); }
+body[data-edition="halloween"] .track-b { color: #1d1029; border-color: #dbb7ff; background: linear-gradient(135deg, #e4caff, #a473d4); }
+body[data-edition="halloween"] .timeline-event-selected { box-shadow: 0 0 0 2px #c4f477; }
+body[data-edition="halloween"] .empty-song-lane { color: #a791b8; }
+
+body[data-edition="halloween"] .sampler-pad-group h3 { color: #ffb967; text-shadow: none; font: 400 1.65rem "Creepster", Impact, fantasy; letter-spacing: .04em; }
+body[data-edition="halloween"] :is(.sampler-pad-vox, .sampler-pad-numbers) { color: #ffecd5; border-color: #b5703b; background: radial-gradient(ellipse at top left, #ffb35822, transparent 70%), linear-gradient(145deg, #7b351c, #301727); }
+body[data-edition="halloween"] :is(.sampler-pad-names, .sampler-pad-positions, .sampler-pad-songs) { color: #f2e3ff; border-color: #ab7acb; background: linear-gradient(145deg, #593775, #281635); }
+body[data-edition="halloween"] .sampler-pad::after { background: linear-gradient(90deg, #ffb96799, #b889e266); }
+body[data-edition="halloween"] .sampler-pad-live { color: #19200e; border-color: #e6ffc0; background: linear-gradient(145deg, #e3ffb5, #b0e265); box-shadow: 0 0 0 2px #e5ffbd99, 0 0 24px #c4f47755; }
+body[data-edition="halloween"] .sampler-pad-live small { color: #293c15; }
+body[data-edition="halloween"] .sampler-pad-level { background: #09050f66; }
+body[data-edition="halloween"] .sampler-pad-level-live { background: #c4f477; }
+
+body[data-edition="halloween"] .scoreboard { border-color: #e4a14c; background: linear-gradient(145deg, #533121, #100a17 35%, #31163f); box-shadow: inset 0 0 0 2px #0d0714, inset 0 0 14px #ff8a201a, 0 5px 24px #000a; }
+body[data-edition="halloween"] .score-counter output { color: #fff1d7; border-color: #d89347; background: radial-gradient(circle, #624228 1px, transparent 2px) 0 0 / 5px 5px, #130a16; text-shadow: 0 2px 0 #b65e2a; box-shadow: 0 0 8px #ff8a2026; }
+body[data-edition="halloween"] .scoreboard button { color: #ffbb6b; }
+body[data-edition="halloween"] .scoreboard button:hover { background: #ffb25818; }
+body[data-edition="halloween"] .score-counter button svg { filter: drop-shadow(0 0 3px #ff9b3a66); }
+body[data-edition="halloween"] .inning-half button { color: #b49bc3; }
+body[data-edition="halloween"] .inning-half button[aria-pressed="true"] { color: #c4f477; }
+body[data-edition="halloween"] .inning-half button[aria-pressed="true"] span { background: #c4f477; box-shadow: 0 0 10px #c4f47799; }
+body[data-edition="halloween"] .score-counter > span { color: #e5c5f3; }
+body[data-edition="halloween"] .floating-fade-button { color: #ffe6ca; border-color: #ffc075; border-radius: 16px 6px 16px 6px; background: linear-gradient(145deg, #753515, #341831); box-shadow: 0 6px 25px #0008, inset 0 1px 0 #ffcb8e33; }
+
+@media (max-width: 900px) and (min-width: 600px) {
+  body[data-edition="halloween"] .hero-card { padding-right: 42%; }
+  body[data-edition="halloween"] .hero-card h1 { font-size: clamp(3.5rem, 8vw, 5rem); }
+  body[data-edition="halloween"] .halloween-brand { font-size: 10px; letter-spacing: .08em; }
+}
+@media (max-width: 599px) {
+  body[data-edition="halloween"] { background-position: 63% center; }
+  body[data-edition="halloween"] .hero-card { padding: 120px 20px 24px; min-height: 440px; border-radius: 24px 24px 36px 10px; }
+  body[data-edition="halloween"] .hero-card > .halloween-hero-art { background: linear-gradient(180deg, #160d2040, #160d20bd 35%, #160d20f5 80%), url("/walk-up-announcer/assets/halloween-haunted-ballpark.webp") 66% top / auto 100%; }
+  body[data-edition="halloween"] .halloween-brand { margin-top: 18px; font-size: 10px; }
+  body[data-edition="halloween"] .hero-card h1 { font-size: clamp(3.4rem, 14vw, 5.2rem); }
+  body[data-edition="halloween"] .halloween-caption { font-size: 10px; margin-bottom: 18px; }
+  body[data-edition="halloween"] .panel { padding: 14px; }
+  body[data-edition="halloween"] .player-number-badge { flex-basis: 48px; width: 48px; height: 52px; font-size: 17px; }
+  body[data-edition="halloween"] .player-identity { gap: 9px; }
+  body[data-edition="halloween"] .combined-walkup-label { font-size: 8px; letter-spacing: .08em; }
+  body[data-edition="halloween"] .combined-walkup-note { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-edition="halloween"] *, body[data-edition="halloween"] *::before, body[data-edition="halloween"] *::after { animation: none; transition: none; }
+}

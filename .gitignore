@@ -8,3 +8,5 @@ yarn-debug.log*
 yarn-error.log*
 .env
 .env.*
+# Incoming Halloween recordings are published from v2/public/assets/audio/halloween/.
+/halloween/

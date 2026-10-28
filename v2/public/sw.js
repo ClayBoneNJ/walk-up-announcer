@@ -1,7 +1,11 @@
-const CACHE_NAME = "walk-up-announcer-v140";
+const CACHE_NAME = "walk-up-announcer-v142";
 const APP_SHELL_URLS = [
   "/walk-up-announcer/",
   "/walk-up-announcer/index.html",
+  "/walk-up-announcer/assets/halloween-ballpark.svg",
+  "/walk-up-announcer/assets/halloween-haunted-ballpark.webp",
+  "/walk-up-announcer/assets/halloween-pumpkin.svg",
+  "/walk-up-announcer/assets/fonts/Creepster-Regular.ttf",
   "/walk-up-announcer/assets/fonts/Lobster-Regular.ttf",
 ];
 
