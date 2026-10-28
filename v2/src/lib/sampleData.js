@@ -7,7 +7,7 @@ import {
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "142";
+const AUDIO_ASSET_VERSION = "143";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -612,16 +612,32 @@ export const halloweenWalkupClips = teamPlayerData
     playerName: player.name,
   }));
 
+const halloweenSongClips = [clip({
+  id: "halloween-song-matty",
+  group: "songs",
+  label: "Deep End",
+  src: assetSrc("halloween/songs", "matty wanko song deep end.mp3"),
+  playerId: "matty",
+  playerName: "Matty Wanko",
+})];
+
 export const halloweenPlayers = players
   .filter((player) => halloweenFilesByPlayerId[player.id])
-  .map((player) => ({
-    ...player,
-    sequence: [event(`${player.id}-halloween-walkup`, "A", 0,
-      halloweenWalkupClips.find((clip) => clip.playerId === player.id))],
-  }));
+  .map((player) => {
+    const walkup = halloweenWalkupClips.find((clip) => clip.playerId === player.id);
+    const song = halloweenSongClips.find((clip) => clip.playerId === player.id);
+    return {
+      ...player,
+      sequence: [
+        event(`${player.id}-halloween-walkup`, "A", 0, walkup),
+        ...(song ? [event(`${player.id}-halloween-song`, "B", walkup.durationMs, song)] : []),
+      ],
+    };
+  });
 
 export const halloweenClipLibrary = [
   ...halloweenWalkupClips,
+  ...halloweenSongClips,
   ...clipLibrary.filter((clip) => ["crowd", "umpire-calls", "player-hype", "crowd-hype"].includes(clip.group)),
 ];
 

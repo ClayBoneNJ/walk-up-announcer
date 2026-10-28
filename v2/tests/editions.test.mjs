@@ -30,7 +30,7 @@ test("Halloween has 16 combined walkups on A and no borrowed songs", () => {
   assert.equal(model.players.length, 17);
   assert.equal(model.halloweenPlayers.length, 16);
   for (const player of model.halloweenPlayers) {
-    assert.equal(player.sequence.length, 1, player.name);
+    assert.equal(player.sequence.filter((event) => event.track === "A").length, 1, player.name);
     const [event] = player.sequence;
     assert.equal(event.track, "A");
     assert.equal(event.startMs, 0);
@@ -38,7 +38,26 @@ test("Halloween has 16 combined walkups on A and no borrowed songs", () => {
     assert.equal(event.clip.group, "halloween-walkups");
     assert.ok(event.clip.durationMs > 0);
   }
-  assert.equal(model.halloweenClipLibrary.filter((clip) => clip.group === "songs").length, 0);
+  const songs = model.halloweenClipLibrary.filter((clip) => clip.group === "songs");
+  assert.equal(songs.length, 1);
+  assert.equal(songs[0].id, "halloween-song-matty");
+});
+
+test("Matty's separate song is added to existing Halloween settings and keeps independent timing", () => {
+  const matty = model.halloweenPlayers.find((player) => player.id === "matty");
+  const saved = plain(model.serializePlayerSequences([matty]));
+  saved[0].sequence = saved[0].sequence.filter((event) => event.track === "A");
+  saved[0].sequence[0].startMs = 500;
+  const restored = model.hydrateSavedPlayerSequences(saved, model.halloweenPlayers, model.halloweenClipLibrary).find((player) => player.id === "matty");
+  assert.equal(restored.sequence[0].startMs, 500);
+  const song = restored.sequence.find((event) => event.track === "B");
+  assert.equal(song.clip.label, "Deep End");
+  assert.equal(song.startMs, matty.sequence[0].clip.durationMs);
+  const updated = plain(model.serializePlayerSequences([restored]));
+  updated[0].sequence.find((event) => event.track === "B").startMs = 8000;
+  const reloaded = model.hydrateSavedPlayerSequences(updated, model.halloweenPlayers, model.halloweenClipLibrary).find((player) => player.id === "matty");
+  assert.equal(reloaded.sequence.find((event) => event.track === "B").startMs, 8000);
+  assert.equal(reloaded.sequence[0].startMs, 500);
 });
 
 test("Both editions use exactly the same crowd and game effects", () => {
