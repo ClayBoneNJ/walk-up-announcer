@@ -81,13 +81,18 @@ export function createWebAudioPlayback(AudioContextClass, audioHost = globalThis
     return load;
   };
 
-  const play = (buffer, onEnded, startTime = context.currentTime) => {
+  const play = (buffer, onEnded, startTime = context.currentTime, envelope = []) => {
     const current = context;
     const source = current.createBufferSource();
     const gain = current.createGain();
     source.buffer = buffer;
     source.connect(gain);
     gain.connect(current.destination);
+    envelope.forEach((point, index) => {
+      const time = startTime + point.ms / 1000;
+      if (index === 0) gain.gain.setValueAtTime(point.volume, time);
+      else gain.gain.linearRampToValueAtTime(point.volume, time);
+    });
     let stopped = false;
     const disconnect = () => {
       source.disconnect();

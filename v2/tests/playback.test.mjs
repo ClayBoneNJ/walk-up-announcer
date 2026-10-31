@@ -13,6 +13,7 @@ function harness({ mobile = true, serviceWorker } = {}) {
   const timers = new Map();
   const played = [];
   const media = [];
+  const gains = [];
   let id = 0;
   class MockContext {
     constructor() { this.state = "suspended"; this.sampleRate = 44100; this.currentTime = 10; this.sources = []; contexts.push(this); }
@@ -25,8 +26,14 @@ function harness({ mobile = true, serviceWorker } = {}) {
       this.sources.push(source);
       return source;
     }
-    createGain() { return { connect() {}, disconnect() {}, gain: { value: 1,
-      cancelScheduledValues() {}, setValueAtTime() {}, linearRampToValueAtTime() {} } }; }
+    createGain() {
+      const events = [];
+      gains.push(events);
+      return { connect() {}, disconnect() {}, gain: { value: 1,
+        cancelScheduledValues(time) { events.push(["cancel", time]); },
+        setValueAtTime(value, time) { events.push(["set", value, time]); },
+        linearRampToValueAtTime(value, time) { events.push(["ramp", value, time]); } } };
+    }
   }
   class MockAudio {
     constructor(src) { this.src = src; this.volume = 1; media.push(this); }
@@ -48,7 +55,7 @@ function harness({ mobile = true, serviceWorker } = {}) {
       const key = state.length; state.push(value); return [value, (next) => state[key] = typeof next === "function" ? next(state[key]) : next];
     }, useMemo: (fn) => fn(), useEffect() {} };
   const engine = vm.runInNewContext(`${hookSource}\nusePlaybackEngine({ onClipPlayed: (clip) => played.push(clip.id) })`, { ...context, played });
-  return { engine, contexts, state, timers, played, media, endGesture() { gesture = false; },
+  return { engine, contexts, state, timers, played, media, gains, endGesture() { gesture = false; },
     get audibleSources() { return contexts.flatMap((ctx) => ctx.sources).filter((s) => s.buffer?.length > 1); } };
 }
 const clip = (id) => ({ id, label: id, src: `https://example.test/${id}.mp3` });
@@ -91,6 +98,56 @@ test("iPhone walkup schedules voice/song offsets without a second tap or re-armi
     assert.equal(h.timers.size, 0);
   });
 });
+test("iPhone music ducks across adjacent announcer clips and restores after the last voice", async () => {
+  await withFetch(async () => audioResponse(), async () => {
+    const h = harness();
+    await h.engine.playSequence({ id: "p", name: "Player", sequence: [
+      { startMs: 0, clip: { ...clip("song"), group: "songs", durationMs: 10000 } },
+      { startMs: 1000, clip: { ...clip("number"), group: "numbers", durationMs: 1000 } },
+      { startMs: 2100, clip: { ...clip("name"), group: "names", durationMs: 1500 } },
+    ] });
+    const gain = h.gains[0];
+    const start = h.audibleSources[0].startTime;
+    assert.deepEqual(gain.map(([kind, volume]) => [kind, volume]),
+      [["set", 1], ["ramp", 1], ["ramp", 0.25], ["ramp", 0.25], ["ramp", 1]]);
+    assert.ok(Math.abs(gain.at(-1)[2] - start - 3.95) < 0.00001);
+    assert.equal(h.gains[1].length, 0, "The announcer stays at full volume");
+    await h.engine.fadeOutAndStopAll();
+    assert.ok(gain.some(([kind]) => kind === "cancel"), "Stop cancels future ducking ramps");
+    assert.ok(h.audibleSources.every((source) => source.stopped));
+  });
+});
+
+test("Halloween song starting under the combined walkup starts ducked; nonoverlapping music stays full", async () => {
+  await withFetch(async () => audioResponse(), async () => {
+    for (const [songStart, initialVolume] of [[1000, 0.25], [4000, 1]]) {
+      const h = harness();
+      await h.engine.playSequence({ id: "p", name: "Player", sequence: [
+        { startMs: 0, clip: { ...clip("walkup"), group: "halloween-walkups", durationMs: 3000 } },
+        { startMs: songStart, clip: { ...clip("song"), group: "songs", durationMs: 10000 } },
+      ] });
+      assert.equal(h.gains[1][0][1], initialVolume);
+      await h.engine.fadeOutAndStopAll({ fadeOut: false });
+    }
+  });
+});
+
+test("Desktop music starts ducked under speech and Reset cancels its volume timer", async () => {
+  const h = harness({ mobile: false });
+  await h.engine.playSequence({ id: "p", name: "Player", sequence: [
+    { startMs: 0, clip: { ...clip("song"), group: "songs", durationMs: 10000 } },
+    { startMs: 0, clip: { ...clip("voice"), group: "names", durationMs: 3000 } },
+  ] });
+  const triggers = [...h.timers.entries()];
+  for (const [id, timer] of triggers) { h.timers.delete(id); await timer.fn(); }
+  assert.equal(h.media[0].volume, 0.25);
+  assert.equal(h.media[1].volume, 1);
+  assert.ok(h.timers.size > 0);
+  await h.engine.resetEngine();
+  assert.equal(h.timers.size, 0);
+  assert.ok(h.media.every((audio) => audio.paused));
+});
+
 test("Stop during a mobile download prevents the clip starting afterward", async () => {
   let complete;
   await withFetch(() => new Promise((resolve) => complete = resolve), async () => {

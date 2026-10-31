@@ -52,6 +52,10 @@ generation details are in `../docs/halloween-art.md`.
 
 ## Audio reliability
 
+During walkup sequences in both editions, songs automatically duck to 25% volume
+under announcer clips and return to full volume over 350 ms. Adjacent spoken clips
+keep the music ducked between calls. Saved timeline offsets and audio files are unchanged.
+
 Clip durations are measured from the audio files and bundled in src/lib/audioDurations.json. After adding or replacing audio, regenerate them with npm run audio:durations -- <path-to-ffmpeg>. The production build does not require FFmpeg.
 
 iPhone and iPad playback uses a tap-unlocked Web Audio context with a 32 MB decoded-buffer cache. Arm Audio caches the full compressed clips for offline use. Reset Audio recreates the playback context without changing the lineup or scores.

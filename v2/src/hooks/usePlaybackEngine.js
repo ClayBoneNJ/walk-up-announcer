@@ -2,6 +2,33 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createWebAudioPlayback, withTimeout } from "../lib/webAudioPlayback";
 
 const STOP_FADE_MS = 700;
+const DUCK_VOLUME = 0.25;
+
+// Merge adjacent spoken clips so the music stays down between name/number calls.
+function songEnvelope(event, sequence) {
+  if (event.clip.group !== "songs") return [];
+  const start = Math.max(0, event.startMs || 0);
+  const windows = sequence.filter((entry) =>
+    ["announcements", "numbers", "positions", "names", "halloween-walkups"].includes(entry.clip.group))
+    .map((entry) => [Math.max(0, (entry.startMs || 0) - 80),
+      Math.max(0, entry.startMs || 0) + (entry.clip.durationMs || 0)])
+    .sort((a, b) => a[0] - b[0]);
+  const merged = [];
+  for (const window of windows) {
+    const previous = merged.at(-1);
+    if (previous && window[0] <= previous[1] + 350) previous[1] = Math.max(previous[1], window[1]);
+    else merged.push([...window]);
+  }
+  const points = [{ ms: 0, volume: 1 }];
+  for (const [from, to] of merged) {
+    if (to <= start || from >= start + event.clip.durationMs) continue;
+    if (from <= start) points[0].volume = DUCK_VOLUME;
+    else points.push({ ms: from - start, volume: 1 }, { ms: from - start + 80, volume: DUCK_VOLUME });
+    points.push({ ms: Math.max(0, to - start), volume: DUCK_VOLUME },
+      { ms: Math.max(0, to - start) + 350, volume: 1 });
+  }
+  return points;
+}
 const EMPTY_READY_STATE = {
   offline: false, armed: false, directPlayback: false,
   failedCount: 0, cachedCount: 0, totalCount: 0, loading: false,
@@ -56,8 +83,26 @@ function isIOSAudioHost() {
 }
 
 function createMediaVoice(audio) {
+  let envelopeTimer;
+  const cancelEnvelope = () => window.clearTimeout(envelopeTimer);
   return {
+    envelope(points) {
+      if (!points.length) return;
+      const start = performance.now();
+      const tick = () => {
+        const elapsed = performance.now() - start;
+        let index = points.findIndex((point) => point.ms > elapsed);
+        if (index < 0) { audio.volume = points.at(-1).volume; return; }
+        const previous = points[Math.max(0, index - 1)];
+        const next = points[index];
+        const fraction = next.ms === previous.ms ? 0 : Math.max(0, (elapsed - previous.ms) / (next.ms - previous.ms));
+        audio.volume = previous.volume + (next.volume - previous.volume) * fraction;
+        envelopeTimer = window.setTimeout(tick, 25);
+      };
+      tick();
+    },
     stop() {
+      cancelEnvelope();
       audio.onended = null;
       audio.onerror = null;
       audio.pause();
@@ -65,6 +110,7 @@ function createMediaVoice(audio) {
       audio.load();
     },
     fade(durationMs) {
+      cancelEnvelope();
       const startingVolume = audio.volume;
       const start = performance.now();
       return new Promise((resolve) => {
@@ -195,17 +241,20 @@ export function usePlaybackEngine({ onClipPlayed } = {}) {
     }
   };
 
-  const startMedia = async (src, clip, generation) => {
+  const startMedia = async (src, clip, generation, envelope = []) => {
     if (generation !== playbackGenerationRef.current) return;
     const audio = new Audio(src);
     audio.preload = "auto";
     audio.playsInline = true;
     audio.crossOrigin = "anonymous";
     const voice = createMediaVoice(audio);
-    audio.onended = () => retireVoice(voice, generation);
+    audio.onended = () => { voice.stop(); retireVoice(voice, generation); };
     audio.onerror = () => reportFailure(new Error("Audio loading failed"), generation);
     activeVoicesRef.current.push(voice);
+    if (envelope.length) audio.volume = envelope[0].volume;
     await audio.play();
+    if (generation !== playbackGenerationRef.current) return;
+    voice.envelope(envelope);
     if (generation === playbackGenerationRef.current) onClipPlayed?.(clip);
   };
 
@@ -259,8 +308,9 @@ export function usePlaybackEngine({ onClipPlayed } = {}) {
       const startTime = backend ? backend.currentTime + 0.025 : 0;
       sequence.forEach((event, index) => {
         const delay = Math.max(0, Number.isFinite(event.startMs) ? event.startMs : 0);
+        const envelope = songEnvelope(event, sequence);
         if (backend) {
-          const voice = backend.play(prepared[index], () => retireVoice(voice, generation), startTime + delay / 1000);
+          const voice = backend.play(prepared[index], () => retireVoice(voice, generation), startTime + delay / 1000, envelope);
           activeVoicesRef.current.push(voice);
         }
         const timeout = window.setTimeout(async () => {
@@ -269,7 +319,7 @@ export function usePlaybackEngine({ onClipPlayed } = {}) {
             clipId: event.clip.id, clipName: event.clip.label });
           try {
             if (backend) onClipPlayed?.(event.clip);
-            else await startMedia(prepared[index], event.clip, generation);
+            else await startMedia(prepared[index], event.clip, generation, envelope);
           } catch (error) { reportFailure(error, generation); }
         }, delay + (backend ? 25 : 0));
         sequenceTimeoutsRef.current.push(timeout);
