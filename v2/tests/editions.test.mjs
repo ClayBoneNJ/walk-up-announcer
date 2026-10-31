@@ -39,7 +39,7 @@ test("Halloween has 16 combined walkups on A and no borrowed songs", () => {
     assert.ok(event.clip.durationMs > 0);
   }
   const songs = model.halloweenClipLibrary.filter((clip) => clip.group === "songs");
-  assert.deepEqual(plain(songs.map((song) => song.id)), ["halloween-song-matty", "halloween-song-nate", "halloween-song-billy", "halloween-song-tristan", "halloween-song-camden", "halloween-song-brandon", "halloween-song-alex", "halloween-song-mario"]);
+  assert.deepEqual(plain(songs.map((song) => song.id)), ["halloween-song-matty", "halloween-song-nate", "halloween-song-billy", "halloween-song-tristan", "halloween-song-camden", "halloween-song-brandon", "halloween-song-alex", "halloween-song-mario", "halloween-song-nick"]);
 });
 
 test("Matty's separate song is added to existing Halloween settings and keeps independent timing", () => {

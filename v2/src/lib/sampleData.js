@@ -7,7 +7,7 @@ import {
 import { temporaryPlayerData } from "./temporaryPlayers/index.js";
 import audioDurations from "./audioDurations.json";
 
-const AUDIO_ASSET_VERSION = "154";
+const AUDIO_ASSET_VERSION = "155";
 
 function assetSrc(folder, fileName) {
   return `${import.meta.env.BASE_URL}assets/audio/${folder}/${encodeURIComponent(fileName)}?v=${AUDIO_ASSET_VERSION}`;
@@ -668,6 +668,13 @@ const halloweenSongClips = [clip({
   src: assetSrc("halloween/songs", "mario contraras song beetlejuice.mp3"),
   playerId: "mario",
   playerName: "Mario Contreras",
+}), clip({
+  id: "halloween-song-nick",
+  group: "songs",
+  label: "Watching",
+  src: assetSrc("halloween/songs", "nick mangino song watching.mp3"),
+  playerId: "nick",
+  playerName: "Nick Mangino",
 })];
 
 export const halloweenPlayers = players
