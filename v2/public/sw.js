@@ -1,4 +1,4 @@
-const CACHE_NAME = "walk-up-announcer-v151";
+const CACHE_NAME = "walk-up-announcer-v152";
 const APP_SHELL_URLS = [
   "/walk-up-announcer/",
   "/walk-up-announcer/index.html",
