@@ -42,7 +42,7 @@ tap Arm Audio in the selected edition to preload that edition's library for offl
 
 Halloween currently includes the 16 supplied combined entrance/number/name recordings
 on Track A. Gio Mortensen has no supplied recording and is omitted from this edition.
-Matty's Deep End, Nate's Nightmare, Billy's Dragula, Tristan's Hush, Cam's Crypt, Brandon's Thriller, Alex Bonk's Halloween Theme, Mario's Beetlejuice, Nick's Watching, and Ben's Umbrella songs are on Track B, starting after each player's
+Matty's Deep End, Nate's Nightmare, Billy's Dragula, Tristan's Hush, Cam's Crypt, Brandon's Thriller, Alex Bonk's Halloween Theme, Mario's Beetlejuice, Nick's Watching, Ben's Umbrella, and Alex Kelman's Psycho Killer songs are on Track B, starting after each player's
 combined walkup by default; their timing can be moved independently. Other song lanes are empty. Crowd effects are shared
 with Regular. Source recordings go in the local `halloween/` inbox; published recordings
 live in `public/assets/audio/halloween/walkups/` and are mapped in `src/lib/sampleData.js`.
